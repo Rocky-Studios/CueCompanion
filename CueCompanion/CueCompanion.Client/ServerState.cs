@@ -5,8 +5,10 @@ namespace CueCompanion
     public class ServerState
     {
         public int CurrentCueNumber { get; set; }
-
         public Show CurrentShow = GetSampleShow();
+        public Connection[] Connections = [
+            new ("Sound")
+        ];
 
         private static Show GetSampleShow()
         {

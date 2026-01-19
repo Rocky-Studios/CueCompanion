@@ -31,7 +31,7 @@
 }
 
 .current-cue{
-    flex-grow: 1.25;
+    flex-grow: 1.5;
     flex-basis: 0;
 }
 
@@ -96,4 +96,14 @@ table.cue-explorer-controls td
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
+}
+
+.current-cue-tasks{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+.current-cue-tasks > div{
+    flex: 1 1 0;
+    background-color: darkgray;
 }

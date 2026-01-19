@@ -50,14 +50,25 @@
         </div>
     </div>   
     <div class="main-box current-cue">
-        <h3>Current Cue - @Counter.State.CurrentShow.Cues.FirstOrDefault(c=>c.CueNumber==Counter.State.CurrentCueNumber, new Cue(0,"None","", [])).CueName (@Counter.State.CurrentCueNumber)</h3>
+        <h3>Current Cue - @CurrentCue.CueName (@Counter.State.CurrentCueNumber)</h3>
         <div class="current-cue-view-select">
             <h5>View</h5>
             <RoleViewCheckbox Name="All" Enabled="false"/>
-            @foreach(Role role in Counter.State.CurrentShow.Roles)
+            @foreach(Role role in Counter.State.CurrentShow.Roles) 
             {
                 <RoleViewCheckbox Name="@role.RoleName" Enabled="false"/>
             }
+        </div>
+        <div>
+            <h4>Tasks</h4>
+            <div class="current-cue-tasks">
+                @foreach (string task in TasksForCurrentCue)
+                {
+                    <div>
+                        @task
+                    </div>
+                }
+            </div>
         </div>
     </div>   
     <div class="main-box cue-notes">
@@ -66,6 +77,11 @@
 </div>
 
 @code {
+    //@CurrentCue.Tasks.FirstOrDefault(new KeyValuePair<Role, string>()).Value
+    protected Cue CurrentCue => Counter.State.CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == Counter.State.CurrentCueNumber, new Cue(0, "None", "", []));
+    
+    protected string[] TasksForCurrentCue => CurrentCue.Tasks.Values.ToArray();
+    
     protected override async Task OnInitializedAsync()
     {
         Counter.OnChange += () => InvokeAsync(StateHasChanged);
