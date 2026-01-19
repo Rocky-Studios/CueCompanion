@@ -50,7 +50,7 @@
         </div>
     </div>   
     <div class="main-box current-cue">
-        <h3>Current Cue - @Counter.State.CurrentShow.Cues.FirstOrDefault(c=>c.CueNumber==Counter.State.CurrentCueNumber, new Cue(0,"None","")).CueName (@Counter.State.CurrentCueNumber)</h3>
+        <h3>Current Cue - @Counter.State.CurrentShow.Cues.FirstOrDefault(c=>c.CueNumber==Counter.State.CurrentCueNumber, new Cue(0,"None","", [])).CueName (@Counter.State.CurrentCueNumber)</h3>
         <div class="current-cue-view-select">
             <h5>View</h5>
             <RoleViewCheckbox Name="All" Enabled="false"/>
