@@ -1,4 +1,6 @@
-﻿namespace CueCompanion
+﻿using CueCompanion.Client;
+
+namespace CueCompanion
 {
     public class ServerState
     {
@@ -10,6 +12,13 @@
             new TimeOnly(14, 0, 0),
             "Default Show",
             ShowLocation.MPC,
+            [
+                new Role("Sound", "Gergo"),
+                new Role("Graphics", "Reece"),
+                new Role("Lights/VFX", "Chuck"),
+                new Role("Aux/Camera", "Sheldon"),
+                new Role("Stage", "Hyunseo"),
+            ],
             [
                 new Cue(1, "House Lights Up", "Fade house lights to full for audience seating."),
                 new Cue(2, "Intro Music", "Play opening theme track at -6dB, 30s lead-in."),

@@ -1,0 +1,9 @@
+﻿<div>
+    <input type="checkbox" value="@Enabled"/>
+    <span>@Name</span>
+</div>
+
+@code {
+    [Parameter] public bool Enabled { get; set; } = false;
+    [Parameter] public string Name { get; set; } = "";
+}

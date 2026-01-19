@@ -90,3 +90,10 @@ table.cue-explorer-controls td
     min-height: 0;
     box-sizing: border-box;
 }
+
+.current-cue-view-select{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
