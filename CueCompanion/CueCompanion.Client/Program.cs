@@ -1,16 +1,15 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-namespace CueCompanion.Client
+namespace CueCompanion.Client;
+
+internal class Program
 {
-    internal class Program
+    private static async Task Main(string[] args)
     {
-        static async Task Main(string[] args)
-        {
-            var builder = WebAssemblyHostBuilder.CreateDefault(args);
+        WebAssemblyHostBuilder builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            builder.Services.AddSingleton<CounterService>();
+        builder.Services.AddSingleton<CounterService>();
 
-            await builder.Build().RunAsync();
-        }
+        await builder.Build().RunAsync();
     }
 }

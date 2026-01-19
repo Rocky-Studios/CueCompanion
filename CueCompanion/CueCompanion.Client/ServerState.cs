@@ -1,37 +1,39 @@
 ﻿using CueCompanion.Client;
 
-namespace CueCompanion
-{
-    public class ServerState
-    {
-        public int CurrentCueNumber { get; set; }
-        public Show CurrentShow = GetSampleShow();
-        public Connection[] Connections = [
-            new ("Sound")
-        ];
+namespace CueCompanion;
 
-        private static Show GetSampleShow()
-        {
-            Role sound = new Role("Sound", "Gergo");
-            Role graphics = new Role("Graphics", "Reece");
-            Role lights = new Role("Lights/VFX", "Chuck");
-            Role aux = new Role("Aux/Camera", "Sheldon");
-            Role stage = new Role("Stage", "Hyunseo");
-            
-            Show show = new Show(
-                new DateOnly(2026, 1, 1),
-                new TimeOnly(12, 0, 0),
-                new TimeOnly(14, 0, 0),
-                "Default Show",
-                ShowLocation.MPC,
-                [
-                    new Role("Sound", "Gergo"),
-                    new Role("Graphics", "Reece"),
-                    new Role("Lights/VFX", "Chuck"),
-                    new Role("Aux/Camera", "Sheldon"),
-                    new Role("Stage", "Hyunseo"),
-                ],
-                [
+public class ServerState
+{
+    public Connection[] Connections =
+    [
+        new("Sound")
+    ];
+
+    public Show CurrentShow = GetSampleShow();
+    public int CurrentCueNumber { get; set; }
+
+    private static Show GetSampleShow()
+    {
+        Role sound = new("Sound", "Gergo");
+        Role graphics = new("Graphics", "Reece");
+        Role lights = new("Lights/VFX", "Chuck");
+        Role aux = new("Aux/Camera", "Sheldon");
+        Role stage = new("Stage", "Hyunseo");
+
+        Show show = new(
+            new DateOnly(2026, 1, 1),
+            new TimeOnly(12, 0, 0),
+            new TimeOnly(14, 0, 0),
+            "Default Show",
+            ShowLocation.MPC,
+            [
+                new Role("Sound", "Gergo"),
+                new Role("Graphics", "Reece"),
+                new Role("Lights/VFX", "Chuck"),
+                new Role("Aux/Camera", "Sheldon"),
+                new Role("Stage", "Hyunseo")
+            ],
+            [
                 new Cue(1, "House Open", "Begin pre-show sequence",
                     new Dictionary<Role, string>
                     {
@@ -251,9 +253,8 @@ namespace CueCompanion
                         { stage, "Cast to marks; confetti cue on GO" }
                     }
                 )
-                ]
-            );
-            return show;
-        }
+            ]
+        );
+        return show;
     }
 }

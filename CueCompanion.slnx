@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="CueCompanion/CueCompanion.Client/CueCompanion.Client.csproj" />
-  <Project Path="CueCompanion/CueCompanion/CueCompanion.csproj" />
+    <Project Path="CueCompanion/CueCompanion.Client/CueCompanion.Client.csproj"/>
+    <Project Path="CueCompanion/CueCompanion/CueCompanion.csproj"/>
 </Solution>

@@ -1,4 +1,4 @@
-﻿.main-view{
+﻿.main-view {
     display: flex;
     flex-direction: row;
     align-items: stretch;
@@ -8,102 +8,97 @@
     gap: 20px;
 }
 
-.main-box{
+.main-box {
     background-color: lightgray;
     height: 100%;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    min-height: 0; 
-    overflow: hidden; 
+    min-height: 0;
+    overflow: hidden;
 }
 
-.main-box h3
-{
+.main-box h3 {
     width: 100%;
     text-align: center;
     margin: 0 0 1rem 0;
 }
 
-.cue-explorer{
+.cue-explorer {
     flex-grow: 0.8;
     flex-basis: 0;
 }
 
-.current-cue{
+.current-cue {
     flex-grow: 1.5;
     flex-basis: 0;
 }
 
-.cue-notes{
+.cue-notes {
     flex-grow: 0.4;
     flex-basis: 0;
 }
 
-table.cue-explorer-controls
-{
+table.cue-explorer-controls {
     width: 100%;
     border-collapse: collapse;
 }
-table.cue-explorer-controls td
-{
+
+table.cue-explorer-controls td {
     border: 1px solid black;
     background-color: gray;
 }
 
-.cue-explorer-key
-{
+.cue-explorer-key {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     flex-shrink: 0;
     gap: 0.5rem;
 }
-::deep .cue-explorer-key div
-{
+
+::deep .cue-explorer-key div {
     flex-grow: 1;
 }
 
-.cue-explorer-container
-{
+.cue-explorer-container {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
 }
 
-.cue-explorer-cues
-{
+.cue-explorer-cues {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
 }
 
-.cue-explorer-list
-{
+.cue-explorer-list {
     margin-top: 2rem;
     border: 2px solid #333;
     display: flex;
     flex-direction: column;
-    overflow: auto; 
+    overflow: auto;
     min-height: 0;
     box-sizing: border-box;
 }
 
-.current-cue-view-select{
+.current-cue-view-select {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
 }
 
-.current-cue-tasks{
+.current-cue-tasks {
     display: flex;
     flex-direction: row;
     gap: 10px;
 }
-.current-cue-tasks > div{
+
+.current-cue-tasks > div {
     flex: 1 1 0;
     background-color: darkgray;
 }

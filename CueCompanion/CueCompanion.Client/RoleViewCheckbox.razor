@@ -4,12 +4,13 @@
 </div>
 
 @code {
-    [Parameter] public bool Enabled { get; set; } = false;
+    [Parameter] public bool Enabled { get; set; }
     [Parameter] public string Name { get; set; } = "";
     [Parameter] public required Action<bool> OnChange { get; set; }
-    
+
     private void OnCheckboxChange()
     {
         OnChange.Invoke(!Enabled);
     }
+
 }

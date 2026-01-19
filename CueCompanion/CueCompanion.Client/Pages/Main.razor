@@ -1,5 +1,4 @@
 ﻿@page "/"
-@using CueCompanion
 @rendermode InteractiveAuto
 @inject NavigationManager Navigation
 @inject CounterService Counter
@@ -48,14 +47,15 @@
                 </div>
             </div>
         </div>
-    </div>   
+    </div>
     <div class="main-box current-cue">
         <h3>Current Cue - @CurrentCue.CueName (@Counter.State.CurrentCueNumber)</h3>
         <div class="current-cue-view-select">
             <h5>View</h5>
-            @foreach(Role role in Counter.State.CurrentShow.Roles) 
+            @foreach (Role role in Counter.State.CurrentShow.Roles)
             {
-                <RoleViewCheckbox Name="@role.RoleName" Enabled="false" OnChange="@(value =>
+                <RoleViewCheckbox Name="@role.RoleName" Enabled="false" OnChange=
+                "@(value =>
                 {
                     if (!RoleViewStates.TryAdd(role.RoleName, value))
                     {
@@ -63,7 +63,7 @@
                     }
 
                     InvokeAsync(StateHasChanged);
-                })" />
+                })"/>
             }
         </div>
         <div>
@@ -73,9 +73,9 @@
                 {
                     string task = TasksForCurrentCue[i];
                     string roleName = CurrentCue.Tasks.Keys.ElementAt(i).RoleName;
-                    if(RoleViewStates.TryGetValue(roleName, out bool state))
+                    if (RoleViewStates.TryGetValue(roleName, out bool state))
                     {
-                        if(state)
+                        if (state)
                         {
                             <div>
                                 <h5>@roleName</h5>
@@ -86,19 +86,20 @@
                 }
             </div>
         </div>
-    </div>   
+    </div>
     <div class="main-box cue-notes">
         <h3>Notes</h3>
-    </div>   
+    </div>
 </div>
 
 @code {
+
     //<RoleViewCheckbox Name="All" Enabled="false"/>
     protected Cue CurrentCue => Counter.State.CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == Counter.State.CurrentCueNumber, new Cue(0, "None", "", []));
-    
+
     protected string[] TasksForCurrentCue => CurrentCue.Tasks.Values.ToArray();
     protected Dictionary<string, bool> RoleViewStates = [];
-    
+
     protected override async Task OnInitializedAsync()
     {
         Counter.OnChange += () => InvokeAsync(StateHasChanged);
@@ -116,4 +117,5 @@
     {
         await Counter.UpdateCueNumber(Counter.State.CurrentCueNumber - 1);
     }
+
 }

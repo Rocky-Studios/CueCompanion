@@ -1,14 +1,13 @@
-﻿
-using CueCompanion.Client;
+﻿using CueCompanion.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion;
 
 public class CounterService
 {
+    private HubConnection? _connection;
     public ServerState State { get; private set; } = new();
     public Connection UserConnection { get; set; }
-    private HubConnection? _connection;
 
     public event Func<Task>? OnChange;
 
@@ -44,4 +43,3 @@ public class CounterService
             await _connection.InvokeAsync("UpdateCueNumber", newCueNumber);
     }
 }
-

@@ -2,8 +2,8 @@
 
 public class Role
 {
-    public string RoleName;
     public string? PersonName;
+    public string RoleName;
 
     public Role(string roleName, string? personName = null)
     {

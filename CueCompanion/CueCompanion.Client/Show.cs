@@ -4,15 +4,16 @@ namespace CueCompanion;
 
 public class Show
 {
-    public DateOnly Date;
-    public TimeOnly StartTime;
-    public TimeOnly EndTime;
-    public string Name;
-    public ShowLocation Location;
-    public Role[] Roles;
     public Cue[] Cues;
+    public DateOnly Date;
+    public TimeOnly EndTime;
+    public ShowLocation Location;
+    public string Name;
+    public Role[] Roles;
+    public TimeOnly StartTime;
 
-    public Show(DateOnly date, TimeOnly startTime, TimeOnly endTime, string name, ShowLocation location, Role[] roles, Cue[] cues)
+    public Show(DateOnly date, TimeOnly startTime, TimeOnly endTime, string name, ShowLocation location, Role[] roles,
+        Cue[] cues)
     {
         Date = date;
         StartTime = startTime;

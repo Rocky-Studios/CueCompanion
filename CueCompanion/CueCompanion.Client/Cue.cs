@@ -4,8 +4,8 @@ namespace CueCompanion;
 
 public class Cue
 {
-    public int CueNumber;
     public string CueName;
+    public int CueNumber;
     public string Description;
     public Dictionary<Role, string> Tasks;
 

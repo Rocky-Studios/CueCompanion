@@ -1,59 +1,83 @@
 using CueCompanion.Components;
 using CueCompanion.Hubs;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
+using _Imports = CueCompanion.Client._Imports;
 
-namespace CueCompanion
+namespace CueCompanion;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+        // Add services to the container.
+        builder.Services.AddRazorComponents()
+            .AddInteractiveWebAssemblyComponents()
+            .AddInteractiveServerComponents();
+
+
+        builder.Services.AddSignalR();
+
+        builder.Services.AddResponseCompression(opts =>
         {
-            var builder = WebApplication.CreateBuilder(args);
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                ["application/octet-stream"]);
+        });
+        builder.Services.AddSingleton<CounterService>();
+        builder.Services.AddSingleton<CueHub>();
 
-            // Add services to the container.
-            builder.Services.AddRazorComponents()
-                .AddInteractiveWebAssemblyComponents()
-                .AddInteractiveServerComponents();
+        WebApplication app = builder.Build();
+        app.UseResponseCompression();
+        app.MapHub<CueHub>("/cueHub");
 
 
-            builder.Services.AddSignalR();
+        // Configure the HTTP request pipeline.
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseWebAssemblyDebugging();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
+        }
 
-            builder.Services.AddResponseCompression(opts =>
-            {
-                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    ["application/octet-stream"]);
-            });
-            builder.Services.AddSingleton<CounterService>();
+        app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+        app.UseHttpsRedirection();
 
-            var app = builder.Build();
-            app.UseResponseCompression();
-            app.MapHub<CueHub>("/cueHub");
+        app.UseAntiforgery();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseWebAssemblyDebugging();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+        // API endpoints
 
-            app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-            app.UseHttpsRedirection();
+        app.MapPost("/api/cue/next", async ([FromServices] CueHub hub) =>
+        {
+            await hub.UpdateCueNumber(hub.GetState().CurrentCueNumber + 1);
+            return Results.Ok();
+        });
 
-            app.UseAntiforgery();
+        app.MapPost("/api/cue/prev", async ([FromServices] CueHub hub) =>
+        {
+            await hub.UpdateCueNumber(hub.GetState().CurrentCueNumber - 1);
+            return Results.Ok();
+        });
 
-            app.MapStaticAssets();
-            app.MapRazorComponents<App>()
+        app.MapPost("/api/cue/set/{number:int}", async (int number, [FromServices] CueHub hub) =>
+        {
+            await hub.UpdateCueNumber(number);
+            return Results.Ok();
+        });
+
+
+        app.MapStaticAssets();
+        app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
+            .AddAdditionalAssemblies(typeof(_Imports).Assembly);
 
 
-            app.Run();
-        }
+        app.Run();
     }
 }
