@@ -1,9 +1,15 @@
 ﻿<div>
-    <input type="checkbox" value="@Enabled"/>
+    <input type="checkbox" value="@Enabled" @onchange="OnCheckboxChange"/>
     <span>@Name</span>
 </div>
 
 @code {
     [Parameter] public bool Enabled { get; set; } = false;
     [Parameter] public string Name { get; set; } = "";
+    [Parameter] public required Action<bool> OnChange { get; set; }
+    
+    private void OnCheckboxChange()
+    {
+        OnChange.Invoke(!Enabled);
+    }
 }

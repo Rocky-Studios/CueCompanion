@@ -53,20 +53,36 @@
         <h3>Current Cue - @CurrentCue.CueName (@Counter.State.CurrentCueNumber)</h3>
         <div class="current-cue-view-select">
             <h5>View</h5>
-            <RoleViewCheckbox Name="All" Enabled="false"/>
             @foreach(Role role in Counter.State.CurrentShow.Roles) 
             {
-                <RoleViewCheckbox Name="@role.RoleName" Enabled="false"/>
+                <RoleViewCheckbox Name="@role.RoleName" Enabled="false" OnChange="@(value =>
+                {
+                    if (!RoleViewStates.TryAdd(role.RoleName, value))
+                    {
+                        RoleViewStates[role.RoleName] = !RoleViewStates[role.RoleName];
+                    }
+
+                    InvokeAsync(StateHasChanged);
+                })" />
             }
         </div>
         <div>
             <h4>Tasks</h4>
             <div class="current-cue-tasks">
-                @foreach (string task in TasksForCurrentCue)
+                @for (int i = 0; i < TasksForCurrentCue.Length; i++)
                 {
-                    <div>
-                        @task
-                    </div>
+                    string task = TasksForCurrentCue[i];
+                    string roleName = CurrentCue.Tasks.Keys.ElementAt(i).RoleName;
+                    if(RoleViewStates.TryGetValue(roleName, out bool state))
+                    {
+                        if(state)
+                        {
+                            <div>
+                                <h5>@roleName</h5>
+                                @task
+                            </div>
+                        }
+                    }
                 }
             </div>
         </div>
@@ -77,10 +93,11 @@
 </div>
 
 @code {
-    //@CurrentCue.Tasks.FirstOrDefault(new KeyValuePair<Role, string>()).Value
+    //<RoleViewCheckbox Name="All" Enabled="false"/>
     protected Cue CurrentCue => Counter.State.CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == Counter.State.CurrentCueNumber, new Cue(0, "None", "", []));
     
     protected string[] TasksForCurrentCue => CurrentCue.Tasks.Values.ToArray();
+    protected Dictionary<string, bool> RoleViewStates = [];
     
     protected override async Task OnInitializedAsync()
     {
