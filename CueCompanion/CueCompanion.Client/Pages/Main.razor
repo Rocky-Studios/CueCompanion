@@ -36,7 +36,7 @@
                     <CueBox Name="Next" Color="Blue"/>
                 </div>
                 <div class="cue-explorer-list">
-                    @foreach (Cue cue in Counter.State.CurrentShow.Cues)
+                    @foreach (Cue cue in CurrentShow.Cues)
                     {
                         string cueColor = cue.CueNumber == Counter.State.CurrentCueNumber ? "Green"
                             : cue.CueNumber == Counter.State.CurrentCueNumber - 1 ? "Yellow"
@@ -52,7 +52,7 @@
         <h3>Current Cue - @CurrentCue.CueName (@Counter.State.CurrentCueNumber)</h3>
         <div class="current-cue-view-select">
             <h5>View</h5>
-            @foreach (Role role in Counter.State.CurrentShow.Roles)
+            @foreach (Role role in CurrentShow.Roles)
             {
                 <RoleViewCheckbox Name="@role.RoleName" Enabled="false" OnChange=
                 "@(value =>
@@ -66,8 +66,8 @@
                 })"/>
             }
         </div>
-        <div>
-            <h4>Tasks</h4>
+        <div style="min-height: 20vh" class="thin-border">
+            <h3>Tasks</h3>
             <div class="current-cue-tasks">
                 @for (int i = 0; i < TasksForCurrentCue.Length; i++)
                 {
@@ -86,17 +86,55 @@
                 }
             </div>
         </div>
+        <div class="cue-notes thin-border">
+            <h3>Notes</h3>
+            <div style="display: flex; flex-direction: row">
+                <div>
+                    <span><h5 style="display: inline">All notes:</h5> (shared with everyone)</span>
+                    <textarea rows="15" cols="35"></textarea>
+                </div>
+                <div>
+                    <h5>Your notes:</h5>
+                    <textarea rows="15" cols="35"></textarea>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="main-box cue-notes">
-        <h3>Notes</h3>
+    <div class="main-box info">
+        <h3>Info</h3>
+        <div class="show-info-details thin-border">
+            <h5>Show:</h5>
+            <p>@CurrentShow.Name</p>
+            <p>Date: @CurrentShow.Date.ToShortDateString()</p>
+            <p>Time: @CurrentShow.StartTime.ToShortTimeString() - @CurrentShow.EndTime.ToShortTimeString()</p>
+            <p>At: @CurrentShow.Location.ToString()</p>
+            <br/>
+            <h5>Total Cues:</h5>
+            <p>@CurrentShow.Cues.Length</p>
+            <br/>
+            <h5>Roles:</h5>
+            <ul>
+                @foreach (Role role in CurrentShow.Roles)
+                {
+                    if (role.PersonName != "")
+                    {
+                        <li>@role.RoleName - @role.PersonName</li>
+                    }
+                    else
+                    {
+                        <li>@role.RoleName</li>
+                    }
+                }
+            </ul>
+        </div>
     </div>
 </div>
 
 @code {
 
     //<RoleViewCheckbox Name="All" Enabled="false"/>
-    protected Cue CurrentCue => Counter.State.CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == Counter.State.CurrentCueNumber, new Cue(0, "None", "", []));
-
+    protected Cue CurrentCue => CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == Counter.State.CurrentCueNumber, new Cue(0, "None", "", []));
+    protected Show CurrentShow => Counter.State.CurrentShow;
     protected string[] TasksForCurrentCue => CurrentCue.Tasks.Values.ToArray();
     protected Dictionary<string, bool> RoleViewStates = [];
 

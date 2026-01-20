@@ -32,6 +32,7 @@
 .current-cue {
     flex-grow: 1.5;
     flex-basis: 0;
+    justify-content: space-between;
 }
 
 .cue-notes {
@@ -101,4 +102,24 @@ table.cue-explorer-controls td {
 .current-cue-tasks > div {
     flex: 1 1 0;
     background-color: darkgray;
+}
+
+.thin-border {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 0.5rem;
+}
+
+.thick-border {
+    border: 3px solid black;
+    border-collapse: collapse;
+    padding: 0.5rem;
+}
+
+p {
+    margin-bottom: 0;
+}
+
+.info {
+    flex-grow: 0.3;
 }
