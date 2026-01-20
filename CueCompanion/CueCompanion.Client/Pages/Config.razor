@@ -1,0 +1,27 @@
+@page "/config"
+@inject NavigationManager Navigation
+@inject AuthService Auth
+<h1>Cue Companion Config</h1>
+
+@code
+{
+    protected User? CurrentUser => Auth.User;
+    protected UserType? CurrentUserType => CurrentUser?.UserType;
+
+    protected override void OnInitialized()
+    {
+        if (CurrentUser?.UserType != UserType.Master)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Auth.OnUserChanged += () => InvokeAsync(StateHasChanged);
+            await Auth.StartAsync(Navigation.BaseUri);
+        }
+    }
+}

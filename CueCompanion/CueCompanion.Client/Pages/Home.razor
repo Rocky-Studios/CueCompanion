@@ -1,0 +1,34 @@
+@page "/"
+@rendermode InteractiveAuto
+@inject NavigationManager Navigation
+@inject AuthService Auth
+<h1>Cue Companion</h1>
+<h3>You are: @CurrentUserType</h3>
+<p>Your permissions:</p>
+@if (CurrentUser != null)
+{
+    @foreach (KeyValuePair<UserPermission, bool> perm in CurrentUser.GetPermissions())
+    {
+        <li>@perm.Key.ToString(): @perm.Value</li>
+    }
+}
+
+@if (CurrentUser?.UserType == UserType.Master)
+{
+    <p><a target="_blank" href="/config">Go to config</a></p>
+}
+
+@code
+{
+    protected User? CurrentUser => Auth.User;
+    protected UserType? CurrentUserType => CurrentUser?.UserType;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Auth.OnUserChanged += () => InvokeAsync(StateHasChanged);
+            await Auth.StartAsync(Navigation.BaseUri);
+        }
+    }
+}

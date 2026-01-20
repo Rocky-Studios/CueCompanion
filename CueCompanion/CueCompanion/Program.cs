@@ -1,3 +1,4 @@
+using CueCompanion.Client;
 using CueCompanion.Components;
 using CueCompanion.Hubs;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,8 @@ namespace CueCompanion;
 
 public class Program
 {
+    public static UserManager UserManager = new();
+
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -26,11 +29,15 @@ public class Program
                 ["application/octet-stream"]);
         });
         builder.Services.AddSingleton<CounterService>();
+        builder.Services.AddSingleton<AuthService>();
         builder.Services.AddSingleton<CueHub>();
+        builder.Services.AddSingleton<AuthHub>();
 
         WebApplication app = builder.Build();
+
         app.UseResponseCompression();
         app.MapHub<CueHub>("/cueHub");
+        app.MapHub<AuthHub>("/authHub");
 
 
         // Configure the HTTP request pipeline.
