@@ -13,7 +13,7 @@ public class ServerState
     public int CurrentCueNumber { get; set; }
 
     public Cue CurrentCue =>
-        CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == CurrentCueNumber) ?? CurrentShow.Cues[0];
+        CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == CurrentCueNumber) ?? new Cue();
 
     private static Show GetSampleShow()
     {

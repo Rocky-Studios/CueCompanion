@@ -47,7 +47,21 @@
         </button>
         <div style="min-height: 20vh" class="thin-border">
             <h3>Tasks</h3>
-
+            @foreach (Role role in CurrentShow.Roles)
+            {
+                <button @onclick="() => AddTaskForRole(role.RoleName)">Add task for @role.RoleName</button>
+            }
+            <div class="current-cue-tasks">
+                @for (int i = 0; i < TasksForCurrentCue.Length; i++)
+                {
+                    string task = TasksForCurrentCue[i];
+                    string roleName = CurrentCue.Tasks.Keys.ElementAt(i);
+                    <div>
+                        <h5>@roleName</h5>
+                        <input @bind="CurrentCue.Tasks[roleName]"/>
+                    </div>
+                }
+            </div>
         </div>
         <div class="cue-notes thin-border">
             <h3>Notes</h3>
@@ -159,6 +173,7 @@
     private Show CurrentShow { get; set; } = Show.CreateDefault();
     private int CurrentCueNumber { get; set; }
     private Cue? CurrentCue => CurrentShow.Cues.FirstOrDefault(c => c?.CueNumber == CurrentCueNumber);
+    protected string[] TasksForCurrentCue => CurrentCue?.Tasks.Values.ToArray() ?? [];
 
     private async Task ExportShowToJson()
     {
@@ -227,5 +242,10 @@
         (cue.CueNumber, nextCue.CueNumber) = (nextCue.CueNumber, cue.CueNumber);
         CurrentCueNumber = cue.CueNumber;
         CurrentShow.Cues = CurrentShow.Cues.OrderBy(c => c.CueNumber).ToArray();
+    }
+
+    private async Task AddTaskForRole(string roleName)
+    {
+        CurrentCue!.Tasks[roleName] = "New Task";
     }
 }

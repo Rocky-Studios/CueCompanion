@@ -48,4 +48,10 @@ public class CounterService
         if (_connection != null)
             await _connection.InvokeAsync("UpdateNote", noteID, newNoteText);
     }
+
+    public async Task UpdateEntireState()
+    {
+        if (_connection != null)
+            await _connection.InvokeAsync("UpdateEntireState", State);
+    }
 }

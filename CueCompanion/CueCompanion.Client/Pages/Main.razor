@@ -1,6 +1,8 @@
 ﻿@page "/"
+@using System.Text.Json
 @rendermode InteractiveAuto
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @inject CounterService Counter
 <PageTitle>CueCompanion</PageTitle>
 <div class="main-view">
@@ -103,6 +105,7 @@
     </div>
     <div class="main-box info">
         <h3>Info</h3>
+        <button @onclick="ImportShowFromJson">Import</button>
         <div class="show-info-details thin-border">
             <h5>Show:</h5>
             <p>@CurrentShow.Name</p>
@@ -129,6 +132,41 @@
             </ul>
         </div>
     </div>
+    <script>
+
+        window.selectImportJsonFile = async () => {
+            return new Promise((resolve, reject) => {
+
+                const inputElement = document.createElement('input');
+                inputElement.type = 'file';
+                inputElement.accept = '.json';
+
+                if (!inputElement) {
+                    reject("Input element not found");
+                    return;
+                }
+
+                inputElement.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (!file) {
+                        reject("No file selected");
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        resolve(e.target.result);
+                    };
+                    reader.onerror = (e) => {
+                        reject("Error reading file");
+                    };
+                    reader.readAsText(file);
+                });
+
+                inputElement.click();
+            });
+        }
+    </script>
 </div>
 
 @code {
@@ -174,4 +212,10 @@
         await Counter.UpdateCueNumber(Counter.State.CurrentCueNumber - 1);
     }
 
+    private async Task ImportShowFromJson()
+    {
+        string json = await JS.InvokeAsync<string>("selectImportJsonFile");
+        Counter.State.CurrentShow = JsonSerializer.Deserialize<Show>(json);
+        await Counter.UpdateEntireState();
+    }
 }
