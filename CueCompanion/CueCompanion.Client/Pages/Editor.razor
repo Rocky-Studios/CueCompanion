@@ -22,6 +22,7 @@
                 </tr>
             </table>
             <div class="cue-explorer-cues">
+                <button @onclick="AddNewCue">New Cue</button>
                 <div class="cue-explorer-list">
                     @foreach (Cue cue in CurrentShow.Cues)
                     {
@@ -29,14 +30,21 @@
                             : cue.CueNumber == CurrentCueNumber - 1 ? "Yellow"
                             : cue.CueNumber == CurrentCueNumber + 1 ? "Blue"
                             : "Gray";
-                        <CueBox Name="@cue.CueName" Number="@cue.CueNumber" Color="@cueColor"/>
+                        <CueBox Name="@cue.CueName" Number="@cue.CueNumber" Color="@cueColor"
+                                OnClick="() => CueClicked(cue)"/>
                     }
                 </div>
             </div>
         </div>
     </div>
     <div class="main-box current-cue">
-        <h3>Current Cue - @CurrentCue?.CueName (@CurrentCueNumber)</h3>
+        <h3>Current Cue - <input @bind="CurrentCue?.CueName"/> (@CurrentCueNumber)</h3>
+        <button @onclick="() => MoveCueUp(CurrentCue!)">
+            Move up ⬆️
+        </button>
+        <button @onclick="() => MoveCueDown(CurrentCue!)">
+            Move down ⬇️
+        </button>
         <div style="min-height: 20vh" class="thin-border">
             <h3>Tasks</h3>
 
@@ -149,7 +157,7 @@
 @code
 {
     private Show CurrentShow { get; set; } = Show.CreateDefault();
-    private int CurrentCueNumber { get; } = 0;
+    private int CurrentCueNumber { get; set; }
     private Cue? CurrentCue => CurrentShow.Cues.FirstOrDefault(c => c?.CueNumber == CurrentCueNumber);
 
     private async Task ExportShowToJson()
@@ -184,6 +192,40 @@
         List<Role> rolesList = CurrentShow.Roles.ToList();
         rolesList.Remove(role);
         CurrentShow.Roles = rolesList.ToArray();
+    }
+
+    private async Task CueClicked(Cue cue)
+    {
+        CurrentCueNumber = cue.CueNumber;
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AddNewCue()
+    {
+        CurrentShow.Cues = CurrentShow.Cues.Append(new Cue(CurrentShow.Cues.Length, "New Cue", "", [])).ToArray();
+    }
+
+    private async Task MoveCueUp(Cue cue)
+    {
+        if (cue.CueNumber <= 0) return;
+
+        Cue? previousCue = CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == cue.CueNumber - 1);
+        if (previousCue == null) return;
+
+        (cue.CueNumber, previousCue.CueNumber) = (previousCue.CueNumber, cue.CueNumber);
+        CurrentCueNumber = cue.CueNumber;
+        CurrentShow.Cues = CurrentShow.Cues.OrderBy(c => c.CueNumber).ToArray();
+    }
+
+    private async Task MoveCueDown(Cue cue)
+    {
+        if (cue.CueNumber >= CurrentShow.Cues.Length - 1) return;
+
+        Cue? nextCue = CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == cue.CueNumber + 1);
+        if (nextCue == null) return;
+
+        (cue.CueNumber, nextCue.CueNumber) = (nextCue.CueNumber, cue.CueNumber);
+        CurrentCueNumber = cue.CueNumber;
+        CurrentShow.Cues = CurrentShow.Cues.OrderBy(c => c.CueNumber).ToArray();
     }
 }

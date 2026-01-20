@@ -1,4 +1,4 @@
-﻿<div class="cue-box color-@Color.ToLower()">
+﻿<div class="cue-box color-@Color.ToLower()" @onclick="HandleClick">
     <span class="cue-name">@Name</span>
     @if (Number.HasValue)
     {
@@ -10,4 +10,10 @@
     [Parameter] public string Name { get; set; } = "";
     [Parameter] public string Color { get; set; } = "Gray";
     [Parameter] public int? Number { get; set; }
+    [Parameter] public Action? OnClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        OnClick?.Invoke();
+    }
 }
