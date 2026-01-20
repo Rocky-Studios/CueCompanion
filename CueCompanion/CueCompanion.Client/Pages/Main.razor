@@ -72,7 +72,7 @@
                 @for (int i = 0; i < TasksForCurrentCue.Length; i++)
                 {
                     string task = TasksForCurrentCue[i];
-                    string roleName = CurrentCue.Tasks.Keys.ElementAt(i).RoleName;
+                    string roleName = CurrentCue.Tasks.Keys.ElementAt(i);
                     if (RoleViewStates.TryGetValue(roleName, out bool state))
                     {
                         if (state)
@@ -91,7 +91,8 @@
             <div style="display: flex; flex-direction: row">
                 <div>
                     <span><h5 style="display: inline">All notes:</h5> (shared with everyone)</span>
-                    <textarea rows="15" cols="35"></textarea>
+                    @{ CurrentCue.Notes.TryGetValue("All", out string? allNotes); }
+                    <textarea rows="15" cols="35" @bind="AllNotes" @bind:event="oninput"></textarea>
                 </div>
                 <div>
                     <h5>Your notes:</h5>
@@ -137,6 +138,23 @@
     protected Show CurrentShow => Counter.State.CurrentShow;
     protected string[] TasksForCurrentCue => CurrentCue.Tasks.Values.ToArray();
     protected Dictionary<string, bool> RoleViewStates = [];
+
+    protected string AllNotes
+    {
+        get
+        {
+            CurrentCue.Notes.TryGetValue("All", out string? val);
+            return val ?? "";
+        }
+        set
+        {
+            if (CurrentCue != null)
+            {
+                CurrentCue.Notes["All"] = value;
+                Counter.UpdateNote("All", value);
+            }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

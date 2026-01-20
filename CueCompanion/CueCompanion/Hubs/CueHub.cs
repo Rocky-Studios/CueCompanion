@@ -16,4 +16,10 @@ public class CueHub : Hub
         _state.CurrentCueNumber = newCueNumber;
         await Clients.All.SendAsync("StateUpdated", _state);
     }
+
+    public async Task UpdateNote(string noteID, string newNoteText)
+    {
+        _state.CurrentCue.Notes[noteID] = newNoteText;
+        await Clients.All.SendAsync("StateUpdated", _state);
+    }
 }

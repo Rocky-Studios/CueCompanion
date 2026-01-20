@@ -4,13 +4,10 @@ namespace CueCompanion;
 
 public class Show
 {
-    public Cue[] Cues;
-    public DateOnly Date;
-    public TimeOnly EndTime;
-    public ShowLocation Location;
-    public string Name;
-    public Role[] Roles;
-    public TimeOnly StartTime;
+    // Parameterless constructor required for System.Text.Json deserialization
+    public Show()
+    {
+    }
 
     public Show(DateOnly date, TimeOnly startTime, TimeOnly endTime, string name, ShowLocation location, Role[] roles,
         Cue[] cues)
@@ -23,6 +20,14 @@ public class Show
         Roles = roles;
         Cues = cues;
     }
+
+    public Cue[] Cues { get; set; } = Array.Empty<Cue>();
+    public DateOnly Date { get; set; }
+    public TimeOnly EndTime { get; set; }
+    public ShowLocation Location { get; set; }
+    public string Name { get; set; } = "";
+    public Role[] Roles { get; set; } = Array.Empty<Role>();
+    public TimeOnly StartTime { get; set; }
 }
 
 public enum ShowLocation

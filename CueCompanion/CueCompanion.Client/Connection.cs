@@ -2,11 +2,15 @@
 
 public class Connection
 {
-    public string Role;
-    public List<(string view, bool isViewing)> Viewing = [];
-
-    public Connection(string role)
+    public Connection()
     {
-        Role = role;
     }
+
+    public Connection(string connectionName)
+    {
+        ConnectionName = connectionName;
+    }
+
+    public string ConnectionName { get; set; } = "";
+    public Dictionary<string, bool> Viewing { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

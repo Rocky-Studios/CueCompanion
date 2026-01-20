@@ -29,10 +29,10 @@ public class CounterService
 
         State = await _connection.InvokeAsync<ServerState>("GetState");
         UserConnection = State.Connections[0];
-        UserConnection.Viewing =
-        [
-            ("sound", true)
-        ];
+        UserConnection.Viewing = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Sound", true }
+        };
         if (OnChange != null)
             await OnChange.Invoke();
     }
@@ -41,5 +41,11 @@ public class CounterService
     {
         if (_connection != null)
             await _connection.InvokeAsync("UpdateCueNumber", newCueNumber);
+    }
+
+    public async Task UpdateNote(string noteID, string newNoteText)
+    {
+        if (_connection != null)
+            await _connection.InvokeAsync("UpdateNote", noteID, newNoteText);
     }
 }
