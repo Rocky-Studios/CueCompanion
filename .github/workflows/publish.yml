@@ -22,7 +22,7 @@ jobs:
       run: dotnet restore CueCompanion.slnx
 
     - name: Publish Server project
-      run: dotnet publish CueCompanion/CueCompanion.csproj -c Release -o publish --self-contained true -r win-x64
+      run: dotnet publish CueCompanion/CueCompanion/CueCompanion.csproj -c Release -o publish --self-contained true -r win-x64
 
     - name: Upload published build
       uses: actions/upload-artifact@v4
