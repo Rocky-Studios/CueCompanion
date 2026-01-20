@@ -19,7 +19,7 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      run: dotnet restore CueCompanion.sln
+      run: dotnet restore CueCompanion.slnx
 
     - name: Publish Server project
       run: dotnet publish CueCompanion/CueCompanion.csproj -c Release -o publish --self-contained true -r win-x64
