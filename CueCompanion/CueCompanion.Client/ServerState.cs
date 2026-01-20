@@ -9,7 +9,7 @@ public class ServerState
         new Connection("Sound")
     };
 
-    public Show CurrentShow { get; set; } = GetSampleShow();
+    public Show CurrentShow { get; set; } = new();
     public int CurrentCueNumber { get; set; }
 
     public Cue CurrentCue =>

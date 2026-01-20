@@ -75,3 +75,129 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.main-view {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    gap: 20px;
+}
+
+.main-box {
+    background-color: lightgray;
+    height: 100%;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.main-box h3 {
+    width: 100%;
+    text-align: center;
+    margin: 0 0 1rem 0;
+}
+
+.cue-explorer {
+    flex-grow: 0.8;
+    flex-basis: 0;
+}
+
+.current-cue {
+    flex-grow: 1.5;
+    flex-basis: 0;
+    justify-content: space-between;
+}
+
+.cue-notes {
+    flex-grow: 0.4;
+    flex-basis: 0;
+}
+
+table.cue-explorer-controls {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.cue-explorer-controls td {
+    border: 1px solid black;
+    background-color: gray;
+}
+
+.cue-explorer-key {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    flex-shrink: 0;
+    gap: 0.5rem;
+}
+
+::deep .cue-explorer-key div {
+    flex-grow: 1;
+}
+
+.cue-explorer-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.cue-explorer-cues {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.cue-explorer-list {
+    margin-top: 2rem;
+    border: 2px solid #333;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+.current-cue-view-select {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.current-cue-tasks {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.current-cue-tasks > div {
+    flex: 1 1 0;
+    background-color: darkgray;
+}
+
+.thin-border {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 0.5rem;
+}
+
+.thick-border {
+    border: 3px solid black;
+    border-collapse: collapse;
+    padding: 0.5rem;
+}
+
+p {
+    margin-bottom: 0;
+}
+
+.info {
+    flex-grow: 0.3;
+}
