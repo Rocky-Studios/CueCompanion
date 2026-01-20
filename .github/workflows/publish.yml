@@ -1,0 +1,40 @@
+name: Build and Publish CueCompanion
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore CueCompanion.sln
+
+    - name: Publish Server project
+      run: dotnet publish CueCompanion/CueCompanion.csproj -c Release -o publish --self-contained true -r win-x64
+
+    - name: Upload published build
+      uses: actions/upload-artifact@v4
+      with:
+        name: CueCompanion-Build
+        path: publish
+
+    - name: Zip build
+      run: Compress-Archive -Path publish/* -DestinationPath CueCompanion.zip
+
+    - name: Upload zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: CueCompanion-Zip
+        path: CueCompanion.zip
