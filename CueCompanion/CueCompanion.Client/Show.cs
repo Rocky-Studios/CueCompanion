@@ -28,6 +28,20 @@ public class Show
     public string Name { get; set; } = "";
     public Role[] Roles { get; set; } = Array.Empty<Role>();
     public TimeOnly StartTime { get; set; }
+
+    public static Show CreateDefault()
+    {
+        return new Show
+        {
+            Date = DateOnly.FromDateTime(DateTime.Now),
+            StartTime = new TimeOnly(19, 0),
+            EndTime = new TimeOnly(21, 0),
+            Name = "New Show",
+            Location = ShowLocation.MPC,
+            Roles = Array.Empty<Role>(),
+            Cues = Array.Empty<Cue>()
+        };
+    }
 }
 
 public enum ShowLocation
