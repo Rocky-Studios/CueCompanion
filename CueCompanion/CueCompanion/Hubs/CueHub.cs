@@ -18,7 +18,6 @@ public class CueHub : Hub
         // Copy incoming values into the server state (don't reassign the readonly field)
         _state.CurrentShow = newState.CurrentShow;
         _state.CurrentCueNumber = newState.CurrentCueNumber;
-        _state.Connections = newState.Connections;
 
         await Clients.All.SendAsync("StateUpdated", _state);
     }

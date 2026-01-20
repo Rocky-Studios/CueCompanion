@@ -1,5 +1,4 @@
-﻿using CueCompanion.Client;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion;
 
@@ -7,7 +6,6 @@ public class CounterService
 {
     private HubConnection? _connection;
     public ServerState State { get; private set; } = new();
-    public Connection UserConnection { get; set; }
 
     public event Func<Task>? OnChange;
 
@@ -28,11 +26,6 @@ public class CounterService
         await _connection.StartAsync();
 
         State = await _connection.InvokeAsync<ServerState>("GetState");
-        UserConnection = State.Connections[0];
-        UserConnection.Viewing = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "Sound", true }
-        };
         if (OnChange != null)
             await OnChange.Invoke();
     }

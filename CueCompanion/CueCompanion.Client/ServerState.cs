@@ -4,11 +4,6 @@ namespace CueCompanion;
 
 public class ServerState
 {
-    public Connection[] Connections { get; set; } = new[]
-    {
-        new Connection("Sound")
-    };
-
     public Show CurrentShow { get; set; } = new();
     public int CurrentCueNumber { get; set; }
 

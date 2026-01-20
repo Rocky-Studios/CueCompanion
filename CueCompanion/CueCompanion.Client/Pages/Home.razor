@@ -15,20 +15,48 @@
 
 @if (CurrentUser?.UserType == UserType.Master)
 {
-    <p><a target="_blank" href="/config">Go to config</a></p>
+    <div class="config">
+        <h2>Configuration Panel</h2>
+        <p>This section is only visible to Master users.</p>
+        <div class="config-connections">
+            <h3>Connections</h3>
+            @{
+                foreach (Connection conn in cons)
+                {
+                    <div class="connection-item">
+                        <strong>@conn.ConnectionName</strong>
+                        <p>Pass: @conn.ConnectionPasskey</p>
+                    </div>
+                }
+            }
+        </div>
+    </div>
 }
 
 @code
 {
     protected User? CurrentUser => Auth.User;
     protected UserType? CurrentUserType => CurrentUser?.UserType;
+    private Connection[] cons = [];
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
+        Auth.OnChange += () => InvokeAsync(StateHasChanged);
+
+        await Auth.StartAsync(Navigation.BaseUri);
+        await Auth.WaitForUser();
+        cons = await GetConnections();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected async Task<Connection[]> GetConnections()
+    {
+        if (CurrentUserType != UserType.Master)
         {
-            Auth.OnUserChanged += () => InvokeAsync(StateHasChanged);
-            await Auth.StartAsync(Navigation.BaseUri);
+            Console.WriteLine("Unauthorized access to connections.");
+            return [];
         }
+
+        return await Auth.GetConnectionsAsync();
     }
 }

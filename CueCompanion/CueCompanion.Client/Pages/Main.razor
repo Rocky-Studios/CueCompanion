@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @inject CounterService Counter
+@inject AuthService Auth
 <PageTitle>CueCompanion</PageTitle>
 <div class="main-view">
     <div class="main-box cue-explorer">
@@ -130,6 +131,13 @@
                     }
                 }
             </ul>
+            <br/>
+            <h3>Connection</h3>
+            <input @bind="UserConnectionName"/> <input @bind="UserConnectionPasskey"/>
+            <button
+                @onclick="async () => await Auth.ConnectAsync(Auth.User, UserConnectionName, UserConnectionPasskey)">
+                Connect
+            </button>
         </div>
     </div>
     <script>
@@ -177,6 +185,9 @@
     protected string[] TasksForCurrentCue => CurrentCue.Tasks.Values.ToArray();
     protected Dictionary<string, bool> RoleViewStates = [];
 
+    protected string UserConnectionName { get; set; }
+    protected string UserConnectionPasskey { get; set; }
+
     protected string AllNotes
     {
         get
@@ -198,8 +209,10 @@
     {
         Counter.OnChange += () => InvokeAsync(StateHasChanged);
 
+
         // Start the SignalR connection
         await Counter.StartAsync(Navigation.BaseUri);
+        await Auth.StartAsync(Navigation.BaseUri);
     }
 
     private async Task IncrementCueNumber()

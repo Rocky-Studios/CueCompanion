@@ -10,6 +10,7 @@ namespace CueCompanion;
 public class Program
 {
     public static UserManager UserManager = new();
+    public static ConnectionManager ConnectionManager = new();
 
     public static void Main(string[] args)
     {

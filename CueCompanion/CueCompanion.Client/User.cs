@@ -6,10 +6,16 @@ public class User
     {
         UserType = userType;
         IPAddress = ipAddress;
+        UserId = Guid.NewGuid();
+    }
+
+    public User()
+    {
     }
 
     public UserType UserType { get; set; }
     public string IPAddress { get; set; }
+    public Guid UserId { get; set; }
     public Dictionary<UserPermission, bool>? _permissions { get; set; }
 
     public Dictionary<UserPermission, bool> GetPermissions()

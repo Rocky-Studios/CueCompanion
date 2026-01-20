@@ -25,6 +25,34 @@ public class AuthHub : Hub
 
         Program.UserManager.AddUser(user);
 
-        await Clients.Caller.SendAsync("Authenticated", user);
+        await Clients.Caller.SendAsync("UserConnected", user);
+    }
+
+    public Task<ConnectionsPacket> GetConnections(User user)
+    {
+        ConnectionsPacket returnValue = new();
+        if (user.UserId != Program.UserManager.GetUser(user.IPAddress)?.UserId)
+        {
+            returnValue.Error = "User not recognized.";
+            return Task.FromResult(returnValue);
+        }
+
+        if (user.UserType != UserType.Master)
+        {
+            returnValue.Error = "Insufficient permissions to get connections.";
+            return Task.FromResult(returnValue);
+        }
+
+        Connection[] connections = Program.ConnectionManager.GetConnections();
+        returnValue.Connections = connections;
+        return Task.FromResult(returnValue);
+    }
+
+    public Task<(Connection? connection, Exception? error)> Connect(User user, string connectionName,
+        string connectionKey)
+    {
+        (Connection? connection, Exception? error) =
+            Program.ConnectionManager.TryConnect(connectionName, connectionKey);
+        return Task.FromResult((connection, error));
     }
 }
