@@ -6,6 +6,7 @@ public class AuthService
 {
     private HubConnection? _connection;
     public User? User { get; private set; }
+    public Connection? Connection { get; set; }
     public string? ConnectionKey { get; }
     public event Func<Task>? OnChange;
 
@@ -53,6 +54,7 @@ public class AuthService
         }
 
         Console.WriteLine("Connected to connection: " + connectionName);
+        Connection = connection;
         return connection;
     }
 }

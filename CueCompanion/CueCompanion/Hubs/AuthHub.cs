@@ -23,6 +23,7 @@ public class AuthHub : Hub
             user.SetAllPermissions(false);
         }
 
+        user.UserId = Guid.NewGuid();
         Program.UserManager.AddUser(user);
 
         await Clients.Caller.SendAsync("UserConnected", user);

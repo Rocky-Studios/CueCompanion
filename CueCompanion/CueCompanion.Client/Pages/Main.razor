@@ -138,6 +138,9 @@
                 @onclick="async () => await Auth.ConnectAsync(Auth.User, UserConnectionName, UserConnectionPasskey)">
                 Connect
             </button>
+            <p>Connected as: @Auth.Connection?.ConnectionName</p>
+            <h5>User</h5>
+            <p>User ID: @Auth.User?.UserId (@Auth.User?.UserType.ToString())</p>
         </div>
     </div>
     <script>
