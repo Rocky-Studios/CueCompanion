@@ -30,9 +30,9 @@ public class Program
                 ["application/octet-stream"]);
         });
         builder.Services.AddSingleton<CounterService>();
-        builder.Services.AddSingleton<AuthService>();
+        builder.Services.AddScoped<AuthService>();
         builder.Services.AddSingleton<CueHub>();
-        builder.Services.AddSingleton<AuthHub>();
+        builder.Services.AddScoped<AuthHub>();
 
         WebApplication app = builder.Build();
 
@@ -85,6 +85,27 @@ public class Program
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(typeof(_Imports).Assembly);
 
+        new Thread(() =>
+        {
+            while (true)
+            {
+                Console.Write("Enter command: ");
+                string? command = Console.ReadLine();
+                if (command == "exit")
+                {
+                    app.Lifetime.StopApplication();
+                    break;
+                }
+
+                if (command is "listConnections")
+                {
+                    Console.WriteLine("Connections:");
+                    foreach (Connection connection in ConnectionManager.GetConnections())
+                        Console.WriteLine(
+                            $"\t\"{connection.ConnectionName}\" (Passkey: \"{connection.ConnectionPasskey}\")");
+                }
+            }
+        }).Start();
 
         app.Run();
     }

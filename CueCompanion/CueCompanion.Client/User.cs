@@ -2,9 +2,8 @@ namespace CueCompanion.Client;
 
 public class User
 {
-    public User(UserType userType, string ipAddress)
+    public User(string ipAddress)
     {
-        UserType = userType;
         IPAddress = ipAddress;
         UserId = null;
     }
@@ -13,7 +12,6 @@ public class User
     {
     }
 
-    public UserType UserType { get; set; }
     public string IPAddress { get; set; }
     public Guid? UserId { get; set; }
     public Dictionary<UserPermission, bool>? _permissions { get; set; }
@@ -52,8 +50,9 @@ public class User
     }
 }
 
-public enum UserType
+public enum ClientType
 {
+    Unknown,
     Master,
     Child
 }

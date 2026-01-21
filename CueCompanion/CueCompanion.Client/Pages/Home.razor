@@ -3,17 +3,9 @@
 @inject NavigationManager Navigation
 @inject AuthService Auth
 <h1>Cue Companion</h1>
-<h3>You are: @CurrentUserType</h3>
-<p>Your permissions:</p>
-@if (CurrentUser != null)
-{
-    @foreach (KeyValuePair<UserPermission, bool> perm in CurrentUser.GetPermissions())
-    {
-        <li>@perm.Key.ToString(): @perm.Value</li>
-    }
-}
+<h3>You are: @Auth.ClientType.ToString()</h3>
 
-@if (CurrentUser?.UserType == UserType.Master)
+@if (Auth.ClientType == ClientType.Master)
 {
     <div class="config">
         <h2>Configuration Panel</h2>
@@ -35,8 +27,6 @@
 
 @code
 {
-    protected User? CurrentUser => Auth.User;
-    protected UserType? CurrentUserType => CurrentUser?.UserType;
     private Connection[] cons = [];
 
     protected override async Task OnInitializedAsync()
@@ -44,19 +34,6 @@
         Auth.OnChange += () => InvokeAsync(StateHasChanged);
 
         await Auth.StartAsync(Navigation.BaseUri);
-        await Auth.WaitForUser();
-        cons = await GetConnections();
         await InvokeAsync(StateHasChanged);
-    }
-
-    protected async Task<Connection[]> GetConnections()
-    {
-        if (CurrentUserType != UserType.Master)
-        {
-            Console.WriteLine("Unauthorized access to connections.");
-            return [];
-        }
-
-        return await Auth.GetConnectionsAsync();
     }
 }
