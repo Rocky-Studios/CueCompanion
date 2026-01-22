@@ -5,7 +5,7 @@ namespace CueCompanion.Hubs;
 
 public class AuthHub : Hub
 {
-    public override async Task OnConnectedAsync()
+    private ClientType GetRequestClientType()
     {
         string? ip = Context.GetHttpContext()?.Connection.RemoteIpAddress?.ToString();
 
@@ -14,7 +14,35 @@ public class AuthHub : Hub
         else if (ip is "127.0.0.1") clientType = ClientType.Master; // localhost for IPv4
         else if (ip is "::1") clientType = ClientType.Master; // localhost for IPv6
         else clientType = ClientType.Child;
+        return clientType;
+    }
 
+    public override async Task OnConnectedAsync()
+    {
+        ClientType clientType = GetRequestClientType();
         await Clients.Caller.SendAsync("ClientTypeVerification", clientType);
+    }
+
+    public async Task<UserConnectPacket> Connect(string connectionName, string connectionPasskey)
+    {
+        UserConnectPacket packet = new();
+        await Task.Run(() =>
+        {
+            ClientType clientType = GetRequestClientType();
+            if (clientType == ClientType.Unknown)
+            {
+                packet.Error = "Unknown client type";
+            }
+            else
+            {
+                (Connection? connection, string? error) =
+                    Program.ConnectionManager.TryConnect(connectionName, connectionPasskey);
+                if (error != null)
+                    packet.Error = error;
+                else
+                    packet.Connection = connection;
+            }
+        });
+        return packet;
     }
 }

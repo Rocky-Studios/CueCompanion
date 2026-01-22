@@ -25,6 +25,23 @@
     </div>
 }
 
+<h3>Connect:</h3>
+<Login OnSubmit="OnSubmit"/>
+<h3>Connection:</h3>
+<p><strong>Status:</strong> @Auth.ConnectionMessage</p>
+@if (Auth.Connection != null)
+{
+    <div class="connection-details">
+        <p><strong>Connection Name:</strong> @Auth.Connection.ConnectionName</p>
+        <p><strong>Passkey:</strong> @Auth.Connection.ConnectionPasskey</p>
+        <p>Secret key: @Auth.Connection.Secret.ToString()</p>
+    </div>
+}
+else
+{
+    <p>No active connection.</p>
+}
+
 @code
 {
     private Connection[] cons = [];
@@ -35,5 +52,10 @@
 
         await Auth.StartAsync(Navigation.BaseUri);
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnSubmit(string name, string passkey)
+    {
+        Auth.Connection = await Auth.Connect(name, passkey);
     }
 }

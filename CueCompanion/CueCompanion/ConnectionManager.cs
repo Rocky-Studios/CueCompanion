@@ -6,7 +6,7 @@ public class ConnectionManager
 {
     private readonly List<Connection> Connections =
     [
-        new("Master Connection")
+        new Connection("Master Connection").WithRandomPasskey()
     ];
 
     public void AddConnection(Connection connection)
@@ -19,13 +19,14 @@ public class ConnectionManager
         return Connections.ToArray();
     }
 
-    public (Connection? connection, Exception? error) TryConnect(string connectionName, string connectionKey)
+    public (Connection? connection, string? error) TryConnect(string connectionName, string connectionKey)
     {
         Connection? connection = Connections.FirstOrDefault(c =>
             c.ConnectionName == connectionName);
-        if (connection == null) return (null, new InvalidOperationException("Connection not found."));
+        if (connection == null) return (null, "Connection not found.");
         if (connection.ConnectionPasskey != connectionKey)
-            return (null, new UnauthorizedAccessException("Invalid connection key."));
+            return (null, "Invalid connection key.");
+        connection = connection.WithSecret();
         return (connection, null);
     }
 }
