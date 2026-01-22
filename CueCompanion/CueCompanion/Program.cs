@@ -1,7 +1,6 @@
 using CueCompanion.Client;
 using CueCompanion.Components;
 using CueCompanion.Hubs;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using _Imports = CueCompanion.Client._Imports;
 
@@ -28,8 +27,9 @@ public class Program
             opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                 ["application/octet-stream"]);
         });
-        builder.Services.AddSingleton<CounterService>();
+        // CueCompanion/CueCompanion/Program.cs
         builder.Services.AddScoped<AuthService>();
+        builder.Services.AddScoped<ShowService>();
         builder.Services.AddSingleton<CueHub>();
         builder.Services.AddScoped<AuthHub>();
         builder.Services.AddScoped<LocalStorageService>();
@@ -60,23 +60,23 @@ public class Program
 
         // API endpoints
 
-        app.MapPost("/api/cue/next", async ([FromServices] CueHub hub) =>
-        {
-            await hub.UpdateCueNumber(hub.GetState().CurrentCueNumber + 1);
-            return Results.Ok();
-        });
-
-        app.MapPost("/api/cue/prev", async ([FromServices] CueHub hub) =>
-        {
-            await hub.UpdateCueNumber(hub.GetState().CurrentCueNumber - 1);
-            return Results.Ok();
-        });
-
-        app.MapPost("/api/cue/set/{number:int}", async (int number, [FromServices] CueHub hub) =>
-        {
-            await hub.UpdateCueNumber(number);
-            return Results.Ok();
-        });
+        //app.MapPost("/api/cue/next", async ([FromServices] CueHub hub) =>
+        //{
+        //    await hub.UpdateCueNumber(hub.GetState().CurrentCueNumber + 1);
+        //    return Results.Ok();
+        //});
+        //
+        //app.MapPost("/api/cue/prev", async ([FromServices] CueHub hub) =>
+        //{
+        //    await hub.UpdateCueNumber(hub.GetState().CurrentCueNumber - 1);
+        //    return Results.Ok();
+        //});
+        //
+        //app.MapPost("/api/cue/set/{number:int}", async (int number, [FromServices] CueHub hub) =>
+        //{
+        //    await hub.UpdateCueNumber(number);
+        //    return Results.Ok();
+        //});
 
 
         app.MapStaticAssets();

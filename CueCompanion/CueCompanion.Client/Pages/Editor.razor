@@ -170,7 +170,7 @@
 
 @code
 {
-    private Show CurrentShow { get; set; } = Show.CreateDefault();
+    private Show CurrentShow { get; set; } = CueCompanion.Show.CreateDefault();
     private int CurrentCueNumber { get; set; }
     private Cue? CurrentCue => CurrentShow.Cues.FirstOrDefault(c => c?.CueNumber == CurrentCueNumber);
     protected string[] TasksForCurrentCue => CurrentCue?.Tasks.Values.ToArray() ?? [];

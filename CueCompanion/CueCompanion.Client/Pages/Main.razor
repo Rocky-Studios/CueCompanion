@@ -3,9 +3,9 @@
 @rendermode InteractiveAuto
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
-@inject CounterService Counter
-@inject AuthService Auth
 <PageTitle>CueCompanion</PageTitle>
+<h1>CueCompanion</h1>
+<Login OnSubmit="OnSubmit"/>
 <div class="main-view">
     <div class="main-box cue-explorer">
         <h3>Cue Explorer</h3>
@@ -18,7 +18,7 @@
                     <td colspan="2">Next</td>
                     <td rowspan="2" style="min-width: 1rem">
                         <span style="text-align: right">
-                            @Counter.State.CurrentCueNumber
+                            @Show.State.CurrentCueNumber
                         </span>
                     </td>
                 </tr>
@@ -41,9 +41,9 @@
                 <div class="cue-explorer-list">
                     @foreach (Cue cue in CurrentShow.Cues)
                     {
-                        string cueColor = cue.CueNumber == Counter.State.CurrentCueNumber ? "Green"
-                            : cue.CueNumber == Counter.State.CurrentCueNumber - 1 ? "Yellow"
-                            : cue.CueNumber == Counter.State.CurrentCueNumber + 1 ? "Blue"
+                        string cueColor = cue.CueNumber == Show.State.CurrentCueNumber ? "Green"
+                            : cue.CueNumber == Show.State.CurrentCueNumber - 1 ? "Yellow"
+                            : cue.CueNumber == Show.State.CurrentCueNumber + 1 ? "Blue"
                             : "Gray";
                         <CueBox Name="@cue.CueName" Number="@cue.CueNumber" Color="@cueColor"/>
                     }
@@ -52,7 +52,7 @@
         </div>
     </div>
     <div class="main-box current-cue">
-        <h3>Current Cue - @CurrentCue.CueName (@Counter.State.CurrentCueNumber)</h3>
+        <h3>Current Cue - @CurrentCue.CueName (@Show.State.CurrentCueNumber)</h3>
         <div class="current-cue-view-select">
             <h5>View</h5>
             @foreach (Role role in CurrentShow.Roles)
@@ -174,8 +174,8 @@
 @code {
 
     //<RoleViewCheckbox Name="All" Enabled="false"/>
-    protected Cue CurrentCue => CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == Counter.State.CurrentCueNumber, new Cue(0, "None", "", []));
-    protected Show CurrentShow => Counter.State.CurrentShow;
+    protected Cue CurrentCue => CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == Show.State.CurrentCueNumber, new Cue(0, "None", "", []));
+    protected Show CurrentShow => Show.State.CurrentShow;
     protected string[] TasksForCurrentCue => CurrentCue.Tasks.Values.ToArray();
     protected Dictionary<string, bool> RoleViewStates = [];
 
@@ -194,35 +194,50 @@
             if (CurrentCue != null)
             {
                 CurrentCue.Notes["All"] = value;
-                Counter.UpdateNote("All", value);
+                Show.UpdateNote("All", value);
             }
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        Counter.OnChange += () => InvokeAsync(StateHasChanged);
+        Show.OnChange += () => InvokeAsync(StateHasChanged);
 
 
         // Start the SignalR connection
-        await Counter.StartAsync(Navigation.BaseUri);
+        await Show.StartAsync(Navigation.BaseUri);
         await Auth.StartAsync(Navigation.BaseUri);
     }
 
     private async Task IncrementCueNumber()
     {
-        await Counter.UpdateCueNumber(Counter.State.CurrentCueNumber + 1);
+        if (Show.State != null)
+            await Show.UpdateCueNumber(Show.State.CurrentCueNumber + 1);
     }
 
     private async Task DecrementCueNumber()
     {
-        await Counter.UpdateCueNumber(Counter.State.CurrentCueNumber - 1);
+        if (Show.State != null)
+            await Show.UpdateCueNumber(Show.State.CurrentCueNumber - 1);
     }
 
     private async Task ImportShowFromJson()
     {
+        if (Show.State == null) return;
         string json = await JS.InvokeAsync<string>("selectImportJsonFile");
-        Counter.State.CurrentShow = JsonSerializer.Deserialize<Show>(json);
-        await Counter.UpdateEntireState();
+        Show.State.CurrentShow = JsonSerializer.Deserialize<Show>(json);
+        await Show.UpdateEntireState();
+    }
+
+    private async Task OnSubmit(string name, string passkey)
+    {
+        Auth.Connection = await Auth.Connect(name, passkey);
+        if (Auth.Connection != null)
+        {
+            await LocalStorage.SetItemAsync("connectionName", Auth.Connection.ConnectionName);
+            await LocalStorage.SetItemAsync("connectionPasskey", Auth.Connection.ConnectionPasskey);
+        }
+
+        await Show.GetShowState();
     }
 }

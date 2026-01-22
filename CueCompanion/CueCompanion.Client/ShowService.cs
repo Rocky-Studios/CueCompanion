@@ -1,11 +1,19 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using CueCompanion.Client;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion;
 
-public class CounterService
+public class ShowService
 {
+    private readonly AuthService _auth;
     private HubConnection? _connection;
-    public ServerState State { get; private set; } = new();
+
+    public ShowService(AuthService auth)
+    {
+        _auth = auth;
+    }
+
+    public ServerState? State { get; private set; } = new();
 
     public event Func<Task>? OnChange;
 
@@ -23,9 +31,10 @@ public class CounterService
                 await OnChange.Invoke();
         });
 
-        await _connection.StartAsync();
 
-        State = await _connection.InvokeAsync<ServerState>("GetState");
+        await _connection.StartAsync();
+        await GetShowState();
+
         if (OnChange != null)
             await OnChange.Invoke();
     }
@@ -46,5 +55,11 @@ public class CounterService
     {
         if (_connection != null)
             await _connection.InvokeAsync("UpdateEntireState", State);
+    }
+
+    public async Task GetShowState()
+    {
+        if (_connection != null && _auth.Connection != null)
+            State = await _connection.InvokeAsync<ServerState?>("GetState", _auth.Connection);
     }
 }

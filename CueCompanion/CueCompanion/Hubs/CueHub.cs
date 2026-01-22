@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using CueCompanion.Client;
+using Microsoft.AspNetCore.SignalR;
 
 namespace CueCompanion.Hubs;
 
@@ -6,9 +7,11 @@ public class CueHub : Hub
 {
     private static readonly ServerState _state = new();
 
-    public ServerState GetState()
+    public ServerState? GetState(Connection connection)
     {
-        return _state;
+        if (Program.ConnectionManager.IsConnectionValid(connection))
+            return _state;
+        return null;
     }
 
     public async Task UpdateEntireState(ServerState newState)
