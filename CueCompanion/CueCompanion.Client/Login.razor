@@ -17,6 +17,8 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Login</button>
+        <button type="button" class="btn btn-primary" @onclick="LoadPreviousConnection">Load previous connection
+        </button>
     </EditForm>
 
 </div>
@@ -38,6 +40,17 @@
         if (OnSubmit != null)
         {
             await OnSubmit(loginModel.ConnectionName ?? "", loginModel.ConnectionPaskey ?? "");
+        }
+    }
+
+    protected async Task LoadPreviousConnection()
+    {
+        string? name = await LocalStorage.GetItemAsync("connectionName");
+        string? passkey = await LocalStorage.GetItemAsync("connectionPasskey");
+        if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(passkey))
+        {
+            loginModel.ConnectionName = name;
+            loginModel.ConnectionPaskey = passkey;
         }
     }
 }

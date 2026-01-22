@@ -1,7 +1,5 @@
 @page "/"
 @rendermode InteractiveAuto
-@inject NavigationManager Navigation
-@inject AuthService Auth
 <h1>Cue Companion</h1>
 <h3>You are: @Auth.ClientType.ToString()</h3>
 
@@ -57,5 +55,10 @@ else
     private async Task OnSubmit(string name, string passkey)
     {
         Auth.Connection = await Auth.Connect(name, passkey);
+        if (Auth.Connection != null)
+        {
+            await LocalStorage.SetItemAsync("connectionName", Auth.Connection.ConnectionName);
+            await LocalStorage.SetItemAsync("connectionPasskey", Auth.Connection.ConnectionPasskey);
+        }
     }
 }

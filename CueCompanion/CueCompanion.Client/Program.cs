@@ -9,8 +9,8 @@ internal class Program
         WebAssemblyHostBuilder builder = WebAssemblyHostBuilder.CreateDefault(args);
 
         builder.Services.AddSingleton<CounterService>();
-        //builder.Services.AddSingleton<AuthService>();
         builder.Services.AddScoped<AuthService>();
+        builder.Services.AddScoped<LocalStorageService>();
 
         await builder.Build().RunAsync();
     }

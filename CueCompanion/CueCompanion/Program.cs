@@ -32,6 +32,7 @@ public class Program
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddSingleton<CueHub>();
         builder.Services.AddScoped<AuthHub>();
+        builder.Services.AddScoped<LocalStorageService>();
 
         WebApplication app = builder.Build();
 
