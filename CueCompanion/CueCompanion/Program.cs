@@ -2,6 +2,7 @@ using CueCompanion.Client;
 using CueCompanion.Components;
 using CueCompanion.Hubs;
 using Microsoft.AspNetCore.ResponseCompression;
+using MudBlazor.Services;
 using _Imports = CueCompanion.Client._Imports;
 
 namespace CueCompanion;
@@ -33,6 +34,8 @@ public class Program
         builder.Services.AddSingleton<ShowHub>();
         builder.Services.AddScoped<AuthHub>();
         builder.Services.AddScoped<LocalStorageService>();
+
+        builder.Services.AddMudServices();
 
         WebApplication app = builder.Build();
 

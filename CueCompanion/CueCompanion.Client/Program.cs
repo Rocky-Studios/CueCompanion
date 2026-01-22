@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor.Services;
 
 namespace CueCompanion.Client;
 
@@ -11,6 +12,8 @@ internal class Program
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddScoped<ShowService>();
         builder.Services.AddScoped<LocalStorageService>();
+
+        builder.Services.AddMudServices();
 
         await builder.Build().RunAsync();
     }
