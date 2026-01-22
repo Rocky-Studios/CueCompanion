@@ -19,11 +19,15 @@ public class ConnectionManager
         return Connections.ToArray();
     }
 
-    public bool IsConnectionValid(Connection connection)
+    public (bool status, string? message) IsConnectionValid(Connection connection)
     {
-        return Connections.Any(c =>
+        bool isvalid = Connections.Any(c =>
             c.ConnectionName == connection.ConnectionName &&
             c.ConnectionPasskey == connection.ConnectionPasskey);
+        if (isvalid)
+            return (true, null);
+        else
+            return (false, "Connection is invalid.");
     }
 
     public (Connection? connection, string? error) TryConnect(string connectionName, string connectionKey)

@@ -2,7 +2,7 @@
 
 namespace CueCompanion;
 
-public class ServerState
+public class ShowState
 {
     public Show CurrentShow { get; set; } = new();
     public int CurrentCueNumber { get; set; }
@@ -260,5 +260,14 @@ public class ServerState
             }
         );
         return show;
+    }
+
+    public static ShowState CreateSampleState()
+    {
+        return new ShowState
+        {
+            CurrentShow = GetSampleShow(),
+            CurrentCueNumber = 1
+        };
     }
 }

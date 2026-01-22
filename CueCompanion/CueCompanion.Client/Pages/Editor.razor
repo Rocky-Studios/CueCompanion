@@ -170,7 +170,7 @@
 
 @code
 {
-    private Show CurrentShow { get; set; } = CueCompanion.Show.CreateDefault();
+    private CueCompanion.Show CurrentShow { get; set; } = CueCompanion.Show.CreateDefault();
     private int CurrentCueNumber { get; set; }
     private Cue? CurrentCue => CurrentShow.Cues.FirstOrDefault(c => c?.CueNumber == CurrentCueNumber);
     protected string[] TasksForCurrentCue => CurrentCue?.Tasks.Values.ToArray() ?? [];
@@ -193,7 +193,7 @@
     private async Task ImportShowFromJson()
     {
         string json = await JS.InvokeAsync<string>("selectImportJsonFile");
-        CurrentShow = JsonSerializer.Deserialize<Show>(json);
+        CurrentShow = JsonSerializer.Deserialize<CueCompanion.Show>(json);
     }
 
     private async Task AddNewRole()

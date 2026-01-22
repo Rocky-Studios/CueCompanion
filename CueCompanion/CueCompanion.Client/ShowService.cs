@@ -13,8 +13,11 @@ public class ShowService
         _auth = auth;
     }
 
-    public ServerState? State { get; private set; } = new();
-
+    public ShowState? State { get; private set; }
+    public Show? Show => State?.CurrentShow;
+    public Cue? CurrentCue => State?.CurrentCue;
+    public Dictionary<string, string>? CurrentTasks => CurrentCue?.Tasks;
+    public int? CurrentCueNumber => State?.CurrentCueNumber;
     public event Func<Task>? OnChange;
 
     public async Task StartAsync(string baseUrl)
@@ -24,42 +27,24 @@ public class ShowService
             .WithAutomaticReconnect()
             .Build();
 
-        _connection.On<ServerState>("StateUpdated", async state =>
-        {
-            State = state;
-            if (OnChange != null)
-                await OnChange.Invoke();
-        });
-
-
         await _connection.StartAsync();
-        await GetShowState();
 
         if (OnChange != null)
             await OnChange.Invoke();
     }
 
-    public async Task UpdateCueNumber(int newCueNumber)
+    public async Task GetShow()
     {
-        if (_connection != null)
-            await _connection.InvokeAsync("UpdateCueNumber", newCueNumber);
-    }
+        if (_connection == null)
+            throw new InvalidOperationException("Connection has not been started.");
+        if (_auth.Connection == null)
+            throw new InvalidOperationException("No valid connection in AuthService.");
+        ShowResponsePacket response = await _connection.InvokeAsync<ShowResponsePacket>("GetShow", _auth.Connection);
+        if (response.ErrorMessage is { Length: > 0 })
+            Console.WriteLine("Error requesting show: " + response.ErrorMessage);
 
-    public async Task UpdateNote(string noteID, string newNoteText)
-    {
-        if (_connection != null)
-            await _connection.InvokeAsync("UpdateNote", noteID, newNoteText);
-    }
-
-    public async Task UpdateEntireState()
-    {
-        if (_connection != null)
-            await _connection.InvokeAsync("UpdateEntireState", State);
-    }
-
-    public async Task GetShowState()
-    {
-        if (_connection != null && _auth.Connection != null)
-            State = await _connection.InvokeAsync<ServerState?>("GetState", _auth.Connection);
+        State = response.State;
+        if (OnChange != null)
+            await OnChange.Invoke();
     }
 }

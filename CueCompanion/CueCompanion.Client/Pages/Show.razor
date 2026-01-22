@@ -5,7 +5,6 @@
 @inject IJSRuntime JS
 <PageTitle>CueCompanion</PageTitle>
 <h1>CueCompanion</h1>
-<Login OnSubmit="OnSubmit"/>
 <div class="main-view">
     <div class="main-box cue-explorer">
         <h3>Cue Explorer</h3>
@@ -18,7 +17,7 @@
                     <td colspan="2">Next</td>
                     <td rowspan="2" style="min-width: 1rem">
                         <span style="text-align: right">
-                            @Show.State.CurrentCueNumber
+                            @CurrentCueNumber
                         </span>
                     </td>
                 </tr>
@@ -39,11 +38,12 @@
                     <CueBox Name="Next" Color="Blue"/>
                 </div>
                 <div class="cue-explorer-list">
+                    @if (CurrentShow != null)
                     @foreach (Cue cue in CurrentShow.Cues)
                     {
-                        string cueColor = cue.CueNumber == Show.State.CurrentCueNumber ? "Green"
-                            : cue.CueNumber == Show.State.CurrentCueNumber - 1 ? "Yellow"
-                            : cue.CueNumber == Show.State.CurrentCueNumber + 1 ? "Blue"
+                        string cueColor = cue.CueNumber == CurrentCueNumber ? "Green"
+                            : cue.CueNumber == CurrentCueNumber - 1 ? "Yellow"
+                            : cue.CueNumber == CurrentCueNumber + 1 ? "Blue"
                             : "Gray";
                         <CueBox Name="@cue.CueName" Number="@cue.CueNumber" Color="@cueColor"/>
                     }
@@ -52,9 +52,13 @@
         </div>
     </div>
     <div class="main-box current-cue">
-        <h3>Current Cue - @CurrentCue.CueName (@Show.State.CurrentCueNumber)</h3>
+        @if (CurrentCueNumber != null)
+        {
+            <h3>Current Cue - @CurrentCue?.CueName (@CurrentCueNumber)</h3>
+        }
         <div class="current-cue-view-select">
             <h5>View</h5>
+            @if (CurrentShow != null && RoleViewStates != null)
             @foreach (Role role in CurrentShow.Roles)
             {
                 <RoleViewCheckbox Name="@role.RoleName" Enabled="false" OnChange=
@@ -72,6 +76,7 @@
         <div style="min-height: 20vh" class="thin-border">
             <h3>Tasks</h3>
             <div class="current-cue-tasks">
+                @if (CurrentShow != null && CurrentCue != null && TasksForCurrentCue != null && RoleViewStates != null)
                 @for (int i = 0; i < TasksForCurrentCue.Length; i++)
                 {
                     string task = TasksForCurrentCue[i];
@@ -91,49 +96,59 @@
         </div>
         <div class="cue-notes thin-border">
             <h3>Notes</h3>
-            <div style="display: flex; flex-direction: row">
-                <div>
-                    <span><h5 style="display: inline">All notes:</h5> (shared with everyone)</span>
-                    @{ CurrentCue.Notes.TryGetValue("All", out string? allNotes); }
-                    <textarea rows="15" cols="35" @bind="AllNotes" @bind:event="oninput"></textarea>
+            @if (CurrentShow != null && CurrentCue != null)
+            {
+                <div style="display: flex; flex-direction: row">
+                    <div>
+                        <span><h5 style="display: inline">All notes:</h5> (shared with everyone)</span>
+                        @{ CurrentCue.Notes.TryGetValue("All", out string? allNotes); }
+                        <textarea rows="15" cols="35" @bind="AllNotes" @bind:event="oninput"></textarea>
+                    </div>
+                    <div>
+                        <h5>Your notes:</h5>
+                        <textarea rows="15" cols="35"></textarea>
+                    </div>
                 </div>
-                <div>
-                    <h5>Your notes:</h5>
-                    <textarea rows="15" cols="35"></textarea>
-                </div>
-            </div>
+            }
         </div>
     </div>
     <div class="main-box info">
         <h3>Info</h3>
         <button @onclick="ImportShowFromJson">Import</button>
-        <div class="show-info-details thin-border">
-            <h5>Show:</h5>
-            <p>@CurrentShow.Name</p>
-            <p>Date: @CurrentShow.Date.ToShortDateString()</p>
-            <p>Time: @CurrentShow.StartTime.ToShortTimeString() - @CurrentShow.EndTime.ToShortTimeString()</p>
-            <p>At: @CurrentShow.Location.ToString()</p>
-            <br/>
-            <h5>Total Cues:</h5>
-            <p>@CurrentShow.Cues.Length</p>
-            <br/>
-            <h5>Roles:</h5>
-            <ul>
-                @foreach (Role role in CurrentShow.Roles)
-                {
-                    if (role.PersonName != "")
+        @if (CurrentShow != null)
+        {
+            <div class="CurrentShow-info-details thin-border">
+                <h5>CurrentShow:</h5>
+                <p>@CurrentShow.Name</p>
+                <p>Date: @CurrentShow.Date.ToShortDateString()</p>
+                <p>Time: @CurrentShow.StartTime.ToShortTimeString() - @CurrentShow.EndTime.ToShortTimeString()</p>
+                <p>At: @CurrentShow.Location.ToString()</p>
+                <br/>
+                <h5>Total Cues:</h5>
+                <p>@CurrentShow.Cues.Length</p>
+                <br/>
+                <h5>Roles:</h5>
+                <ul>
+                    @foreach (Role role in CurrentShow.Roles)
                     {
-                        <li>@role.RoleName - @role.PersonName</li>
+                        if (role.PersonName != "")
+                        {
+                            <li>@role.RoleName - @role.PersonName</li>
+                        }
+                        else
+                        {
+                            <li>@role.RoleName</li>
+                        }
                     }
-                    else
-                    {
-                        <li>@role.RoleName</li>
-                    }
-                }
-            </ul>
-            <br/>
-        </div>
+                </ul>
+                <br/>
+            </div>
+        }
+        <h3>Connection</h3>
+        <Login OnSubmit="OnSubmit"/>
+        <ConnectionStatus @ref="connectionStatusRef"/>
     </div>
+    <!--suppress JSUnresolvedReference -->
     <script>
 
         window.selectImportJsonFile = async () => {
@@ -159,7 +174,7 @@
                     reader.onload = (e) => {
                         resolve(e.target.result);
                     };
-                    reader.onerror = (e) => {
+                    reader.onerror = () => {
                         reject("Error reading file");
                     };
                     reader.readAsText(file);
@@ -172,72 +187,55 @@
 </div>
 
 @code {
-
-    //<RoleViewCheckbox Name="All" Enabled="false"/>
-    protected Cue CurrentCue => CurrentShow.Cues.FirstOrDefault(c => c.CueNumber == Show.State.CurrentCueNumber, new Cue(0, "None", "", []));
-    protected Show CurrentShow => Show.State.CurrentShow;
-    protected string[] TasksForCurrentCue => CurrentCue.Tasks.Values.ToArray();
-    protected Dictionary<string, bool> RoleViewStates = [];
-
-    protected string UserConnectionName { get; set; }
-    protected string UserConnectionPasskey { get; set; }
-
-    protected string AllNotes
-    {
-        get
-        {
-            CurrentCue.Notes.TryGetValue("All", out string? val);
-            return val ?? "";
-        }
-        set
-        {
-            if (CurrentCue != null)
-            {
-                CurrentCue.Notes["All"] = value;
-                Show.UpdateNote("All", value);
-            }
-        }
-    }
+    protected CueCompanion.Show? CurrentShow => ShowService.Show;
+    protected Cue? CurrentCue => ShowService.CurrentCue;
+    protected string[]? TasksForCurrentCue => CurrentCue?.Tasks.Values.ToArray();
+    protected Dictionary<string, bool>? RoleViewStates { get; set; } = new();
+    protected int? CurrentCueNumber => ShowService.CurrentCueNumber;
+    protected string? AllNotes;
+    private ConnectionStatus? connectionStatusRef;
 
     protected override async Task OnInitializedAsync()
     {
-        Show.OnChange += () => InvokeAsync(StateHasChanged);
+        AuthService.OnChange += StateChanged;
+        ShowService.OnChange += StateChanged;
 
-
-        // Start the SignalR connection
-        await Show.StartAsync(Navigation.BaseUri);
-        await Auth.StartAsync(Navigation.BaseUri);
+        await ShowService.StartAsync(Navigation.BaseUri);
+        await AuthService.StartAsync(Navigation.BaseUri);
+        await StateChanged();
     }
 
-    private async Task IncrementCueNumber()
+    async Task StateChanged()
     {
-        if (Show.State != null)
-            await Show.UpdateCueNumber(Show.State.CurrentCueNumber + 1);
-    }
-
-    private async Task DecrementCueNumber()
-    {
-        if (Show.State != null)
-            await Show.UpdateCueNumber(Show.State.CurrentCueNumber - 1);
-    }
-
-    private async Task ImportShowFromJson()
-    {
-        if (Show.State == null) return;
-        string json = await JS.InvokeAsync<string>("selectImportJsonFile");
-        Show.State.CurrentShow = JsonSerializer.Deserialize<Show>(json);
-        await Show.UpdateEntireState();
+        if (connectionStatusRef != null) await connectionStatusRef?.UpdateState();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnSubmit(string name, string passkey)
     {
-        Auth.Connection = await Auth.Connect(name, passkey);
-        if (Auth.Connection != null)
+        AuthService.Connection = await AuthService.Connect(name, passkey);
+        if (AuthService.Connection != null)
         {
-            await LocalStorage.SetItemAsync("connectionName", Auth.Connection.ConnectionName);
-            await LocalStorage.SetItemAsync("connectionPasskey", Auth.Connection.ConnectionPasskey);
+            await LocalStorage.SetItemAsync("connectionName", AuthService.Connection.ConnectionName);
+            await LocalStorage.SetItemAsync("connectionPasskey", AuthService.Connection.ConnectionPasskey);
         }
 
-        await Show.GetShowState();
+        await ShowService.GetShow();
+    }
+
+    private async Task IncrementCueNumber()
+    {
+    }
+
+    private async Task DecrementCueNumber()
+    {
+    }
+
+    private async Task ImportShowFromJson()
+    {
+        if (ShowService.State == null) return;
+        string json = await JS.InvokeAsync<string>("selectImportJsonFile");
+        ShowService.State.CurrentShow = JsonSerializer.Deserialize<CueCompanion.Show>(json) ?? ShowService.State.CurrentShow;
+        //await ShowService.UpdateEntireState();
     }
 }

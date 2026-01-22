@@ -1,0 +1,22 @@
+<h5 style="text-align: left">Connection:</h5>
+<p><strong>Status:</strong> @AuthService.ConnectionMessage</p>
+@if (AuthService.Connection != null)
+{
+    <div class="connection-details">
+        <p><strong>Connection Name:</strong> @AuthService.Connection.ConnectionName</p>
+        <p><strong>Passkey:</strong> @AuthService.Connection.ConnectionPasskey</p>
+        <p>Secret key: @AuthService.Connection.Secret.ToString()</p>
+    </div>
+}
+else
+{
+    <p>No active connection.</p>
+}
+
+@code
+{
+    public async Task UpdateState()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

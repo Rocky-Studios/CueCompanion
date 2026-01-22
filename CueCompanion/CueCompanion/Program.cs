@@ -30,14 +30,14 @@ public class Program
         // CueCompanion/CueCompanion/Program.cs
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddScoped<ShowService>();
-        builder.Services.AddSingleton<CueHub>();
+        builder.Services.AddSingleton<ShowHub>();
         builder.Services.AddScoped<AuthHub>();
         builder.Services.AddScoped<LocalStorageService>();
 
         WebApplication app = builder.Build();
 
         app.UseResponseCompression();
-        app.MapHub<CueHub>("/cueHub");
+        app.MapHub<ShowHub>("/cueHub");
         app.MapHub<AuthHub>("/authHub");
 
 
