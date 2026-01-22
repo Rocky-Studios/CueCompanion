@@ -24,7 +24,7 @@ public class Connection
         return this;
     }
 
-    public Connection WithSecret(Guid? secret = null)
+    public Connection AddSecret(Guid? secret = null)
     {
         Secret = secret ?? Guid.NewGuid();
         return this;

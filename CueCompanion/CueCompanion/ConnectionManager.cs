@@ -4,6 +4,8 @@ namespace CueCompanion;
 
 public class ConnectionManager
 {
+    private readonly List<(string connectionName, Guid secret)> ConnectedConnections = [];
+
     private readonly List<Connection> Connections =
     [
         new Connection("Master Connection").WithRandomPasskey()
@@ -21,13 +23,22 @@ public class ConnectionManager
 
     public (bool status, string? message) IsConnectionValid(Connection connection)
     {
-        bool isvalid = Connections.Any(c =>
+        bool isConnectionNameValid = Connections.Any(c =>
+            c.ConnectionName == connection.ConnectionName);
+        if (!isConnectionNameValid)
+            return (false, "Connection not found.");
+        bool isPasskeyValid = Connections.Any(c =>
             c.ConnectionName == connection.ConnectionName &&
             c.ConnectionPasskey == connection.ConnectionPasskey);
-        if (isvalid)
-            return (true, null);
-        else
-            return (false, "Connection is invalid.");
+        if (!isPasskeyValid)
+            return (false, "Invalid connection passkey.");
+        bool isSecretValid = Connections.Any(c =>
+            c.ConnectionName == connection.ConnectionName &&
+            c.ConnectionPasskey == connection.ConnectionPasskey &&
+            c.Secret == connection.Secret);
+        if (!isSecretValid)
+            return (false, "Invalid connection. Try reconnecting.");
+        return (true, null);
     }
 
     public (Connection? connection, string? error) TryConnect(string connectionName, string connectionKey)
@@ -37,7 +48,10 @@ public class ConnectionManager
         if (connection == null) return (null, "Connection not found.");
         if (connection.ConnectionPasskey != connectionKey)
             return (null, "Invalid connection key.");
-        connection = connection.WithSecret();
+        if (ConnectedConnections.Any(c => c.connectionName == connectionName))
+            return (null, "Connection already in use.");
+        connection = connection.AddSecret();
+        ConnectedConnections.Add((connectionName, connection.Secret!.Value));
         return (connection, null);
     }
 }
