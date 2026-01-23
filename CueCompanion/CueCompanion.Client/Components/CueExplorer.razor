@@ -1,0 +1,13 @@
+<MudPaper Class="p-4" Outlined="true">
+    <MudText Typo="Typo.h5">Cue Explorer</MudText>
+    @if (Cues != null)
+        @foreach (Cue cue in Cues)
+    {
+        <CueBox Name="@cue.CueName" Color="CueColor.Red" Number="@cue.CueNumber"/>
+    }
+</MudPaper>
+
+@code
+{
+    [Parameter] public required Cue[]? Cues { get; set; }
+}

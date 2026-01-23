@@ -1,0 +1,20 @@
+﻿<MudPaper>
+    <div class="cue-box color-@CueColorClass" @onclick="HandleClick">
+        <span class="cue-name">@Name</span>
+        <span class="cue-number">@Number</span>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public required string Name { get; set; }
+    [Parameter] public CueColor Color { get; set; } = CueColor.Gray;
+    [Parameter] public required int Number { get; set; }
+    [Parameter] public Action? OnClick { get; set; }
+
+    protected string CueColorClass => CueColorExtensions.ToString(Color);
+
+    private async Task HandleClick()
+    {
+        OnClick?.Invoke();
+    }
+}

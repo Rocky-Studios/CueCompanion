@@ -5,150 +5,20 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 <PageTitle>CueCompanion</PageTitle>
-<h1>CueCompanion</h1>
-<div class="main-view">
-    <div class="main-box cue-explorer">
-        <h3>Cue Explorer</h3>
-        <div class="cue-explorer-container">
-            <table class="cue-explorer-controls">
-                <tr>
-                    <td colspan="2">Explore</td>
-                    <td colspan="2">Prev</td>
-                    <td colspan="2">Reset</td>
-                    <td colspan="2">Next</td>
-                    <td rowspan="2" style="min-width: 1rem">
-                        <span style="text-align: right">
-                            @CurrentCueNumber
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">Change</td>
-                    <td colspan="3">
-                        <button @onclick="DecrementCueNumber">Prev</button>
-                    </td>
-                    <td colspan="3">
-                        <button @onclick="IncrementCueNumber">Next</button>
-                    </td>
-                </tr>
-            </table>
-            <div class="cue-explorer-cues">
-                <div class="cue-explorer-key">
-                    <CueBox Name="Prev" Color="Yellow"/>
-                    <CueBox Name="Current" Color="Green"/>
-                    <CueBox Name="Next" Color="Blue"/>
-                </div>
-                <div class="cue-explorer-list">
-                    @if (CurrentShow != null)
-                    @foreach (Cue cue in CurrentShow.Cues)
-                    {
-                        string cueColor = cue.CueNumber == CurrentCueNumber ? "Green"
-                            : cue.CueNumber == CurrentCueNumber - 1 ? "Yellow"
-                            : cue.CueNumber == CurrentCueNumber + 1 ? "Blue"
-                            : "Gray";
-                        <CueBox Name="@cue.CueName" Number="@cue.CueNumber" Color="@cueColor"/>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="main-box current-cue">
-        @if (CurrentCueNumber != null)
-        {
-            <h3>Current Cue - @CurrentCue?.CueName (@CurrentCueNumber)</h3>
-        }
-        <div class="current-cue-view-select">
-            <h5>View</h5>
-            @if (CurrentShow != null && RoleViewStates != null)
-            @foreach (Role role in CurrentShow.Roles)
-            {
-                <RoleViewCheckbox Name="@role.RoleName" Enabled="false" OnChange=
-                "@(value =>
-                {
-                    if (!RoleViewStates.TryAdd(role.RoleName, value))
-                    {
-                        RoleViewStates[role.RoleName] = !RoleViewStates[role.RoleName];
-                    }
-
-                    InvokeAsync(StateHasChanged);
-                })"/>
-            }
-        </div>
-        <div style="min-height: 20vh" class="thin-border">
-            <h3>Tasks</h3>
-            <div class="current-cue-tasks">
-                @if (CurrentShow != null && CurrentCue != null && TasksForCurrentCue != null && RoleViewStates != null)
-                @for (int i = 0; i < TasksForCurrentCue.Length; i++)
-                {
-                    string task = TasksForCurrentCue[i];
-                    string roleName = CurrentCue.Tasks.Keys.ElementAt(i);
-                    if (RoleViewStates.TryGetValue(roleName, out bool state))
-                    {
-                        if (state)
-                        {
-                            <div>
-                                <h5>@roleName</h5>
-                                @task
-                            </div>
-                        }
-                    }
-                }
-            </div>
-        </div>
-        <div class="cue-notes thin-border">
-            <h3>Notes</h3>
-            @if (CurrentShow != null && CurrentCue != null)
-            {
-                <div style="display: flex; flex-direction: row">
-                    <div>
-                        <span><h5 style="display: inline">All notes:</h5> (shared with everyone)</span>
-                        @{ CurrentCue.Notes.TryGetValue("All", out string? allNotes); }
-                        <textarea rows="15" cols="35" @bind="AllNotes" @bind:event="oninput"></textarea>
-                    </div>
-                    <div>
-                        <h5>Your notes:</h5>
-                        <textarea rows="15" cols="35"></textarea>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-    <div class="main-box info">
-        <h3>Info</h3>
-        <button @onclick="ImportShowFromJson">Import</button>
-        @if (CurrentShow != null)
-        {
-            <div class="CurrentShow-info-details thin-border">
-                <h5>CurrentShow:</h5>
-                <p>@CurrentShow.Name</p>
-                <p>Date: @CurrentShow.Date.ToShortDateString()</p>
-                <p>Time: @CurrentShow.StartTime.ToShortTimeString() - @CurrentShow.EndTime.ToShortTimeString()</p>
-                <p>At: @CurrentShow.Location.ToString()</p>
-                <br/>
-                <h5>Total Cues:</h5>
-                <p>@CurrentShow.Cues.Length</p>
-                <br/>
-                <h5>Roles:</h5>
-                <ul>
-                    @foreach (Role role in CurrentShow.Roles)
-                    {
-                        if (role.PersonName != "")
-                        {
-                            <li>@role.RoleName - @role.PersonName</li>
-                        }
-                        else
-                        {
-                            <li>@role.RoleName</li>
-                        }
-                    }
-                </ul>
-                <br/>
-            </div>
-        }
-        <h3>Connection</h3>
-        <ConnectionBox @ref="connectionBox"/>
-    </div>
-</div>
+<FlexContainer>
+    <FlexItem>
+        <CueExplorer Cues="CurrentShow?.Cues"/>
+    </FlexItem>
+    <FlexItem>
+        <CueDetails/>
+    </FlexItem>
+    <FlexItem>
+        <MudPaper Class="p-4" Outlined="true">
+            <MudText Typo="Typo.h5">Connection</MudText>
+            <ConnectionStatus/>
+        </MudPaper>
+    </FlexItem>
+</FlexContainer>
 
 @code {
     protected CueCompanion.Show? CurrentShow => ShowService.Show;
@@ -157,7 +27,6 @@
     protected Dictionary<string, bool>? RoleViewStates { get; set; } = new();
     protected int? CurrentCueNumber => ShowService.CurrentCueNumber;
     protected string? AllNotes;
-    private ConnectionBox connectionBox;
 
     protected override async Task OnInitializedAsync()
     {
@@ -175,7 +44,6 @@
     async Task StateChanged()
     {
         await ShowService.GetShow();
-        await connectionBox.UpdateState();
         await InvokeAsync(StateHasChanged);
     }
 
