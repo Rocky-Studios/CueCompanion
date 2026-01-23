@@ -1,40 +1,37 @@
 @page "/"
+@using CueCompanion.Client.Components
 @rendermode InteractiveAuto
-<MudContainer MaxWidth="MaxWidth.Medium">
-<h1>Cue Companion</h1>
-<h3>You are: @AuthService.ClientType.ToString()</h3>
-
-@if (AuthService.ClientType == ClientType.Master)
-{
-    <div class="config">
-        <h2>Configuration Panel</h2>
-        <p>This section is only visible to Master users.</p>
-        <div class="config-connections">
-            <h3>Connections</h3>
-            @{
-                foreach (Connection conn in cons)
-                {
-                    <div class="connection-item">
-                        <strong>@conn.ConnectionName</strong>
-                        <p>Pass: @conn.ConnectionPasskey</p>
-                    </div>
-                }
-            }
-        </div>
-    </div>
-}
-
-<h3>Connect:</h3>
-<Login OnSubmit="OnSubmit"/>
-<ConnectionStatus/>
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudText Typo="Typo.h3">Dashboard</MudText>
+    @if (AuthService.ClientType == null)
+    {
+        <MudText Typo="Typo.body2">Fetching client type...</MudText>
+    }
+    else if (AuthService.ClientType == ClientType.Unknown)
+    {
+        <MudText Typo="Typo.body1" Color="Color.Error">Unknown client type. Please check your connection.</MudText>
+    }
+    else
+    {
+        <MudText Typo="Typo.body1">You are: @AuthService.ClientType.ToString()</MudText>
+    }
+    <MudDivider/>
+    <ConnectionBox @ref="connectionBox"/>
 </MudContainer>
 @code
 {
     private Connection[] cons = [];
+    private ConnectionBox connectionBox;
 
     protected override async Task OnInitializedAsync()
     {
-        AuthService.OnChange += () => InvokeAsync(StateHasChanged);
+        AuthService.OnChange += async () =>
+        {
+            InvokeAsync(StateHasChanged);
+            await connectionBox.UpdateState();
+        };
+        
+
         Task.Run(async () =>
         {
             await AuthService.StartAsync(Navigation.BaseUri);

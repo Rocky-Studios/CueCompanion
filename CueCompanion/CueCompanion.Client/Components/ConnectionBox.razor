@@ -1,0 +1,17 @@
+@rendermode InteractiveAuto
+<MudPaper Class="p-4" Outlined="true">
+    <MudText Typo="Typo.h5">Connection</MudText>
+    <Connect/>
+    <ConnectionStatus @ref="connectionStatus"/>
+</MudPaper>
+
+@code
+{
+    ConnectionStatus connectionStatus;
+
+    public async Task UpdateState()
+    {
+        await InvokeAsync(StateHasChanged);
+        await connectionStatus.UpdateState();
+    }
+}

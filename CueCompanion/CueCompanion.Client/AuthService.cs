@@ -6,7 +6,7 @@ public class AuthService
 {
     private HubConnection? _authHub;
 
-    public ClientType ClientType { get; set; } = ClientType.Unknown;
+    public ClientType? ClientType { get; set; }
     public Connection? Connection { get; set; }
     public string? ConnectionMessage { get; set; }
     public event Func<Task>? OnChange;

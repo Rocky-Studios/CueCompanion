@@ -1,0 +1,58 @@
+@rendermode InteractiveAuto
+<div>
+    <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@_errors">
+        <MudTextField T="string" Label="Connection Name" Required="true" RequiredError="Connection name is required!"
+                      @bind-Value="connectionNameInput"/>
+        <MudTextField T="string" Label="Connection Passkey" Required="true" RequiredError="Password is required!"
+                      @bind-Value="connectionPasskeyInput"
+                      InputType="InputType.Password"/>
+    </MudForm>
+    @if (_errors.Length > 0)
+    {
+        <MudText Typo="Typo.subtitle2">@($"Errors ({_errors.Length})")</MudText>
+    }
+    @foreach (string error in _errors)
+    {
+        <MudText Color="@Color.Error">@error</MudText>
+    }
+    <div class="mb-2 mt-2">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Connect</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadPreviousConnection">Load previous
+            connection
+        </MudButton>
+    </div>
+</div>
+
+@code
+{
+    bool success;
+    string[] _errors = [];
+    MudForm form;
+    string connectionNameInput;
+    string connectionPasskeyInput;
+
+    async Task Submit()
+    {
+        await form.Validate();
+        if (success)
+        {
+            await AuthService.Connect(connectionNameInput, connectionPasskeyInput);
+            if (AuthService.Connection != null)
+            {
+                await LocalStorage.SetItemAsync("connectionName", AuthService.Connection.ConnectionName);
+                await LocalStorage.SetItemAsync("connectionPasskey", AuthService.Connection.ConnectionPasskey);
+            }
+        }
+    }
+
+    async Task LoadPreviousConnection()
+    {
+        string? name = await LocalStorage.GetItemAsync("connectionName");
+        string? passkey = await LocalStorage.GetItemAsync("connectionPasskey");
+        if (name != null && passkey != null)
+        {
+            connectionNameInput = name;
+            connectionPasskeyInput = passkey;
+        }
+    }
+}
