@@ -44,7 +44,5 @@ public class ShowService
             Console.WriteLine("Error requesting show: " + response.ErrorMessage);
 
         State = response.State;
-        if (OnChange != null)
-            await OnChange.Invoke();
     }
 }

@@ -29,6 +29,11 @@ public class AuthService
         OnChange?.Invoke();
     }
 
+    private async Task WaitForConnection()
+    {
+        while (_authHub == null) await Task.Delay(10);
+    }
+
     //public async Task WaitForUser()
     //{
     //    while (User == null) await Task.Delay(10);
@@ -36,11 +41,10 @@ public class AuthService
 
     public async Task<Connection?> Connect(string connectionName, string connectionPasskey)
     {
-        if (_authHub == null) throw new InvalidOperationException("Auth hub is not started.");
+        await WaitForConnection();
         UserConnectPacket packet =
             await _authHub.InvokeAsync<UserConnectPacket>("Connect", connectionName, connectionPasskey);
         Connection = packet.Connection;
-        OnChange?.Invoke();
         ConnectionMessage = null;
         if (packet.Error != null)
             ConnectionMessage = packet.Error;
