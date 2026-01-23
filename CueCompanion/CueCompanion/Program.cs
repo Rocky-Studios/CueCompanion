@@ -107,6 +107,12 @@ public class Program
                         Console.WriteLine(
                             $"\t\"{connection.ConnectionName}\" (Passkey: \"{connection.ConnectionPasskey}\")");
                 }
+
+                if (command is "resetConnectedConnections")
+                {
+                    ConnectionManager.ResetConnectedConnections();
+                    Console.WriteLine("Connected connections reset.");
+                }
             }
         }).Start();
 

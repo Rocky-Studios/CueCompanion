@@ -21,6 +21,11 @@ public class ConnectionManager
         return Connections.ToArray();
     }
 
+    public void ResetConnectedConnections()
+    {
+        ConnectedConnections.Clear();
+    }
+
     public (bool status, string? message) IsConnectionValid(Connection connection)
     {
         bool isConnectionNameValid = Connections.Any(c =>
@@ -41,17 +46,37 @@ public class ConnectionManager
         return (true, null);
     }
 
-    public (Connection? connection, string? error) TryConnect(string connectionName, string connectionKey)
+    public (Connection? connection, string? error) TryConnect(string connectionName, string connectionKey, Guid? secret)
     {
-        Connection? connection = Connections.FirstOrDefault(c =>
-            c.ConnectionName == connectionName);
+        // Try to find the connection by name
+        Connection? connection = Connections.FirstOrDefault(c => c.ConnectionName == connectionName);
         if (connection == null) return (null, "Connection not found.");
+
+        // Key mismatch, obviously invalid
         if (connection.ConnectionPasskey != connectionKey)
             return (null, "Invalid connection key.");
-        if (ConnectedConnections.Any(c => c.connectionName == connectionName))
-            return (null, "Connection already in use.");
+
+        // Add a random secret to the connection
         connection = connection.AddSecret();
-        ConnectedConnections.Add((connectionName, connection.Secret!.Value));
+        // If a secret was provided, validate it
+        if (secret is { } s)
+        {
+            // Override the randomly generated secret with the provided one
+            connection.Secret = s;
+
+            if (ConnectedConnections.All(c => c.secret != s))
+                return (null, "Invalid connection.");
+        }
+        else
+        {
+            // No secret provided, so if the connection is already in use, reject it
+            if (ConnectedConnections.Any(c => c.connectionName == connectionName))
+                return (null, "Connection already in use.");
+
+            // Otherwise, add it to the list of connected connections
+            ConnectedConnections.Add((connectionName, connection.Secret!.Value));
+        }
+
         return (connection, null);
     }
 }

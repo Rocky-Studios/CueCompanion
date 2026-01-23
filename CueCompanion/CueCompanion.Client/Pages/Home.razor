@@ -38,14 +38,4 @@
             await InvokeAsync(StateHasChanged);
         });
     }
-
-    private async Task OnSubmit(string name, string passkey)
-    {
-        AuthService.Connection = await AuthService.Connect(name, passkey);
-        if (AuthService.Connection != null)
-        {
-            await LocalStorage.SetItemAsync("connectionName", AuthService.Connection.ConnectionName);
-            await LocalStorage.SetItemAsync("connectionPasskey", AuthService.Connection.ConnectionPasskey);
-        }
-    }
 }

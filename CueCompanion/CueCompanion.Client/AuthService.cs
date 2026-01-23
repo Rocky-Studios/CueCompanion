@@ -39,11 +39,11 @@ public class AuthService
     //    while (User == null) await Task.Delay(10);
     //}
 
-    public async Task<Connection?> Connect(string connectionName, string connectionPasskey)
+    public async Task<Connection?> Connect(string connectionName, string connectionPasskey, Guid? secret)
     {
         await WaitForConnection();
         UserConnectPacket packet =
-            await _authHub.InvokeAsync<UserConnectPacket>("Connect", connectionName, connectionPasskey);
+            await _authHub.InvokeAsync<UserConnectPacket>("Connect", connectionName, connectionPasskey, secret);
         Connection = packet.Connection;
         ConnectionMessage = null;
         if (packet.Error != null)

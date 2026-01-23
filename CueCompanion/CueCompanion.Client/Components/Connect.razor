@@ -36,11 +36,15 @@
         await form.Validate();
         if (success)
         {
-            await AuthService.Connect(connectionNameInput, connectionPasskeyInput);
+            string? secret = await LocalStorage.GetItemAsync("connectionSecret");
+            Guid? secretGuid = secret != null ? Guid.Parse(secret) : null;
+            await AuthService.Connect(connectionNameInput, connectionPasskeyInput, secretGuid);
             if (AuthService.Connection != null)
             {
                 await LocalStorage.SetItemAsync("connectionName", AuthService.Connection.ConnectionName);
                 await LocalStorage.SetItemAsync("connectionPasskey", AuthService.Connection.ConnectionPasskey);
+                if (AuthService.Connection.Secret is { } connectionSecret)
+                    await LocalStorage.SetItemAsync("connectionSecret", connectionSecret.ToString());
             }
         }
     }

@@ -23,7 +23,7 @@ public class AuthHub : Hub
         await Clients.Caller.SendAsync("ClientTypeVerification", clientType);
     }
 
-    public async Task<UserConnectPacket> Connect(string connectionName, string connectionPasskey)
+    public async Task<UserConnectPacket> Connect(string connectionName, string connectionPasskey, Guid? secret)
     {
         UserConnectPacket packet = new();
         await Task.Run(() =>
@@ -36,7 +36,7 @@ public class AuthHub : Hub
             else
             {
                 (Connection? connection, string? error) =
-                    Program.ConnectionManager.TryConnect(connectionName, connectionPasskey);
+                    Program.ConnectionManager.TryConnect(connectionName, connectionPasskey, secret);
                 if (error != null)
                     packet.Error = error;
                 else
