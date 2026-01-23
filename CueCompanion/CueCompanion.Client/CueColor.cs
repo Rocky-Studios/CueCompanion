@@ -23,4 +23,11 @@ public static class CueColorExtensions
             _ => "gray"
         };
     }
+
+    public static CueColor Random()
+    {
+        Array values = Enum.GetValues(typeof(CueColor));
+        Random random = new();
+        return (CueColor)values.GetValue(random.Next(values.Length))!;
+    }
 }

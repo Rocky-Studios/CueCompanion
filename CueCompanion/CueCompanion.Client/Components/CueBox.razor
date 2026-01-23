@@ -1,9 +1,7 @@
-﻿<MudPaper>
-    <div class="cue-box color-@CueColorClass" @onclick="HandleClick">
-        <span class="cue-name">@Name</span>
-        <span class="cue-number">@Number</span>
-    </div>
-</MudPaper>
+﻿<div class="mud-paper cue-box color-@CueColorClass mb-4" @onclick="HandleClick">
+    <span class="cue-name">@Name</span>
+    <span class="cue-number">@Number</span>
+</div>
 
 @code {
     [Parameter] public required string Name { get; set; }
