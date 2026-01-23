@@ -200,9 +200,12 @@
         AuthService.OnChange += StateChanged;
         ShowService.OnChange += StateChanged;
 
-        await ShowService.StartAsync(Navigation.BaseUri);
-        await AuthService.StartAsync(Navigation.BaseUri);
-        await StateChanged();
+        Task.Run(async () =>
+        {
+            await ShowService.StartAsync(Navigation.BaseUri);
+            await AuthService.StartAsync(Navigation.BaseUri);
+            await StateChanged();
+        });
     }
 
     async Task StateChanged()

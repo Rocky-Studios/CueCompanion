@@ -35,9 +35,11 @@
     protected override async Task OnInitializedAsync()
     {
         AuthService.OnChange += () => InvokeAsync(StateHasChanged);
-
-        await AuthService.StartAsync(Navigation.BaseUri);
-        await InvokeAsync(StateHasChanged);
+        Task.Run(async () =>
+        {
+            await AuthService.StartAsync(Navigation.BaseUri);
+            await InvokeAsync(StateHasChanged);
+        });
     }
 
     private async Task OnSubmit(string name, string passkey)
