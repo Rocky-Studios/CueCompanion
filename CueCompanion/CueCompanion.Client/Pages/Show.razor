@@ -38,22 +38,6 @@
             await ShowService.StartAsync(Navigation.BaseUri);
             await AuthService.StartAsync(Navigation.BaseUri);
 
-            string? secret = await LocalStorage.GetItemAsync("connectionSecret");
-            Guid? secretGuid = secret != null ? Guid.Parse(secret) : null;
-            string? connectionName = await LocalStorage.GetItemAsync("connectionName");
-            string? connectionPasskey = await LocalStorage.GetItemAsync("connectionPasskey");
-            if (connectionName != null && connectionPasskey != null)
-            {
-                await AuthService.Connect(connectionName, connectionPasskey, secretGuid);
-                if (AuthService.Connection != null)
-                {
-                    await LocalStorage.SetItemAsync("connectionName", AuthService.Connection.ConnectionName);
-                    await LocalStorage.SetItemAsync("connectionPasskey", AuthService.Connection.ConnectionPasskey);
-                    if (AuthService.Connection.Secret is { } connectionSecret)
-                        await LocalStorage.SetItemAsync("connectionSecret", connectionSecret.ToString());
-                }
-            }
-
             await StateChanged();
         });
     }

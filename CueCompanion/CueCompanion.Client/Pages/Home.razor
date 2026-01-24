@@ -3,24 +3,11 @@
 @rendermode InteractiveAuto
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudText Typo="Typo.h3">Dashboard</MudText>
-    @if (AuthService.ClientType == null)
-    {
-        <MudText Typo="Typo.body2">Fetching client type...</MudText>
-    }
-    else if (AuthService.ClientType == ClientType.Unknown)
-    {
-        <MudText Typo="Typo.body1" Color="Color.Error">Unknown client type. Please check your connection.</MudText>
-    }
-    else
-    {
-        <MudText Typo="Typo.body1">You are: @AuthService.ClientType.ToString()</MudText>
-    }
     <MudDivider/>
     <ConnectionBox @ref="connectionBox"/>
 </MudContainer>
 @code
 {
-    private Connection[] cons = [];
     private ConnectionBox connectionBox;
 
     protected override async Task OnInitializedAsync()

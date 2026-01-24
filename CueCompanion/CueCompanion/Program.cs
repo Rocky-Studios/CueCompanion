@@ -9,8 +9,6 @@ namespace CueCompanion;
 
 public class Program
 {
-    public static ConnectionManager ConnectionManager = new();
-
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -34,6 +32,10 @@ public class Program
         builder.Services.AddSingleton<ShowHub>();
         builder.Services.AddScoped<AuthHub>();
         builder.Services.AddScoped<LocalStorageService>();
+
+        builder.Services.AddAuthorizationCore();
+        builder.Services.AddSingleton<ConnectionUserStore>();
+        builder.Services.AddSignalR();
 
         builder.Services.AddMudServices();
 
@@ -61,26 +63,6 @@ public class Program
 
         app.UseAntiforgery();
 
-        // API endpoints
-
-        //app.MapPost("/api/cue/next", async ([FromServices] CueHub hub) =>
-        //{
-        //    await hub.UpdateCueNumber(hub.GetState().CurrentCueNumber + 1);
-        //    return Results.Ok();
-        //});
-        //
-        //app.MapPost("/api/cue/prev", async ([FromServices] CueHub hub) =>
-        //{
-        //    await hub.UpdateCueNumber(hub.GetState().CurrentCueNumber - 1);
-        //    return Results.Ok();
-        //});
-        //
-        //app.MapPost("/api/cue/set/{number:int}", async (int number, [FromServices] CueHub hub) =>
-        //{
-        //    await hub.UpdateCueNumber(number);
-        //    return Results.Ok();
-        //});
-
 
         app.MapStaticAssets();
         app.MapRazorComponents<App>()
@@ -103,14 +85,10 @@ public class Program
                 if (command is "listConnections")
                 {
                     Console.WriteLine("Connections:");
-                    foreach (Connection connection in ConnectionManager.GetConnections())
-                        Console.WriteLine(
-                            $"\t\"{connection.ConnectionName}\" (Passkey: \"{connection.ConnectionPasskey}\")");
                 }
 
                 if (command is "resetConnectedConnections")
                 {
-                    ConnectionManager.ResetConnectedConnections();
                     Console.WriteLine("Connected connections reset.");
                 }
             }

@@ -7,13 +7,10 @@ public class ShowHub : Hub
 {
     private static readonly ShowState _state = ShowState.CreateSampleState();
 
-    public ShowResponsePacket GetShow(Connection connection)
+    public ShowResponsePacket GetShow()
     {
-        (bool status, string? message) = Program.ConnectionManager.IsConnectionValid(connection);
         ShowResponsePacket response = new();
-        if (status)
-            response.State = _state;
-        response.ErrorMessage = message;
+        response.State = _state;
         return response;
     }
 

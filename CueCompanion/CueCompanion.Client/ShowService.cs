@@ -35,11 +35,7 @@ public class ShowService
 
     public async Task GetShow()
     {
-        if (_connection == null)
-            throw new InvalidOperationException("Connection has not been started.");
-        if (_auth.Connection == null)
-            throw new InvalidOperationException("No valid connection in AuthService.");
-        ShowResponsePacket response = await _connection.InvokeAsync<ShowResponsePacket>("GetShow", _auth.Connection);
+        ShowResponsePacket response = await _connection.InvokeAsync<ShowResponsePacket>("GetShow");
         if (response.ErrorMessage is { Length: > 0 })
             Console.WriteLine("Error requesting show: " + response.ErrorMessage);
 
