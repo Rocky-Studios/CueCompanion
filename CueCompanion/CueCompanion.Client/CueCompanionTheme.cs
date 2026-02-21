@@ -51,7 +51,7 @@ public static class CueCompanionThemes
         {
             Black = "rgba(39,39,47,1)",
             White = "rgba(255,255,255,1)",
-            Primary = "rgba(240,20,20,1)",
+            Primary = "#FF5440",
             PrimaryContrastText = "rgba(255,255,255,1)",
             Secondary = "rgba(255,64,129,1)",
             SecondaryContrastText = "rgba(255,255,255,1)",
@@ -73,13 +73,13 @@ public static class CueCompanionThemes
             ActionDefault = "rgba(173,173,177,1)",
             ActionDisabled = "rgba(255,255,255,0.25882352941176473)",
             ActionDisabledBackground = "rgba(255,255,255,0.11764705882352941)",
-            Background = "rgba(50,51,61,1)",
+            Background = "#151515",
             BackgroundGray = "rgba(39,39,47,1)",
             Surface = "rgba(55,55,64,1)",
-            DrawerBackground = "rgba(39,39,47,1)",
+            DrawerBackground = "rgba(25,25,28,1)",
             DrawerText = "rgba(255,255,255,0.4980392156862745)",
             DrawerIcon = "rgba(255,255,255,0.4980392156862745)",
-            AppbarBackground = "rgba(39,39,47,1)",
+            AppbarBackground = "rgba(25,25,28,1)",
             AppbarText = "rgba(255,255,255,0.6980392156862745)",
             LinesDefault = "rgba(255,255,255,0.11764705882352941)",
             LinesInputs = "rgba(255,255,255,0.2980392156862745)",
@@ -123,6 +123,27 @@ public static class CueCompanionThemes
             {
                 FontFamily = ["Inter", "Roboto", "sans-serif"],
                 FontSize = "16px",
+                FontWeight = "400",
+                LineHeight = "1.5"
+            },
+            H1 = new H1Typography
+            {
+                FontFamily = ["Inter", "Roboto", "sans-serif"],
+                FontSize = "2rem",
+                FontWeight = "400",
+                LineHeight = "1.5"
+            },
+            H2 = new H2Typography
+            {
+                FontFamily = ["Inter", "Roboto", "sans-serif"],
+                FontSize = "1.5rem",
+                FontWeight = "400",
+                LineHeight = "1.5"
+            },
+            H3 = new H3Typography
+            {
+                FontFamily = ["Inter", "Roboto", "sans-serif"],
+                FontSize = "1.2rem",
                 FontWeight = "400",
                 LineHeight = "1.5"
             }
