@@ -90,7 +90,7 @@ public class Program
                 }
             }
         }).Start();
-
+        DatabaseHandler.Init();
         app.Run();
     }
 }
