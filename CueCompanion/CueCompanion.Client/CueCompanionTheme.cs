@@ -75,7 +75,7 @@ public static class CueCompanionThemes
             ActionDisabledBackground = "rgba(255,255,255,0.11764705882352941)",
             Background = "#151515",
             BackgroundGray = "rgba(39,39,47,1)",
-            Surface = "rgba(55,55,64,1)",
+            Surface = "#2F2F2F",
             DrawerBackground = "rgba(25,25,28,1)",
             DrawerText = "rgba(255,255,255,0.4980392156862745)",
             DrawerIcon = "rgba(255,255,255,0.4980392156862745)",

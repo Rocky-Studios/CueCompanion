@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using MudBlazor
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -18,7 +19,16 @@
 </head>
 
 <body>
-<Routes/>
+<MudThemeProvider IsDarkMode="true" Theme="CueCompanionThemes.CueCompanionTheme">
+</MudThemeProvider>
+<MudPopoverProvider>
+</MudPopoverProvider>
+<MudDialogProvider>
+</MudDialogProvider>
+<MudSnackbarProvider>
+</MudSnackbarProvider>
+<Routes @rendermode="InteractiveServer"/>
+
 <script src="@Assets["_framework/blazor.web.js"]"></script>
 <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
 <script src="@Assets["lib/downloadFile.js"]"></script>

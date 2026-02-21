@@ -1,0 +1,47 @@
+@using System.ComponentModel.DataAnnotations
+<MudPaper MaxWidth="30%">
+    <MudText Typo="Typo.h2">Login</MudText>
+    <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator/>
+        <MudTextField Label="Connection" Class="mt-3" @bind-Value="model.ConnectionName"
+                      For="@(() => model.ConnectionName)" InputType="InputType.Text"/>
+        <MudTextField Label="Password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)"
+                      InputType="InputType.Password"/>
+
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto mt-2">
+            Login
+        </MudButton>
+    </EditForm>
+
+</MudPaper>
+
+@code {
+    readonly LoginForm model = new();
+    bool success;
+
+    public class LoginForm
+    {
+        [Required] public string ConnectionName { get; set; }
+
+        [Required]
+        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
+        public string Password { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        Auth.OnStateChanged += StateHasChanged;
+    }
+
+    private void OnValidSubmit(EditContext context)
+    {
+        success = true;
+
+        Auth.SetConnection(new Connection
+        {
+            ConnectionName = model.ConnectionName,
+            Password = model.Password
+        });
+    }
+
+}

@@ -9,7 +9,7 @@ internal class Program
     {
         WebAssemblyHostBuilder builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-        //builder.Services.AddScoped();
+        builder.Services.AddScoped<AuthService>();
 
         builder.Services.AddMudServices();
 

@@ -1,3 +1,4 @@
+using CueCompanion.Client;
 using CueCompanion.Components;
 using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
@@ -25,7 +26,7 @@ public class Program
                 ["application/octet-stream"]);
         });
 
-        //builder.Services.AddScoped<AuthService>();
+        builder.Services.AddScoped<AuthService>();
         //builder.Services.AddScoped<ShowService>();
         //builder.Services.AddSingleton<ShowHub>();
         //builder.Services.AddScoped<AuthHub>();
