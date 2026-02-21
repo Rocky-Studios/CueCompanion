@@ -1,9 +1,13 @@
-<MudDialog>
+<MudDialog Style="min-width:20%;">
     <TitleContent>
-        Dialog Title
+        <MudText Class="fw-bold">
+            @Title
+        </MudText>
     </TitleContent>
     <DialogContent>
-        @ContentText
+        <MudText Typo="Typo.body2">
+            @Text
+        </MudText>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
@@ -13,7 +17,8 @@
 @code {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; }
 
-    [Parameter] public string ContentText { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Text { get; set; }
 
     private void Submit()
     {

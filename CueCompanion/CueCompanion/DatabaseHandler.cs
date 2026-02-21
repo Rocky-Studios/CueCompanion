@@ -36,11 +36,14 @@ public static class DatabaseHandler
         string passwordHash = HashPassword(password);
         Connection? connection = _db.Table<Connection>()
             .FirstOrDefault(c => c?.ConnectionName == connectionName && c.PasswordHash == passwordHash, null);
-        ConnectionResult result = new()
+        string? errorMessage = null;
+        if (connection == null)
+            errorMessage = "Invalid connection name or password.";
+
+        return new ConnectionResult
         {
             Connection = connection,
-            ErrorMessage = "Invalid connection name or password."
+            ErrorMessage = errorMessage
         };
-        return result;
     }
 }

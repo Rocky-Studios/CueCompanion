@@ -1,6 +1,6 @@
 @using System.ComponentModel.DataAnnotations
 @inject IDialogService DialogService
-<MudPaper MaxWidth="30%">
+<MudPaper MinWidth="30%" MaxWidth="50%">
     <MudText Typo="Typo.h2">Login</MudText>
     <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
         <DataAnnotationsValidator/>
@@ -9,9 +9,16 @@
         <MudTextField Label="Password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)"
                       InputType="InputType.Password"/>
 
-        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto mt-2">
-            Login
-        </MudButton>
+        <div>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                       Class="ml-auto mt-2" Disabled="isLoading">
+                Login
+                @if (isLoading)
+                {
+                    <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
+                }
+            </MudButton>
+        </div>
     </EditForm>
 
 </MudPaper>
@@ -20,37 +27,54 @@
 
 @code {
     readonly LoginForm model = new();
-    bool success;
+    bool isLoading;
 
     public class LoginForm
     {
-        [Required] public string ConnectionName { get; set; }
+        [Required] public string ConnectionName { get; set; } = string.Empty;
 
-        [Required]
-        public string Password { get; set; }
+        [Required] public string Password { get; set; } = string.Empty;
     }
 
     protected override void OnInitialized()
     {
         Auth.OnStateChanged += StateHasChanged;
+        isLoading = false;
     }
 
-    private void OnValidSubmit(EditContext context)
+    private async Task OnValidSubmit(EditContext context)
     {
-        success = true;
-        Task.Run(async () =>
+        if (Auth.Connection != null)
         {
-            ConnectionResult result = await Auth.ConnectAsync(model.ConnectionName, model.Password);
-            if (result.ErrorMessage is { } error)
+            DialogOptions options = new() { CloseOnEscapeKey = true };
+            DialogParameters<ErrorDialog> parameters = new()
             {
-                DialogOptions options = new() { CloseOnEscapeKey = true };
-                DialogParameters<ErrorDialog> parameters = new()
-                {
-                    { x => x.ContentText, error }
-                };
-                DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
-            }
-        });
+                { x => x.Title, "Login failed" },
+                { x => x.Text, "Already logged in" }
+            };
+            await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+            return;
+        }
+
+        isLoading = true;
+        ConnectionResult result = await Auth.ConnectAsync(model.ConnectionName, model.Password);
+        if (result.ErrorMessage is { } error)
+        {
+            DialogOptions options = new() { CloseOnEscapeKey = true };
+            DialogParameters<ErrorDialog> parameters = new()
+            {
+                { x => x.Title, "Login failed" },
+                { x => x.Text, error }
+            };
+            await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+        }
+        else
+        {
+            model.ConnectionName = string.Empty;
+            model.Password = string.Empty;
+        }
+
+        isLoading = false;
     }
 
 }
