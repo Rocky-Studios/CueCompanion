@@ -13,11 +13,9 @@
 
 <MudLayout>
     <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
-                       OnClick="@(e => DrawerToggle())"/>
         <MudText Typo="Typo.h5">CueCompanion</MudText>
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer Open="true" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Persistent">
         <NavMenu/>
     </MudDrawer>
     <MudMainContent>
@@ -27,11 +25,4 @@
 
 @code {
     static MudTheme Theme => CueCompanionThemes.CueCompanionTheme;
-    bool _drawerOpen = true;
-
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-
 }

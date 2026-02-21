@@ -1,28 +1,9 @@
 @page "/"
-@using CueCompanion.Client.Components
 @rendermode InteractiveAuto
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudText Typo="Typo.h3">Dashboard</MudText>
     <MudDivider/>
-    <ConnectionBox @ref="connectionBox"/>
 </MudContainer>
 @code
 {
-    private ConnectionBox connectionBox;
-
-    protected override async Task OnInitializedAsync()
-    {
-        AuthService.OnChange += async () =>
-        {
-            InvokeAsync(StateHasChanged);
-            await connectionBox.UpdateState();
-        };
-        
-
-        Task.Run(async () =>
-        {
-            await AuthService.StartAsync(Navigation.BaseUri);
-            await InvokeAsync(StateHasChanged);
-        });
-    }
 }

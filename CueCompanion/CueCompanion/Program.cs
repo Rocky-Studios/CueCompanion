@@ -1,6 +1,4 @@
-using CueCompanion.Client;
 using CueCompanion.Components;
-using CueCompanion.Hubs;
 using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
 using _Imports = CueCompanion.Client._Imports;
@@ -26,15 +24,14 @@ public class Program
             opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                 ["application/octet-stream"]);
         });
-        // CueCompanion/CueCompanion/Program.cs
-        builder.Services.AddScoped<AuthService>();
-        builder.Services.AddScoped<ShowService>();
-        builder.Services.AddSingleton<ShowHub>();
-        builder.Services.AddScoped<AuthHub>();
-        builder.Services.AddScoped<LocalStorageService>();
+
+        //builder.Services.AddScoped<AuthService>();
+        //builder.Services.AddScoped<ShowService>();
+        //builder.Services.AddSingleton<ShowHub>();
+        //builder.Services.AddScoped<AuthHub>();
+        //builder.Services.AddScoped<LocalStorageService>();
 
         builder.Services.AddAuthorizationCore();
-        builder.Services.AddSingleton<ConnectionUserStore>();
         builder.Services.AddSignalR();
 
         builder.Services.AddMudServices();
@@ -42,8 +39,8 @@ public class Program
         WebApplication app = builder.Build();
 
         app.UseResponseCompression();
-        app.MapHub<ShowHub>("/cueHub");
-        app.MapHub<AuthHub>("/authHub");
+        //app.MapHub<ShowHub>("/cueHub");
+        //app.MapHub<AuthHub>("/authHub");
 
 
         // Configure the HTTP request pipeline.

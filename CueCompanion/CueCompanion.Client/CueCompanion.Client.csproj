@@ -15,4 +15,14 @@
         <PackageReference Include="MudBlazor" Version="9.0.0-preview.2"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="Components\Connect.razor"/>
+        <_ContentIncludedByDefault Remove="Components\ConnectionBox.razor"/>
+        <_ContentIncludedByDefault Remove="Components\CueBox.razor"/>
+        <_ContentIncludedByDefault Remove="Components\CueDetails.razor"/>
+        <_ContentIncludedByDefault Remove="Components\CueExplorer.razor"/>
+        <_ContentIncludedByDefault Remove="Components\FlexContainer.razor"/>
+        <_ContentIncludedByDefault Remove="Components\FlexItem.razor"/>
+    </ItemGroup>
+
 </Project>
