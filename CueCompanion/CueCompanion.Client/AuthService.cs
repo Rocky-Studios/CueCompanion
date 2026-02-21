@@ -25,16 +25,15 @@ public class AuthService
         await _authHub.StartAsync();
     }
 
-    public async Task<Connection?> ConnectAsync(string connectionName, string password)
+    public async Task<ConnectionResult> ConnectAsync(string connectionName, string password)
     {
         if (_authHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
 
-        Connection? connection = await _authHub.InvokeAsync<Connection?>("ConnectAsync", connectionName, password);
-        if (connection != null) SetConnection(connection);
-        else
-            Console.WriteLine("Connection failed");
+        ConnectionResult connection =
+            await _authHub.InvokeAsync<ConnectionResult>("ConnectAsync", connectionName, password);
+        if (connection.Connection != null) SetConnection(connection.Connection);
 
         return connection;
     }

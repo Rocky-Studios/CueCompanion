@@ -1,4 +1,5 @@
 @using System.ComponentModel.DataAnnotations
+@inject IDialogService DialogService
 <MudPaper MaxWidth="30%">
     <MudText Typo="Typo.h2">Login</MudText>
     <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
@@ -14,6 +15,8 @@
     </EditForm>
 
 </MudPaper>
+<MudDialogProvider>
+</MudDialogProvider>
 
 @code {
     readonly LoginForm model = new();
@@ -35,8 +38,19 @@
     private void OnValidSubmit(EditContext context)
     {
         success = true;
-
-        Auth.ConnectAsync(model.ConnectionName, model.Password);
+        Task.Run(async () =>
+        {
+            ConnectionResult result = await Auth.ConnectAsync(model.ConnectionName, model.Password);
+            if (result.ErrorMessage is { } error)
+            {
+                DialogOptions options = new() { CloseOnEscapeKey = true };
+                DialogParameters<ErrorDialog> parameters = new()
+                {
+                    { x => x.ContentText, error }
+                };
+                DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+            }
+        });
     }
 
 }

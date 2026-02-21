@@ -5,9 +5,9 @@ namespace CueCompanion;
 
 public class AuthHub : Hub
 {
-    public async Task<Connection?> ConnectAsync(string connectionName, string password)
+    public async Task<ConnectionResult> ConnectAsync(string connectionName, string password)
     {
-        Connection? connection = DatabaseHandler.TryConnect(connectionName, password);
+        ConnectionResult connection = DatabaseHandler.TryConnect(connectionName, password);
         return connection;
     }
 }

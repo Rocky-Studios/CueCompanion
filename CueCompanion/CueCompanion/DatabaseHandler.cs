@@ -31,11 +31,16 @@ public static class DatabaseHandler
         return password; // Placeholder, replace with actual hash
     }
 
-    public static Connection? TryConnect(string connectionName, string password)
+    public static ConnectionResult TryConnect(string connectionName, string password)
     {
         string passwordHash = HashPassword(password);
         Connection? connection = _db.Table<Connection>()
             .FirstOrDefault(c => c?.ConnectionName == connectionName && c.PasswordHash == passwordHash, null);
-        return connection;
+        ConnectionResult result = new()
+        {
+            Connection = connection,
+            ErrorMessage = "Invalid connection name or password."
+        };
+        return result;
     }
 }
