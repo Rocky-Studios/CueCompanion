@@ -30,4 +30,12 @@ public static class DatabaseHandler
         // Implement your password hashing logic here
         return password; // Placeholder, replace with actual hash
     }
+
+    public static Connection? TryConnect(string connectionName, string password)
+    {
+        string passwordHash = HashPassword(password);
+        Connection? connection = _db.Table<Connection>()
+            .FirstOrDefault(c => c?.ConnectionName == connectionName && c.PasswordHash == passwordHash, null);
+        return connection;
+    }
 }

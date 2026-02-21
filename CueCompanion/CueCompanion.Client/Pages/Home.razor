@@ -8,4 +8,8 @@
 </MudContainer>
 @code
 {
+    protected override async Task OnInitializedAsync()
+    {
+        Task.Run(async () => { await Auth.StartAsync(Navigation.BaseUri); });
+    }
 }

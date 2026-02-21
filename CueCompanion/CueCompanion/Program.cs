@@ -29,7 +29,7 @@ public class Program
         builder.Services.AddScoped<AuthService>();
         //builder.Services.AddScoped<ShowService>();
         //builder.Services.AddSingleton<ShowHub>();
-        //builder.Services.AddScoped<AuthHub>();
+        builder.Services.AddScoped<AuthHub>();
         //builder.Services.AddScoped<LocalStorageService>();
 
         builder.Services.AddAuthorizationCore();
@@ -41,7 +41,7 @@ public class Program
 
         app.UseResponseCompression();
         //app.MapHub<ShowHub>("/cueHub");
-        //app.MapHub<AuthHub>("/authHub");
+        app.MapHub<AuthHub>("/authHub");
 
 
         // Configure the HTTP request pipeline.
