@@ -12,7 +12,7 @@ public class Connection
 
     [Column("name")] public string ConnectionName { get; set; }
 
-    public string Password { get; set; }
+    [Ignore] public string Password { get; set; }
 
     [Column("passwordHash")] public string PasswordHash { get; set; }
 }
