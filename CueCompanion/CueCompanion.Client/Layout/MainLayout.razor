@@ -12,6 +12,10 @@
             </MudText>
             <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large"></MudIcon>
         }
+        @if (!Auth.isLoading)
+        {
+            <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
+        }
     </MudAppBar>
     <MudDrawer Open="true" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Persistent">
         <NavMenu/>

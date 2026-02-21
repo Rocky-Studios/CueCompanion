@@ -1,5 +1,7 @@
 @using System.ComponentModel.DataAnnotations
+@using BitzArt.Blazor.Cookies
 @inject IDialogService DialogService
+@inject ICookieService CookieService
 <MudPaper MinWidth="30%" MaxWidth="50%">
     <MudText Typo="Typo.h2">Login</MudText>
     <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
@@ -72,6 +74,8 @@
         {
             model.ConnectionName = string.Empty;
             model.Password = string.Empty;
+            string key = result.SessionKey ?? throw new InvalidOperationException("Session key is null");
+            await CookieService.SetAsync("sessionKey", key, DateTimeOffset.UtcNow.AddDays(1));
         }
 
         isLoading = false;

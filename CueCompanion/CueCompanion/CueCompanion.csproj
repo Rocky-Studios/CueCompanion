@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BitzArt.Blazor.Cookies.Server" Version="1.5.1"/>
         <PackageReference Include="MudBlazor" Version="9.0.0-preview.2"/>
         <PackageReference Include="sqlite-net-pcl" Version="1.10.196-beta"/>
         <ProjectReference Include="..\CueCompanion.Client\CueCompanion.Client.csproj"/>

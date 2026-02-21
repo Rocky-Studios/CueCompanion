@@ -1,3 +1,4 @@
+using BitzArt.Blazor.Cookies;
 using CueCompanion.Client;
 using CueCompanion.Components;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -34,6 +35,7 @@ public class Program
 
         builder.Services.AddAuthorizationCore();
         builder.Services.AddSignalR();
+        builder.AddBlazorCookies();
 
         builder.Services.AddMudServices();
 

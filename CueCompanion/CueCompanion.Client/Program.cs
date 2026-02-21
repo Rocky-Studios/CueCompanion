@@ -1,3 +1,4 @@
+using BitzArt.Blazor.Cookies;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 
@@ -12,6 +13,7 @@ internal class Program
         builder.Services.AddScoped<AuthService>();
 
         builder.Services.AddMudServices();
+        builder.AddBlazorCookies();
 
         await builder.Build().RunAsync();
     }

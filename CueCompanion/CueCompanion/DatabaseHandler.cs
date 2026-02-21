@@ -14,6 +14,8 @@ public static class DatabaseHandler
         _db = new SQLiteConnection("data.db");
         _db.CreateTable<Show>();
         _db.CreateTable<Connection>();
+        _db.CreateTable<SessionKey>();
+
 
         bool hasAdmin = _db.Table<Connection>().ToList().Any(c => c.ConnectionName == "admin");
         if (!hasAdmin)
@@ -51,13 +53,74 @@ public static class DatabaseHandler
         Connection? connection = _db.Table<Connection>()
             .FirstOrDefault(c => c?.ConnectionName == connectionName && c.PasswordHash == passwordHash, null);
         string? errorMessage = null;
+        string? sessionKey = null;
         if (connection == null)
             errorMessage = "Invalid connection name or password.";
+        else
+        {
+            sessionKey = GetOrAddSessionKey(connection);
+        }
 
         return new ConnectionResult
         {
             Connection = connection,
-            ErrorMessage = errorMessage
+            ErrorMessage = errorMessage,
+            SessionKey = sessionKey
         };
+    }
+
+    public static ConnectionResult TryConnect(string connectionKey)
+    {
+        SessionKey? sessionKey = _db.Table<SessionKey>()
+            .FirstOrDefault(k => k?.Key == connectionKey, null);
+
+        Connection? connection = null;
+        string? errorMessage = null;
+        if (sessionKey == null)
+        {
+            errorMessage = "Invalid connection key.";
+        }
+        else
+        {
+            int connectionId = sessionKey.ConnectionId;
+            connection = _db.Table<Connection>()
+                .FirstOrDefault(c => c?.Id == connectionId, null);
+        }
+
+        if (connection == null)
+            errorMessage = "No connection found.";
+
+        return new ConnectionResult
+        {
+            Connection = connection,
+            ErrorMessage = errorMessage,
+            SessionKey = connectionKey
+        };
+    }
+
+    private static string GetOrAddSessionKey(Connection connection, bool forceNew = false)
+    {
+        SessionKey? existingKeyForConnection = _db.Table<SessionKey>()
+            .FirstOrDefault(k => k?.ConnectionId == connection.Id, null);
+        if (existingKeyForConnection != null)
+        {
+            if (existingKeyForConnection.ExpiresAt < DateTime.UtcNow) _db.Delete(existingKeyForConnection);
+
+            if (forceNew)
+                _db.Delete(existingKeyForConnection);
+            else
+                return existingKeyForConnection.Key;
+        }
+
+        string key = "key";
+        SessionKey sessionKey = new()
+        {
+            ConnectionId = connection.Id,
+            Key = key,
+            IssuedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(1)
+        };
+        _db.Insert(sessionKey);
+        return key;
     }
 }
