@@ -1,8 +1,8 @@
 namespace CueCompanion;
 
-public struct ConnectionResult
+public struct UserConnectionResult
 {
-    public required Connection? Connection { get; init; }
+    public required User? User { get; init; }
     public required string? ErrorMessage { get; init; }
     public required string? SessionKey { get; init; }
 }

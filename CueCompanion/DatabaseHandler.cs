@@ -12,19 +12,19 @@ public static class DatabaseHandler
     {
         _db = new SQLiteConnection("data.db");
         _db.CreateTable<Show>();
-        _db.CreateTable<Connection>();
+        _db.CreateTable<User>();
         _db.CreateTable<SessionKey>();
 
 
-        bool hasAdmin = _db.Table<Connection>().ToList().Any(c => c.ConnectionName == "admin");
+        bool hasAdmin = _db.Table<User>().ToList().Any(c => c.UserName == "admin");
         if (!hasAdmin)
         {
-            Connection adminConnection = new()
+            User adminUser = new()
             {
-                ConnectionName = "admin",
+                UserName = "admin",
                 PasswordHash = HashPassword("admin")
             };
-            _db.Insert(adminConnection);
+            _db.Insert(adminUser);
         }
     }
 
@@ -46,11 +46,11 @@ public static class DatabaseHandler
         return Convert.ToBase64String(hashWithSalt);
     }
 
-    public static ConnectionResult TryConnect(string connectionName, string password)
+    public static UserConnectionResult TryConnect(string connectionName, string password)
     {
         string passwordHash = HashPassword(password);
-        Connection? connection = _db.Table<Connection>()
-            .FirstOrDefault(c => c?.ConnectionName == connectionName && c.PasswordHash == passwordHash, null);
+        User? connection = _db.Table<User>()
+            .FirstOrDefault(c => c?.UserName == connectionName && c.PasswordHash == passwordHash, null);
         string? errorMessage = null;
         string? sessionKey = null;
         if (connection == null)
@@ -60,20 +60,20 @@ public static class DatabaseHandler
             sessionKey = GetOrAddSessionKey(connection);
         }
 
-        return new ConnectionResult
+        return new UserConnectionResult
         {
-            Connection = connection,
+            User = connection,
             ErrorMessage = errorMessage,
             SessionKey = sessionKey
         };
     }
 
-    public static ConnectionResult TryConnect(string connectionKey)
+    public static UserConnectionResult TryConnect(string connectionKey)
     {
         SessionKey? sessionKey = _db.Table<SessionKey>()
             .FirstOrDefault(k => k?.Key == connectionKey, null);
 
-        Connection? connection = null;
+        User? connection = null;
         string? errorMessage = null;
         if (sessionKey == null)
         {
@@ -82,25 +82,25 @@ public static class DatabaseHandler
         else
         {
             int connectionId = sessionKey.ConnectionId;
-            connection = _db.Table<Connection>()
+            connection = _db.Table<User>()
                 .FirstOrDefault(c => c?.Id == connectionId, null);
         }
 
         if (connection == null)
             errorMessage = "No connection found.";
 
-        return new ConnectionResult
+        return new UserConnectionResult
         {
-            Connection = connection,
+            User = connection,
             ErrorMessage = errorMessage,
             SessionKey = connectionKey
         };
     }
 
-    private static string GetOrAddSessionKey(Connection connection, bool forceNew = false)
+    private static string GetOrAddSessionKey(User user, bool forceNew = false)
     {
         SessionKey? existingKeyForConnection = _db.Table<SessionKey>()
-            .FirstOrDefault(k => k?.ConnectionId == connection.Id, null);
+            .FirstOrDefault(k => k?.ConnectionId == user.Id, null);
         if (existingKeyForConnection != null)
         {
             if (existingKeyForConnection.ExpiresAt < DateTime.UtcNow) _db.Delete(existingKeyForConnection);
@@ -114,7 +114,7 @@ public static class DatabaseHandler
         string key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         SessionKey sessionKey = new()
         {
-            ConnectionId = connection.Id,
+            ConnectionId = user.Id,
             Key = key,
             IssuedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(1)

@@ -2,15 +2,15 @@ using SQLite;
 
 namespace CueCompanion;
 
-[Table("connections")]
-public class Connection
+[Table("users")]
+public class User
 {
     [Column("id")]
     [PrimaryKey]
     [AutoIncrement]
     public int Id { get; set; }
 
-    [Column("name")] public string ConnectionName { get; set; }
+    [Column("name")] public string UserName { get; set; }
 
     [Ignore] public string Password { get; set; }
 

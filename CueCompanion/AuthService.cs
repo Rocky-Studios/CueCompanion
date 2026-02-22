@@ -5,7 +5,7 @@ namespace CueCompanion;
 public class AuthService
 {
     private HubConnection? _authHub;
-    public Connection? Connection { get; private set; }
+    public User? Connection { get; private set; }
     public bool isLoading { get; set; } = false;
 
     public event Action? OnStateChanged;
@@ -15,9 +15,9 @@ public class AuthService
         OnStateChanged?.Invoke();
     }
 
-    public void SetConnection(Connection connection)
+    public void SetConnection(User user)
     {
-        Connection = connection;
+        Connection = user;
         UpdateState();
     }
 
@@ -31,30 +31,30 @@ public class AuthService
         await _authHub.StartAsync();
     }
 
-    public async Task<ConnectionResult> ConnectAsync(string connectionName, string password)
+    public async Task<UserConnectionResult> ConnectAsync(string connectionName, string password)
     {
         if (_authHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
 
-        ConnectionResult connection =
-            await _authHub.InvokeAsync<ConnectionResult>("ConnectAsync", connectionName, password);
-        if (connection.Connection != null) SetConnection(connection.Connection);
+        UserConnectionResult userConnection =
+            await _authHub.InvokeAsync<UserConnectionResult>("ConnectAsync", connectionName, password);
+        if (userConnection.User != null) SetConnection(userConnection.User);
 
-        return connection;
+        return userConnection;
     }
 
 
-    public async Task<ConnectionResult> ConnectAsync(string connectionKey)
+    public async Task<UserConnectionResult> ConnectAsync(string connectionKey)
     {
         if (_authHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
 
-        ConnectionResult connection =
-            await _authHub.InvokeAsync<ConnectionResult>("ConnectAsyncWithKey", connectionKey);
-        if (connection.Connection != null) SetConnection(connection.Connection);
+        UserConnectionResult userConnection =
+            await _authHub.InvokeAsync<UserConnectionResult>("ConnectAsyncWithKey", connectionKey);
+        if (userConnection.User != null) SetConnection(userConnection.User);
 
-        return connection;
+        return userConnection;
     }
 }

@@ -8,8 +8,8 @@
     <MudText Typo="Typo.h2">Login</MudText>
     <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
         <DataAnnotationsValidator/>
-        <MudTextField Label="Connection" Class="mt-3" @bind-Value="model.ConnectionName"
-                      For="@(() => model.ConnectionName)" InputType="InputType.Text"/>
+        <MudTextField Label="Username" Class="mt-3" @bind-Value="model.UserName"
+                      For="@(() => model.UserName)" InputType="InputType.Text"/>
         <MudTextField Label="Password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)"
                       InputType="InputType.Password"/>
 
@@ -34,7 +34,7 @@
 
     public class LoginForm
     {
-        [Required] public string ConnectionName { get; set; } = string.Empty;
+        [Required] public string UserName { get; set; } = string.Empty;
 
         [Required] public string Password { get; set; } = string.Empty;
     }
@@ -60,7 +60,7 @@
         }
 
         isLoading = true;
-        ConnectionResult result = await Auth.ConnectAsync(model.ConnectionName, model.Password);
+        UserConnectionResult result = await Auth.ConnectAsync(model.UserName, model.Password);
         if (result.ErrorMessage is { } error)
         {
             DialogOptions options = new() { CloseOnEscapeKey = true };
@@ -73,7 +73,7 @@
         }
         else
         {
-            model.ConnectionName = string.Empty;
+            model.UserName = string.Empty;
             model.Password = string.Empty;
             string key = result.SessionKey ?? throw new InvalidOperationException("Session key is null");
             await CookieService.SetAsync("sessionKey", key, DateTimeOffset.UtcNow.AddDays(1));
