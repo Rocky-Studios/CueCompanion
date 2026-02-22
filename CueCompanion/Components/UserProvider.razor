@@ -1,0 +1,41 @@
+@using System.Text.RegularExpressions
+@inject IJSRuntime JS
+@inject AuthService Auth
+<div id="user-provider">
+
+</div>
+
+@code {
+    private bool _initialized;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Auth.StartAsync(Navigation.BaseUri);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_initialized)
+        {
+            _initialized = true;
+            Auth.isLoading = true;
+
+            string? key = null;
+            string cookie = await JS.InvokeAsync<string>("eval", "document.cookie") ?? string.Empty;
+            Match m = Regex.Match(cookie, @"(?:^|; )sessionKey=([^;]*)");
+            if (m.Success)
+            {
+                key = Uri.UnescapeDataString(m.Groups[1].Value);
+            }
+
+            if (key != null)
+            {
+                await Auth.ConnectAsync(key);
+            }
+
+            Auth.isLoading = false;
+            Auth.UpdateState();
+        }
+    }
+
+}
