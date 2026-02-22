@@ -1,0 +1,60 @@
+using Microsoft.AspNetCore.SignalR.Client;
+
+namespace CueCompanion;
+
+public class AuthService
+{
+    private HubConnection? _authHub;
+    public Connection? Connection { get; private set; }
+    public bool isLoading { get; set; } = false;
+
+    public event Action? OnStateChanged;
+
+    public void UpdateState()
+    {
+        OnStateChanged?.Invoke();
+    }
+
+    public void SetConnection(Connection connection)
+    {
+        Connection = connection;
+        UpdateState();
+    }
+
+    public async Task StartAsync(string baseUrl)
+    {
+        _authHub = new HubConnectionBuilder()
+            .WithUrl($"{baseUrl}auth")
+            .WithAutomaticReconnect()
+            .Build();
+
+        await _authHub.StartAsync();
+    }
+
+    public async Task<ConnectionResult> ConnectAsync(string connectionName, string password)
+    {
+        if (_authHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+
+        ConnectionResult connection =
+            await _authHub.InvokeAsync<ConnectionResult>("ConnectAsync", connectionName, password);
+        if (connection.Connection != null) SetConnection(connection.Connection);
+
+        return connection;
+    }
+
+
+    public async Task<ConnectionResult> ConnectAsync(string connectionKey)
+    {
+        if (_authHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+
+        ConnectionResult connection =
+            await _authHub.InvokeAsync<ConnectionResult>("ConnectAsyncWithKey", connectionKey);
+        if (connection.Connection != null) SetConnection(connection.Connection);
+
+        return connection;
+    }
+}
