@@ -31,6 +31,12 @@ public class AuthService
         await _authHub.StartAsync();
     }
 
+    public async Task ClearConnectionAsync()
+    {
+        Connection = null;
+        UpdateState();
+    }
+
     public async Task<UserConnectionResult> ConnectAsync(string connectionName, string password)
     {
         if (_authHub == null)

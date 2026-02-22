@@ -1,8 +1,6 @@
 @using System.ComponentModel.DataAnnotations
-@using BitzArt.Blazor.Cookies
 @using MudBlazor
 @inject IDialogService DialogService
-@inject ICookieService CookieService
 @inject AuthService Auth
 <MudPaper MinWidth="30%" MaxWidth="50%">
     <MudText Typo="Typo.h2">Login</MudText>
@@ -22,6 +20,10 @@
                     <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
                 }
             </MudButton>
+            <MudButton OnClick="OnLogout" Variant="Variant.Outlined" Color="Color.Primary"
+                       Class="ml-auto mt-2">
+                Log out
+            </MudButton>
         </div>
     </EditForm>
 
@@ -29,6 +31,7 @@
 <MudDialogProvider/>
 
 @code {
+    [CascadingParameter] public UserProvider? UserProvider { get; set; }
     readonly LoginForm model = new();
     bool isLoading;
 
@@ -45,9 +48,18 @@
         isLoading = false;
     }
 
+    private async Task OnLogout()
+    {
+        if (UserProvider != null)
+        {
+            await UserProvider.Logout();
+        }
+        else throw new ArgumentNullException(nameof(UserProvider), "UserProvider is null, cannot log out");
+    }
+
     private async Task OnValidSubmit(EditContext context)
     {
-        if (Auth.Connection != null)
+        if (Auth.Connection != null) // Already logged in
         {
             DialogOptions options = new() { CloseOnEscapeKey = true };
             DialogParameters<ErrorDialog> parameters = new()
@@ -60,7 +72,7 @@
         }
 
         isLoading = true;
-        UserConnectionResult result = await Auth.ConnectAsync(model.UserName, model.Password);
+        UserConnectionResult result = await UserProvider!.Connect(model.UserName, model.Password);
         if (result.ErrorMessage is { } error)
         {
             DialogOptions options = new() { CloseOnEscapeKey = true };
@@ -76,7 +88,11 @@
             model.UserName = string.Empty;
             model.Password = string.Empty;
             string key = result.SessionKey ?? throw new InvalidOperationException("Session key is null");
-            await CookieService.SetAsync("sessionKey", key, DateTimeOffset.UtcNow.AddDays(1));
+            if (UserProvider != null)
+            {
+                await UserProvider.SetSessionKey(key);
+            }
+            else throw new ArgumentNullException(nameof(UserProvider), "UserProvider is null, cannot set session key");
         }
 
         isLoading = false;

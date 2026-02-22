@@ -1,6 +1,7 @@
-@using System.Text.RegularExpressions
+@using BitzArt.Blazor.Cookies
 @inject IJSRuntime JS
 @inject AuthService Auth
+@inject ICookieService Cookies
 <div id="user-provider">
 
 </div>
@@ -20,17 +21,11 @@
             _initialized = true;
             Auth.isLoading = true;
 
-            string? key = null;
-            string cookie = await JS.InvokeAsync<string>("eval", "document.cookie") ?? string.Empty;
-            Match m = Regex.Match(cookie, @"(?:^|; )sessionKey=([^;]*)");
-            if (m.Success)
-            {
-                key = Uri.UnescapeDataString(m.Groups[1].Value);
-            }
+            string? key = await GetSessionKey();
 
             if (key != null)
             {
-                await Auth.ConnectAsync(key);
+                await Connect(key);
             }
 
             Auth.isLoading = false;
@@ -38,4 +33,47 @@
         }
     }
 
+    public async Task Logout()
+    {
+        _ = RemoveSessionKey();
+        _ = Auth.ClearConnectionAsync();
+    }
+
+    public async Task<UserConnectionResult> Connect(string sessionKey)
+    {
+        UserConnectionResult result = await Auth.ConnectAsync(sessionKey);
+        if (result.SessionKey != null)
+        {
+            await SetSessionKey(sessionKey);
+        }
+
+        return result;
+    }
+
+    public async Task<UserConnectionResult> Connect(string username, string password)
+    {
+        UserConnectionResult result = await Auth.ConnectAsync(username, password);
+        if (result.SessionKey != null)
+        {
+            await SetSessionKey(result.SessionKey);
+        }
+
+        return result;
+    }
+
+    public async Task<string?> GetSessionKey()
+    {
+        Cookie? cookie = await Cookies.GetAsync("sessionKey");
+        return cookie?.Value;
+    }
+
+    public async Task SetSessionKey(string key)
+    {
+        await Cookies.SetAsync("sessionKey", key, DateTimeOffset.UtcNow.AddDays(1));
+    }
+
+    public async Task RemoveSessionKey()
+    {
+        await Cookies.RemoveAsync("sessionKey");
+    }
 }
