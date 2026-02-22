@@ -111,7 +111,7 @@ public static class DatabaseHandler
                 return existingKeyForConnection.Key;
         }
 
-        string key = "key";
+        string key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         SessionKey sessionKey = new()
         {
             ConnectionId = connection.Id,

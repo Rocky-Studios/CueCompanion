@@ -12,18 +12,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6a881c6f-881e-4cdf-bfc3-0a7f20e32ea8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/CueCompanion/Components/App.razor" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/Components/App.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/Components/Layout/MainLayout.razor" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/Components/Layout/MainLayout.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/Components/Layout/NavMenu.razor" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/Components/Layout/NavMenu.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/Components/Layout/NavMenu.razor.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/Components/Pages/Home.razor" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/Components/Pages/Home.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/Components/Routes.razor" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/Components/Routes.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/Components/_Imports.razor" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/Components/_Imports.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/CueCompanion.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/CueCompanion.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CueCompanion/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/CueCompanion/appsettings.Development.json" afterDir="false" />
-    </list>
+    <list default="true" id="6a881c6f-881e-4cdf-bfc3-0a7f20e32ea8" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -31,6 +20,7 @@
   </component>
   <component name="CopilotPersistence">
     <persistenceIdMap>
+      <entry key="_C:/Data/RockyStudios/CueCompanion/CueCompanion" value="3A15vtzUCc0rrczmXndhC9EyltJ" />
       <entry key="_C:/Data/RockyStudios/CueCompanionNew/CueCompanion" value="3A0wmtwAuyuSsSgHWcBhqwkeHHQ" />
     </persistenceIdMap>
   </component>
@@ -44,13 +34,26 @@
     <option name="firstShow" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="8" />
+    <option name="cachedIndexableFilesCount" value="5" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "RS-GoogleCoder"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Rocky-Studios/CueCompanion",
+    "accountId": "69655281-ec2f-4939-8d04-ecba8ae44a60"
+  }
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/CueCompanion/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js.map" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/CueCompanion/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.min.js.map" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/CueCompanion/wwwroot/lib/bootstrap/dist/js/bootstrap.js.map" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/CueCompanion/wwwroot/lib/bootstrap/dist/js/bootstrap.min.js.map" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/b3d86993ca014f80958f1139711fc7943a00/b0/94a3f0fe/AddBlazorCookiesExtension.cs" root0="FORCE_HIGHLIGHTING" />
@@ -74,22 +77,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;.NET Launch Settings Profile.CueCompanion: http.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    ".NET Launch Settings Profile.CueCompanion: http.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "master",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "sqlite"
+    ]
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected=".NET Launch Settings Profile.CueCompanion: http">
     <configuration name="CueCompanion: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/CueCompanion/CueCompanion.csproj" />
@@ -137,6 +146,7 @@
       <updated>1771742957235</updated>
       <workItem from="1771742958914" duration="290000" />
       <workItem from="1771743537624" duration="3828000" />
+      <workItem from="1771747471127" duration="672000" />
     </task>
     <task id="LOCAL-00001" summary="Init Commit">
       <option name="closed" value="true" />
@@ -146,7 +156,23 @@
       <option name="project" value="LOCAL" />
       <updated>1771743857978</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Switch to new app structure">
+      <option name="closed" value="true" />
+      <created>1771747553880</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1771747553880</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Update session key generation">
+      <option name="closed" value="true" />
+      <created>1771748094101</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1771748094101</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -168,7 +194,9 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Init Commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Init Commit" />
+    <MESSAGE value="Switch to new app structure" />
+    <MESSAGE value="Update session key generation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update session key generation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -187,16 +215,16 @@
         </breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/CueCompanion/DatabaseHandler.cs</url>
-          <line>51</line>
-          <properties documentPath="C:\Data\RockyStudios\CueCompanionNew\CueCompanion\CueCompanion\DatabaseHandler.cs" containingFunctionPresentation="Method 'TryConnect'">
+          <line>72</line>
+          <properties documentPath="C:\Data\RockyStudios\CueCompanion\CueCompanion\CueCompanion\DatabaseHandler.cs" containingFunctionPresentation="Method 'TryConnect'">
             <startOffsets>
-              <option value="1694" />
+              <option value="2376" />
             </startOffsets>
             <endOffsets>
-              <option value="1853" />
+              <option value="2489" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="4" />
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
