@@ -6,17 +6,21 @@ namespace CueCompanion;
 
 public static class DatabaseHandler
 {
-    private static SQLiteConnection _db;
+    public static SQLiteConnection Connection { get; private set; }
 
     public static void Init()
     {
-        _db = new SQLiteConnection("data.db");
-        _db.CreateTable<Show>();
-        _db.CreateTable<User>();
-        _db.CreateTable<SessionKey>();
+        Connection = new SQLiteConnection("data.db");
+        Connection.CreateTable<Show>();
+        Connection.CreateTable<User>();
+        Connection.CreateTable<SessionKey>();
+        Connection.CreateTable<Permission>();
+        Connection.CreateTable<UserPermission>();
 
+        // Ensure permissions exist before seeding any users
+        PermissionManager.CreateDefaultPermissions();
 
-        bool hasAdmin = _db.Table<User>().ToList().Any(c => c.UserName == "admin");
+        bool hasAdmin = Connection.Table<User>().ToList().Any(c => c.UserName == "admin");
         if (!hasAdmin)
         {
             User adminUser = new()
@@ -24,7 +28,13 @@ public static class DatabaseHandler
                 UserName = "admin",
                 PasswordHash = HashPassword("admin")
             };
-            _db.Insert(adminUser);
+            Connection.Insert(adminUser);
+            Permission? adminPermission = PermissionManager.GetPermissionByName("Admin");
+            Permission? manageUsersPermission = PermissionManager.GetPermissionByName("ManageUsers");
+            if (adminPermission != null)
+                PermissionManager.SetPermission(adminPermission, adminUser, true);
+            if (manageUsersPermission != null)
+                PermissionManager.SetPermission(manageUsersPermission, adminUser, true);
         }
     }
 
@@ -49,7 +59,7 @@ public static class DatabaseHandler
     public static UserConnectionResult TryConnect(string connectionName, string password)
     {
         string passwordHash = HashPassword(password);
-        User? connection = _db.Table<User>()
+        User? connection = Connection.Table<User>()
             .FirstOrDefault(c => c?.UserName == connectionName && c.PasswordHash == passwordHash, null);
         string? errorMessage = null;
         string? sessionKey = null;
@@ -70,7 +80,7 @@ public static class DatabaseHandler
 
     public static UserConnectionResult TryConnect(string connectionKey)
     {
-        SessionKey? sessionKey = _db.Table<SessionKey>()
+        SessionKey? sessionKey = Connection.Table<SessionKey>()
             .FirstOrDefault(k => k?.Key == connectionKey, null);
 
         User? connection = null;
@@ -82,7 +92,7 @@ public static class DatabaseHandler
         else
         {
             int connectionId = sessionKey.ConnectionId;
-            connection = _db.Table<User>()
+            connection = Connection.Table<User>()
                 .FirstOrDefault(c => c?.Id == connectionId, null);
         }
 
@@ -99,14 +109,14 @@ public static class DatabaseHandler
 
     private static string GetOrAddSessionKey(User user, bool forceNew = false)
     {
-        SessionKey? existingKeyForConnection = _db.Table<SessionKey>()
+        SessionKey? existingKeyForConnection = Connection.Table<SessionKey>()
             .FirstOrDefault(k => k?.ConnectionId == user.Id, null);
         if (existingKeyForConnection != null)
         {
-            if (existingKeyForConnection.ExpiresAt < DateTime.UtcNow) _db.Delete(existingKeyForConnection);
+            if (existingKeyForConnection.ExpiresAt < DateTime.UtcNow) Connection.Delete(existingKeyForConnection);
 
             if (forceNew)
-                _db.Delete(existingKeyForConnection);
+                Connection.Delete(existingKeyForConnection);
             else
                 return existingKeyForConnection.Key;
         }
@@ -119,7 +129,7 @@ public static class DatabaseHandler
             IssuedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(1)
         };
-        _db.Insert(sessionKey);
+        Connection.Insert(sessionKey);
         return key;
     }
 }
