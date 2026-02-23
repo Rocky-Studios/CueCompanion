@@ -1,0 +1,34 @@
+@inject AuthService Auth
+@using MudBlazor
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+@if (Auth.Connection != null)
+{
+    <MudText Typo="Typo.h3" Class="me-2">
+        @Auth.Connection.UserName
+    </MudText>
+    <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large"></MudIcon>
+}
+@if (Auth.isLoading)
+{
+    <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
+}
+
+
+@code {
+    private Action? _stateChangeHandler;
+
+    protected override void OnInitialized()
+    {
+        _stateChangeHandler = () => InvokeAsync(StateHasChanged);
+        Auth.OnStateChanged += _stateChangeHandler;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_stateChangeHandler != null)
+            Auth.OnStateChanged -= _stateChangeHandler;
+    }
+
+}

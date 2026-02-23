@@ -1,25 +1,12 @@
 ﻿@using MudBlazor
 @inherits LayoutComponentBase
-@inject AuthService Auth
-
 
 <MudLayout>
-    <UserProvider @ref="userProvider"/>
-    <CascadingValue Value="userProvider">
+    <UserProvider>
         <MudAppBar Elevation="1">
             <MudText Typo="Typo.h5">CueCompanion</MudText>
             <MudSpacer></MudSpacer>
-            @if (Auth.Connection != null)
-            {
-                <MudText Typo="Typo.h3" Class="me-2">
-                    @Auth.Connection.UserName
-                </MudText>
-                <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large"></MudIcon>
-            }
-            @if (Auth.isLoading)
-            {
-                <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
-            }
+            <UserDisplay/>
         </MudAppBar>
         <MudDrawer Open="true" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Persistent">
             <NavMenu/>
@@ -27,13 +14,5 @@
         <MudMainContent>
             @Body
         </MudMainContent>
-    </CascadingValue>
+    </UserProvider>
 </MudLayout>
-@code {
-    private UserProvider? userProvider;
-
-    protected override void OnInitialized()
-    {
-        Auth.OnStateChanged += () => InvokeAsync(StateHasChanged);
-    }
-}

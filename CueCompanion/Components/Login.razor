@@ -2,6 +2,8 @@
 @using MudBlazor
 @inject IDialogService DialogService
 @inject AuthService Auth
+@implements IAsyncDisposable
+
 <MudPaper MinWidth="30%" MaxWidth="50%">
     <MudText Typo="Typo.h2">Login</MudText>
     <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
@@ -42,11 +44,21 @@
         [Required] public string Password { get; set; } = string.Empty;
     }
 
+    private Action? _stateChangeHandler;
+
     protected override void OnInitialized()
     {
-        Auth.OnStateChanged += () => InvokeAsync(StateHasChanged);
+        _stateChangeHandler = () => InvokeAsync(StateHasChanged);
+        Auth.OnStateChanged += _stateChangeHandler;
         isLoading = false;
     }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_stateChangeHandler != null)
+            Auth.OnStateChanged -= _stateChangeHandler;
+    }
+
 
     private async Task OnLogout()
     {
