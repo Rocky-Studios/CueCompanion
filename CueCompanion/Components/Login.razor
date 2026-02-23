@@ -71,7 +71,7 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
-        if (Auth.Connection != null) // Already logged in
+        if (Auth.User != null) // Already logged in
         {
             DialogOptions options = new() { CloseOnEscapeKey = true };
             DialogParameters<ErrorDialog> parameters = new()

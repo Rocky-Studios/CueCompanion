@@ -5,7 +5,8 @@ namespace CueCompanion;
 public class AuthService
 {
     private HubConnection? _authHub;
-    public User? Connection { get; private set; }
+    public User? User { get; private set; }
+    public string? SessionKey { get; set; }
     public bool isLoading { get; set; } = false;
 
     public event Action? OnStateChanged;
@@ -17,7 +18,7 @@ public class AuthService
 
     public void SetConnection(User user)
     {
-        Connection = user;
+        User = user;
         UpdateState();
     }
 
@@ -33,7 +34,7 @@ public class AuthService
 
     public async Task ClearConnectionAsync()
     {
-        Connection = null;
+        User = null;
         UpdateState();
     }
 
@@ -62,5 +63,16 @@ public class AuthService
         if (userConnection.User != null) SetConnection(userConnection.User);
 
         return userConnection;
+    }
+    
+    public async Task<Permission[]> GetPermissionsAsync()
+    {
+        if (_authHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        if (User == null)
+            throw new InvalidOperationException("User is not connected.");
+
+        return await _authHub.InvokeAsync<Permission[]>("GetPermissions", User.Id);
     }
 }

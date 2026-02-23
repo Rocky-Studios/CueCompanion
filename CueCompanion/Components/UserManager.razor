@@ -1,0 +1,69 @@
+@inject AuthService Auth
+@inject UserManagementService UserManagement
+@using CueCompanion.Services
+@using CueCompanion.UserManagement
+@implements IAsyncDisposable
+
+<MudPaper MinWidth="30%" MaxWidth="50%">
+    <MudText Typo="Typo.h2">User Manager</MudText>
+    @if (UserProvider is not {} || UserProvider.CurrentUser is null)
+    {
+        <MudText>You are not logged in.</MudText>
+    }
+    else if (!HasPermissions) 
+    {
+        <MudText>Access denied.</MudText>
+    }
+    else
+    { 
+        <MudTable Items="_users" Dense="true">
+            <HeaderContent>
+                <MudTh>User ID</MudTh>
+                <MudTh>Username</MudTh>
+                <MudTh>Permissions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.UserID</MudTd>
+                <MudTd>@context.UserName</MudTd>
+                <MudTd>@context.Permissions.Select(p => p.Name).Aggregate((a, b) => a + ", " + b)</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudPaper>
+<MudDialogProvider/>
+
+@code
+{
+    [CascadingParameter] public UserProvider? UserProvider { get; set; }
+    
+    
+    private Action? _stateChangeHandler;
+    public bool HasPermissions => UserProvider?.CurrentUser?.HasPermission(2) ?? false;// ManageUsers permission
+    private UserInfo[] _users = [];
+    
+    protected override void OnInitialized()
+    {
+        _stateChangeHandler = () =>
+        {
+            if (HasPermissions && Auth.SessionKey is {} key)
+            {
+                Task.Run(async void () =>
+                {
+                    _users = await UserManagement.GetUsers(key);
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+            else InvokeAsync(StateHasChanged);
+        };
+        Auth.OnStateChanged += _stateChangeHandler;
+
+        _ = UserManagement.StartAsync(Navigation.BaseUri);
+
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_stateChangeHandler != null)
+            Auth.OnStateChanged -= _stateChangeHandler;
+    }
+}

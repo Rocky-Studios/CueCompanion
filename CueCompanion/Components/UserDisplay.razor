@@ -2,10 +2,10 @@
 @rendermode InteractiveServer
 @implements IAsyncDisposable
 
-@if (Auth.Connection != null)
+@if (Auth.User != null)
 {
     <MudText Typo="Typo.h3" Class="me-2">
-        @Auth.Connection.UserName
+        @Auth.User.UserName
     </MudText>
     <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large"></MudIcon>
 }

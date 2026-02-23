@@ -132,4 +132,9 @@ public static class DatabaseHandler
         Connection.Insert(sessionKey);
         return key;
     }
+    
+    public static User GetUserById(int userId)
+    {
+        return Connection.Table<User>().FirstOrDefault(u => u.Id == userId, null);
+    }
 }

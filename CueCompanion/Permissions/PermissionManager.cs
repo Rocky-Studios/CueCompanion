@@ -65,4 +65,14 @@ public static class PermissionManager
         db.Update(userPermission);
         return true;
     }
+
+    public static IEnumerable<Permission> GetPermissionsForUser(User user)
+    {
+        SQLiteConnection db = DatabaseHandler.Connection;
+        IEnumerable<Permission> permissions = from p in db.Table<Permission>()
+            join up in db.Table<UserPermission>() on p.Id equals up.PermissionId
+            where up.UserId == user.Id && up.Value
+            select p;
+        return permissions.ToArray();
+    }
 }

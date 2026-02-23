@@ -13,6 +13,8 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    public User? CurrentUser => Auth.User;
+    
     protected override async Task OnInitializedAsync()
     {
         await Auth.StartAsync(Navigation.BaseUri);
@@ -51,6 +53,11 @@
             await SetSessionKey(sessionKey);
         }
 
+        if (result.User is { } user)
+        {
+            Permission[] permissions = await Auth.GetPermissionsAsync();
+            user.SetPermissions(permissions);
+        }
         return result;
     }
 
@@ -73,6 +80,7 @@
 
     public async Task SetSessionKey(string key)
     {
+        Auth.SessionKey = key;
         await Cookies.SetAsync("sessionKey", key, DateTimeOffset.UtcNow.AddDays(1));
     }
 

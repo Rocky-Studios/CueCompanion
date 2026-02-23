@@ -20,6 +20,10 @@ namespace CueCompanion
                 .AddInteractiveServerComponents();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddSingleton<AuthHub>();
+            
+            builder.Services.AddScoped<UserManagementService>();
+            builder.Services.AddSingleton<UserManagementHub>();
+            
             builder.Services.AddSignalR();
             builder.Services.AddBlazorCookiesServerSideServices();
             builder.Services.AddMudServices();
@@ -43,6 +47,7 @@ namespace CueCompanion
             app.UseHttpsRedirection();
             app.UseAntiforgery();
             app.MapHub<AuthHub>("/auth");
+            app.MapHub<UserManagementHub>("/user-management");
 
             app.MapStaticAssets();
             app.MapRazorComponents<App>()

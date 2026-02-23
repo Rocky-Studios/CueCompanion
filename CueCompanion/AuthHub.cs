@@ -15,4 +15,10 @@ public class AuthHub : Hub
         UserConnectionResult userConnection = DatabaseHandler.TryConnect(connectionKey);
         return userConnection;
     }
+
+    public async Task<Permission[]> GetPermissions(int userId)
+    {
+        User user = DatabaseHandler.GetUserById(userId);
+        return PermissionManager.GetPermissionsForUser(user).ToArray();
+    }
 }
