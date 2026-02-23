@@ -147,6 +147,12 @@ public static class CueCompanionThemes
                 FontWeight = "400",
                 LineHeight = "1.5"
             }
+        },
+        LayoutProperties = new LayoutProperties
+        {
+            DrawerWidthLeft = "100px",
+            DrawerWidthRight = "100px",
+            AppbarHeight = "64px",
         }
     };
 }
