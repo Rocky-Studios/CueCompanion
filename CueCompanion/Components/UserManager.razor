@@ -1,8 +1,10 @@
 @inject AuthService Auth
 @inject UserManagementService UserManagement
+@using System.ComponentModel.DataAnnotations
 @using CueCompanion.Services
 @using CueCompanion.UserManagement
 @implements IAsyncDisposable
+@inject IDialogService DialogService
 
 <MudPaper MinWidth="30%" MaxWidth="50%">
     <MudText Typo="Typo.h2">User Manager</MudText>
@@ -16,31 +18,97 @@
     }
     else
     { 
-        <MudTable Items="_users" Dense="true">
-            <HeaderContent>
-                <MudTh>User ID</MudTh>
-                <MudTh>Username</MudTh>
-                <MudTh>Permissions</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>@context.UserID</MudTd>
-                <MudTd>@context.UserName</MudTd>
-                <MudTd>@context.Permissions.Select(p => p.Name).Aggregate((a, b) => a + ", " + b)</MudTd>
-            </RowTemplate>
-        </MudTable>
+        <MudCard Elevation="10" Outlined="true" Style="max-height: 40vh; overflow-y: auto;">
+            <MudTable Items="_users" Dense="true">
+                <HeaderContent>
+                    <MudTh>User ID</MudTh>
+                    <MudTh>Username</MudTh>
+                    <MudTh>Permissions</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.UserID</MudTd>
+                    <MudTd>@context.UserName</MudTd>
+                    <MudTd>@GetPermissionsString(context)</MudTd>
+                    <MudTd>
+                        @if(context.UserName != "admin")
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"/>
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudCard>
+        <br/>
+        <MudCard Elevation="10" Outlined="true">
+            <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                <MudTextField Label="Username" Class="mt-3" @bind-Value="model.UserName"
+                              For="@(() => model.UserName)" InputType="InputType.Text"/>
+                <MudTextField Label="Password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)"
+                              InputType="InputType.Password"/>
+
+                <DataAnnotationsValidator/>
+                <div>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                               Class="ml-auto mt-2">
+                        Create User
+                    </MudButton>
+                </div>
+            </EditForm>
+        </MudCard>
     }
 </MudPaper>
-<MudDialogProvider/>
 
 @code
 {
     [CascadingParameter] public UserProvider? UserProvider { get; set; }
     
     
+    private string GetPermissionsString(UserInfo user)
+    {
+        return user.Permissions.Length>0 ? user.Permissions.Select(p => p.Name).Aggregate((a, b) => a + ", " + b) : "";
+    }
+    
     private Action? _stateChangeHandler;
     public bool HasPermissions => UserProvider?.CurrentUser?.HasPermission(2) ?? false;// ManageUsers permission
     private UserInfo[] _users = [];
     
+    readonly CreateUserModel model = new();
+    
+    private class CreateUserModel
+    {
+        [Required] public string UserName { get; set; } = string.Empty;
+
+        [Required] public string Password { get; set; } = string.Empty;
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        string username = model.UserName;
+        string password = model.Password;
+        
+        if (Auth.SessionKey is {} key)
+        {
+            CreateNewUserResult result = await UserManagement.CreateNewUser(key, username, password);
+            if (result.ErrorMessage is {} errorMessage)
+            {
+                DialogOptions options = new() { CloseOnEscapeKey = true };
+                DialogParameters<ErrorDialog> parameters = new()
+                {
+                    { x => x.Title, "Create new user failed" },
+                    { x => x.Text, errorMessage }
+                };
+                await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+                return;
+            }
+            model.UserName = "";
+            model.Password = "";
+            _users = await UserManagement.GetUsers(key);
+            await InvokeAsync(StateHasChanged);
+            
+        }
+    }
+
     protected override void OnInitialized()
     {
         _stateChangeHandler = () =>

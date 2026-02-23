@@ -1,3 +1,4 @@
+using CueCompanion.Components;
 using CueCompanion.UserManagement;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -22,5 +23,11 @@ public class UserManagementService
         if(_userManagementHub is null) throw new InvalidOperationException("UserManagementHub connection is not established.");
         UserInfo[] users = await _userManagementHub.InvokeAsync<UserInfo[]>("GetUsers", sessionKey);
         return users;
+    }
+    
+    public async Task<CreateNewUserResult> CreateNewUser(string sessionKey, string userName, string password)
+    {
+        if(_userManagementHub is null) throw new InvalidOperationException("UserManagementHub connection is not established.");
+        return await _userManagementHub.InvokeAsync<CreateNewUserResult>("CreateNewUser", sessionKey, userName, password);
     }
 }
