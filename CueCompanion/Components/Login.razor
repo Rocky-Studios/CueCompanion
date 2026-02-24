@@ -5,6 +5,8 @@
 @implements IAsyncDisposable
 
 <MudPaper MinWidth="30%" MaxWidth="50%">
+    @if(Auth.User is not {} user)
+    {
     <MudText Typo="Typo.h2">Login</MudText>
     <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
         <DataAnnotationsValidator/>
@@ -22,12 +24,18 @@
                     <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
                 }
             </MudButton>
-            <MudButton OnClick="OnLogout" Variant="Variant.Outlined" Color="Color.Primary"
-                       Class="ml-auto mt-2">
-                Log out
-            </MudButton>
+            
         </div>
     </EditForm>
+    }
+    else
+    {
+        <MudText Typo="Typo.h3">You are logged in as <strong>@user.UserName</strong></MudText>
+        <MudButton OnClick="OnLogout" Variant="Variant.Outlined" Color="Color.Primary"
+                   Class="ml-auto mt-2">
+            Log out
+        </MudButton>
+    }
 
 </MudPaper>
 
