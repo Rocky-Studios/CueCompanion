@@ -64,8 +64,20 @@
 @code
 {
     [CascadingParameter] public UserProvider? UserProvider { get; set; }
-    
-    
+
+    protected override Task OnInitializedAsync()
+    {
+        UserManagement.OnStateChanged += async () =>
+        {
+            if (HasPermissions && Auth.SessionKey is {} key)
+            {
+                _users = await UserManagement.GetUsers(key);
+            }
+            await InvokeAsync(StateHasChanged);
+        };
+        return Task.CompletedTask;
+    }
+
     private string GetPermissionsString(UserInfo user)
     {
         return user.Permissions.Length>0 ? user.Permissions.Select(p => p.Name).Aggregate((a, b) => a + ", " + b) : "";
@@ -117,8 +129,7 @@
         {
             UserManagement.DeleteUser(key, userID);
             
-            _users = await UserManagement.GetUsers(key);
-            await InvokeAsync(StateHasChanged);
+            UserManagement.UpdateState();
         }
     }
 
@@ -128,11 +139,7 @@
         {
             if (HasPermissions && Auth.SessionKey is {} key)
             {
-                Task.Run(async void () =>
-                {
-                    _users = await UserManagement.GetUsers(key);
-                    await InvokeAsync(StateHasChanged);
-                });
+                UserManagement.UpdateState();
             }
             else InvokeAsync(StateHasChanged);
         };

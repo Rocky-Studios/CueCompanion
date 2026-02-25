@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
 
-public class UserManagementService
+public class UserManagementService : StateSubscriberService
 {
     
     private HubConnection? _userManagementHub;

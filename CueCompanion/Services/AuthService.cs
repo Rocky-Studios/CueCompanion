@@ -1,20 +1,15 @@
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace CueCompanion;
+namespace CueCompanion.Services;
 
-public class AuthService
+public class AuthService : StateSubscriberService
 {
     private HubConnection? _authHub;
     public User? User { get; private set; }
     public string? SessionKey { get; set; }
     public bool isLoading { get; set; } = false;
 
-    public event Action? OnStateChanged;
 
-    public void UpdateState()
-    {
-        OnStateChanged?.Invoke();
-    }
 
     public void SetConnection(User user)
     {

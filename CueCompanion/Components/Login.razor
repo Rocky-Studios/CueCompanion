@@ -1,7 +1,9 @@
 @using System.ComponentModel.DataAnnotations
+@using CueCompanion.Services
 @using MudBlazor
 @inject IDialogService DialogService
 @inject AuthService Auth
+@inject UserManagementService UserManagement
 @implements IAsyncDisposable
 
 <Panel>
@@ -112,6 +114,8 @@
                 await UserProvider.SetSessionKey(key);
             }
             else throw new ArgumentNullException(nameof(UserProvider), "UserProvider is null, cannot set session key");
+            
+            UserManagement.UpdateState();
         }
 
         isLoading = false;
