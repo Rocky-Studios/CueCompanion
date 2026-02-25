@@ -56,7 +56,7 @@
 
         if (result.User is { } user)
         {
-            Permission[] permissions = await Auth.GetPermissionsAsync();
+            Permission[] permissions = await Auth.GetPermissionsForUserAsync();
             user.SetPermissions(permissions);
         }
         return result;
@@ -68,7 +68,7 @@
         if (result.SessionKey != null)
         {
             await SetSessionKey(result.SessionKey);
-            Permission[] permissions = await Auth.GetPermissionsAsync();
+            Permission[] permissions = await Auth.GetPermissionsForUserAsync();
             Auth.User?.SetPermissions(permissions);
         }
 

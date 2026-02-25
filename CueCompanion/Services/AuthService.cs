@@ -9,6 +9,8 @@ public class AuthService : StateSubscriberService
     public string? SessionKey { get; set; }
     public bool isLoading { get; set; } = false;
 
+    
+    public readonly Dictionary<string, int> PermissionsCache = new();
 
 
     public void SetConnection(User user)
@@ -25,6 +27,8 @@ public class AuthService : StateSubscriberService
             .Build();
 
         await _authHub.StartAsync();
+
+        await GetPermissionsAsync();
     }
 
     public async Task ClearConnectionAsync()
@@ -60,7 +64,7 @@ public class AuthService : StateSubscriberService
         return userConnection;
     }
     
-    public async Task<Permission[]> GetPermissionsAsync()
+    public async Task<Permission[]> GetPermissionsForUserAsync()
     {
         if (_authHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
@@ -68,6 +72,21 @@ public class AuthService : StateSubscriberService
         if (User == null)
             throw new InvalidOperationException("User is not connected.");
 
-        return await _authHub.InvokeAsync<Permission[]>("GetPermissions", User.Id);
+        return await _authHub.InvokeAsync<Permission[]>("GetPermissionsForUser", User.Id);
+    }
+    
+    public async Task<Permission[]> GetPermissionsAsync()
+    {
+        if (_authHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        Permission[] perms = await _authHub.InvokeAsync<Permission[]>("GetPermissions");
+
+        foreach (Permission permission in perms)
+        {
+            PermissionsCache[permission.Name] = permission.Id;
+        }
+        
+        return perms;
     }
 }

@@ -16,9 +16,14 @@ public class AuthHub : Hub
         return userConnection;
     }
 
-    public async Task<Permission[]> GetPermissions(int userId)
+    public async Task<Permission[]> GetPermissionsForUser(int userId)
     {
         User user = DatabaseHandler.GetUserById(userId);
         return PermissionManager.GetPermissionsForUser(user).ToArray();
+    }
+    
+    public async Task<Permission[]> GetPermissions()
+    {
+        return PermissionManager.GetPermissions().ToArray();
     }
 }
