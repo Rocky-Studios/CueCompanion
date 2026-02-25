@@ -6,7 +6,7 @@
 @implements IAsyncDisposable
 @inject IDialogService DialogService
 
-<MudPaper MinWidth="30%" MaxWidth="50%">
+<Panel>
     <MudText Typo="Typo.h2">User Manager</MudText>
     @if (UserProvider is not {} || UserProvider.CurrentUser is null)
     {
@@ -57,7 +57,7 @@
             </EditForm>
         </MudCard>
     }
-</MudPaper>
+</Panel>
 
 @code
 {

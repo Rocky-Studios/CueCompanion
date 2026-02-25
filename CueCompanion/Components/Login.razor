@@ -4,7 +4,7 @@
 @inject AuthService Auth
 @implements IAsyncDisposable
 
-<MudPaper MinWidth="30%" MaxWidth="50%">
+<Panel>
     @if(Auth.User is not {} user)
     {
     <MudText Typo="Typo.h2">Login</MudText>
@@ -37,7 +37,7 @@
         </MudButton>
     }
 
-</MudPaper>
+</Panel>
 
 @code {
     [CascadingParameter] public UserProvider? UserProvider { get; set; }

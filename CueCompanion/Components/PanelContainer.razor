@@ -1,0 +1,8 @@
+<div Class="d-flex flex-row justify-space-around align-items-lg-start flex-wrap">
+    @ChildContent
+</div>
+
+@code
+{
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

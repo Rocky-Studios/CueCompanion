@@ -118,3 +118,11 @@ span.nav-label
 {
     color: var(--mud-palette-primary) !important;
 }
+
+
+.layout-panel
+{
+    min-width: max(30%,400px);
+    flex-basis: max(30%,400px);
+    margin-bottom: 2rem;
+}
