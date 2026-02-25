@@ -16,4 +16,9 @@ public class UserManagementHub : Hub
     {
         return UserManager.CreateNewUser(sessionKey, userName, password);
     }
+    
+    public async Task DeleteUser(string sessionKey, int userId)
+    {
+        UserManager.DeleteUser(sessionKey, userId);
+    }
 }

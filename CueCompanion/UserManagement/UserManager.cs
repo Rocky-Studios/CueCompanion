@@ -84,4 +84,13 @@ public static class UserManager
         if(userName.Any(c => !char.IsLetterOrDigit(c) && c != '_')) return false;
         return true;
     }
+    
+    public static void DeleteUser(string sessionKey, int userId)
+    {
+        if(!HasManageUsersPermission(sessionKey)) throw new Exception("Access denied.");
+        
+        User? user = _db.Table<User>().FirstOrDefault(u => u.Id == userId, null);
+        if (user == null) throw new Exception("User not found.");
+        _db.Delete(user);
+    }
 }

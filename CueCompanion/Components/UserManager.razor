@@ -33,7 +33,9 @@
                     <MudTd>
                         @if(context.UserName != "admin")
                         {
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"/>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => {
+                                DeleteUser(context.UserID);
+                             })"/>
                         }
                     </MudTd>
                 </RowTemplate>
@@ -106,6 +108,17 @@
             _users = await UserManagement.GetUsers(key);
             await InvokeAsync(StateHasChanged);
             
+        }
+    }
+
+    private async Task DeleteUser(int userID)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            UserManagement.DeleteUser(key, userID);
+            
+            _users = await UserManagement.GetUsers(key);
+            await InvokeAsync(StateHasChanged);
         }
     }
 

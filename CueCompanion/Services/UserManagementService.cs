@@ -30,4 +30,10 @@ public class UserManagementService
         if(_userManagementHub is null) throw new InvalidOperationException("UserManagementHub connection is not established.");
         return await _userManagementHub.InvokeAsync<CreateNewUserResult>("CreateNewUser", sessionKey, userName, password);
     }
+    
+    public async Task DeleteUser(string sessionKey, int userId)
+    {
+        if(_userManagementHub is null) throw new InvalidOperationException("UserManagementHub connection is not established.");
+        await _userManagementHub.InvokeAsync("DeleteUser", sessionKey, userId);
+    }
 }
