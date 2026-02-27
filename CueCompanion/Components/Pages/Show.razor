@@ -1,6 +1,10 @@
 @page "/show"
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudText Typo="Typo.h1">Dashboard</MudText>
-    
+    <GridContainer AutoVertical="true">
+        <CueExplorer/>
+        <CurrentCue/>
+        <CueNotes/>
+        <ShowInfo/>
+    </GridContainer>
 </MudContainer>

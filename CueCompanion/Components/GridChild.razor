@@ -1,0 +1,16 @@
+<div Style="@GridStyle">
+    <MudPaper>
+    @ChildContent
+    </MudPaper>
+</div>
+
+@code
+{
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public required int ColumnStart { get; set; }
+    [Parameter] public required int ColumnEnd { get; set; }
+    [Parameter] public required int RowStart { get; set; }
+    [Parameter] public required int RowEnd { get; set; }
+    
+    private string GridStyle => $"grid-column: {ColumnStart}/{ColumnEnd}; grid-row: {RowStart}/{RowEnd}";
+}

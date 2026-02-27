@@ -1,0 +1,12 @@
+<MudCard>
+    <p Class="d-flex justify-content-between">
+        <MudText Inline="true">@CueName</MudText>
+        <MudText Inline="true">@CueNumber</MudText>
+    </p>
+</MudCard>
+
+@code
+{
+    [Parameter] public required string CueName { get; set; }
+    [Parameter] public required int CueNumber { get; set; }
+}

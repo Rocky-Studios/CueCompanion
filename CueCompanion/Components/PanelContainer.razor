@@ -1,8 +1,9 @@
-<div Class="d-flex flex-row justify-space-around align-items-lg-start flex-wrap">
+<div Class="d-flex flex-row justify-space-around align-items-lg-start flex-wrap" Style="flex-direction: @(Vertical ? "column" : "row")">
     @ChildContent
 </div>
 
 @code
 {
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool Vertical { get; set; } = false;
 }
