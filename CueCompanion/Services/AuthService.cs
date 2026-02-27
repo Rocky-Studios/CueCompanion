@@ -9,7 +9,7 @@ public class AuthService : StateSubscriberService
     public string? SessionKey { get; set; }
     public bool isLoading { get; set; } = false;
 
-    
+
     public readonly Dictionary<string, int> PermissionsCache = new();
 
 
@@ -63,7 +63,7 @@ public class AuthService : StateSubscriberService
 
         return userConnection;
     }
-    
+
     public async Task<Permission[]> GetPermissionsForUserAsync()
     {
         if (_authHub == null)
@@ -74,7 +74,7 @@ public class AuthService : StateSubscriberService
 
         return await _authHub.InvokeAsync<Permission[]>("GetPermissionsForUser", User.Id);
     }
-    
+
     public async Task<Permission[]> GetPermissionsAsync()
     {
         if (_authHub == null)
@@ -86,7 +86,7 @@ public class AuthService : StateSubscriberService
         {
             PermissionsCache[permission.Name] = permission.Id;
         }
-        
+
         return perms;
     }
 }

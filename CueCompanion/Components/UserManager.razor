@@ -8,16 +8,16 @@
 
 <Panel>
     <MudText Typo="Typo.h2">User Manager</MudText>
-    @if (UserProvider is not {} || UserProvider.CurrentUser is null)
+    @if (UserProvider is not { } || UserProvider.CurrentUser is null)
     {
         <MudText>You are not logged in.</MudText>
     }
-    else if (!HasPermissions) 
+    else if (!HasPermissions)
     {
         <MudText>Access denied.</MudText>
     }
     else
-    { 
+    {
         <MudCard Elevation="10" Outlined="true" Style="max-height: 40vh; overflow-y: auto;">
             <MudTable Items="_users" Dense="true">
                 <HeaderContent>
@@ -29,13 +29,34 @@
                 <RowTemplate>
                     <MudTd>@context.UserID</MudTd>
                     <MudTd>@context.UserName</MudTd>
-                    <MudTd>@GetPermissionsString(context)</MudTd>
                     <MudTd>
-                        @if(context.UserName != "admin")
+                        @foreach (var perm in GetPermissionsString(context).Split(", "))
                         {
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => {
-                                DeleteUser(context.UserID);
-                             })"/>
+                            @if (perm == "") continue;
+                            <MudCard Class="d-inline">
+                                @perm
+                                <MudIconButton Class="d-inline p-0" Icon="@Icons.Material.Filled.Close" Size="Size.Small"/>
+                            </MudCard>
+                        }
+                        @if(PermissionsNotAdded(context.Permissions).Length != 0)
+                        {
+                            <MudMenu Dense="true" Style="padding: 0;">
+                                <ActivatorContent Context="activator_context">
+                                    <MudIconButton Size="Size.Small" OnClick="@activator_context.ToggleAsync" Icon="@Icons.Material.Filled.Add"/>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    @foreach (string perm in PermissionsNotAdded(context.Permissions))
+                                    {
+                                        <MudMenuItem Label="@perm" @onclick="@(() => {AddPermissionToUser(context.UserID, perm);})"/>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                        }
+                    </MudTd>
+                    <MudTd>
+                        @if (context.UserName != "admin")
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => { DeleteUser(context.UserID); })"/>
                         }
                     </MudTd>
                 </RowTemplate>
@@ -133,6 +154,25 @@
         }
     }
 
+    private async Task AddPermissionToUser(int userID, string permission)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            int permissionID = Auth.PermissionsCache[permission];
+            await UserManagement.AddPermissionToUser(Auth.SessionKey, userID, permissionID);
+            
+            _users = await UserManagement.GetUsers(key);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string[] PermissionsNotAdded(Permission[] permissionsAdded)
+    {
+        var perms = Auth.PermissionsCache.Keys.ToList();
+        var existingPerms = permissionsAdded.Select(p => p.Name).ToArray();
+        return perms.Except(existingPerms).ToArray();
+    }
+
     protected override void OnInitialized()
     {
         _stateChangeHandler = () =>
@@ -145,7 +185,7 @@
         };
         Auth.OnStateChanged += _stateChangeHandler;
 
-        _ = UserManagement.StartAsync(Navigation.BaseUri);
+        _ = UserManagement.StartAsync(Navigation.BaseUri, UserProvider);
 
     }
 

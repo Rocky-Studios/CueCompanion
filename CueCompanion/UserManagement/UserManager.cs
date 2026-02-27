@@ -18,11 +18,11 @@ public static class UserManager
         return true;
     }
     
-    public static UserInfo[] GetUsers(string sessionKey)
+    public static Or<UserInfo[], string> GetUsers(string sessionKey)
     {
         User? user =GetUserBySessionKey(sessionKey);
-        if (user == null) throw new Exception("Invalid session key.");
-        if(!HasManageUsersPermission(sessionKey)) throw new Exception("Access denied.");
+        if (user == null) return new Or<UserInfo[], string>("Invalid session key.");
+        if(!HasManageUsersPermission(sessionKey)) return new Or<UserInfo[], string>("Access denied.");
         
         User[] users = _db.Table<User>().ToArray();
         UserInfo[] userInfos = users.Select(u => new UserInfo()
@@ -39,7 +39,7 @@ public static class UserManager
             return PermissionManager.GetPermissionsForUser(u).ToArray();
         }
         
-        return userInfos;
+        return new Or<UserInfo[], string>(userInfos);
     }
     
     public static User? GetUserBySessionKey(string sessionKey)
@@ -92,5 +92,19 @@ public static class UserManager
         User? user = _db.Table<User>().FirstOrDefault(u => u.Id == userId, null);
         if (user == null) throw new Exception("User not found.");
         _db.Delete(user);
+    }
+
+    public static void AddPermissionToUser(string sessionKey, int userID, int permissionID)
+    {
+        if(!HasManageUsersPermission(sessionKey)) throw new Exception("Access denied.");
+
+        UserPermission userPermission = new()
+        {
+            UserId = userID,
+            PermissionId = permissionID,
+            Value = true
+        };
+        
+        _db.Insert(userPermission);
     }
 }
