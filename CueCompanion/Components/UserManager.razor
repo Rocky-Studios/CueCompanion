@@ -35,7 +35,7 @@
                             @if (perm == "") continue;
                             <MudCard Class="d-inline">
                                 @perm
-                                <MudIconButton Class="d-inline p-0" Icon="@Icons.Material.Filled.Close" Size="Size.Small"/>
+                                <MudIconButton Class="d-inline p-0" Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => { RemovePermissionFromUser(context.UserID, perm);})"/>
                             </MudCard>
                         }
                         @if(PermissionsNotAdded(context.Permissions).Length != 0)
@@ -160,7 +160,17 @@
         {
             int permissionID = Auth.PermissionsCache[permission];
             await UserManagement.AddPermissionToUser(Auth.SessionKey, userID, permissionID);
-            
+            _users = await UserManagement.GetUsers(key);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    private async Task RemovePermissionFromUser(int userID, string permission)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            int permissionID = Auth.PermissionsCache[permission];
+            await UserManagement.RemovePermissionFromUser(Auth.SessionKey, userID, permissionID);
             _users = await UserManagement.GetUsers(key);
             await InvokeAsync(StateHasChanged);
         }

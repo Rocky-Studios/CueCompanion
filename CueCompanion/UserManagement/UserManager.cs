@@ -107,4 +107,13 @@ public static class UserManager
         
         _db.Insert(userPermission);
     }
+    
+    public static void RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
+    {
+        if(!HasManageUsersPermission(sessionKey)) throw new Exception("Access denied.");
+
+        UserPermission? userPermission = _db.Table<UserPermission>().FirstOrDefault(up => up.UserId == userID && up.PermissionId == permissionID, null);
+        if (userPermission == null) throw new Exception("User permission not found.");
+        _db.Delete(userPermission);
+    }
 }

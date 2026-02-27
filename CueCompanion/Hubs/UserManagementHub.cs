@@ -26,4 +26,9 @@ public class UserManagementHub : Hub
     {
         UserManager.AddPermissionToUser(sessionKey, userID, permissionID);
     }
+    
+    public async Task RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
+    {
+        UserManager.RemovePermissionFromUser(sessionKey, userID, permissionID);
+    }
 }

@@ -52,4 +52,12 @@ public class UserManagementService : StateSubscriberService
 
         await _userManagementHub.InvokeAsync("AddPermissionToUser", sessionKey, userID, permissionID);
     }
+    
+    public async Task RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
+    {
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        await _userManagementHub.InvokeAsync("RemovePermissionFromUser", sessionKey, userID, permissionID);
+    }
 }
