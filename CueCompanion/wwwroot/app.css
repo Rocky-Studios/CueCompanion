@@ -122,7 +122,7 @@ span.nav-label
 
 .layout-panel
 {
-    min-width: max(30%,400px);
-    flex-basis: max(30%,400px);
+    min-width: max(40%,400px);
+    flex-basis: max(40%,400px);
     margin-bottom: 2rem;
 }
