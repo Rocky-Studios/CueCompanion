@@ -37,12 +37,24 @@ public static class DatabaseHandler
             if (manageUsersPermission != null)
                 PermissionManager.SetPermission(manageUsersPermission, adminUser, true);
         }
+        
+        RemoveExpiredSessionKeys();
     }
 
-    
+    private static void RemoveExpiredSessionKeys()
+    {
+        List<SessionKey> expiredKeys = Connection.Table<SessionKey>()
+            .Where(k => k.ExpiresAt < DateTime.UtcNow)
+            .ToList();
+        foreach (SessionKey key in expiredKeys)
+        {
+            Connection.Delete(key);
+        }
+    }
 
     public static UserConnectionResult TryConnect(string connectionName, string password)
     {
+        RemoveExpiredSessionKeys();
         string passwordHash = Hash.HashPassword(password);
         User? connection = Connection.Table<User>()
             .FirstOrDefault(c => c?.UserName == connectionName && c.PasswordHash == passwordHash, null);
@@ -65,6 +77,7 @@ public static class DatabaseHandler
 
     public static UserConnectionResult TryConnect(string connectionKey)
     {
+        RemoveExpiredSessionKeys();
         SessionKey? sessionKey = Connection.Table<SessionKey>()
             .FirstOrDefault(k => k?.Key == connectionKey, null);
 
