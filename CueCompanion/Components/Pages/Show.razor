@@ -1,10 +1,60 @@
 @page "/show"
 
+@inject ShowService ShowService
+@inject AuthService Auth
+@inject IDialogService DialogService
+
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <GridContainer AutoVertical="true">
-        <CueExplorer/>
-        <CurrentCue/>
-        <CueNotes/>
-        <ShowInfo/>
-    </GridContainer>
+    <CascadingValue Value="ShowService">
+        <GridContainer AutoVertical="true">
+            <CueExplorer/>
+            <CurrentCue/>
+            <CueNotes/>
+            <ShowInfo/>
+        </GridContainer>
+    </CascadingValue>
 </MudContainer>
+
+
+@code
+{
+    private CueCompanion.Show? _currentShow;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ShowService.OnStateChanged += ShowInfoChanged;
+        Auth.OnStateChanged += ShowInfoChanged;
+
+        await ShowService.StartAsync(Navigation.BaseUri);
+        _ = FetchShowInfo();
+    }
+
+    private async Task FetchShowInfo()
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            ShowRequestResult result = await ShowService.GetCurrentShowAsync(key);
+            if (result.Success)
+            {
+                _currentShow = result.Show;
+            }
+            else
+            {
+                DialogOptions options = new() { CloseOnEscapeKey = true };
+                DialogParameters<ErrorDialog> parameters = new()
+                {
+                    { x => x.Title, "Getting show failed" },
+                    { x => x.Text, result.ErrorMessage }
+                };
+                await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void ShowInfoChanged()
+    {
+        InvokeAsync(async () => { StateHasChanged(); });
+    }
+}

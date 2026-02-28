@@ -1,3 +1,4 @@
+using CueCompanion.UserManagement;
 using SQLite;
 
 namespace CueCompanion;
@@ -10,7 +11,9 @@ public static class PermissionManager
         Permission[] permissions =
         [
             new() { Name = "Admin" },
-            new() { Name = "ManageUsers" }
+            new() { Name = "ManageUsers" },
+            new() { Name = "ViewShow" },
+            new() { Name = "ControlShow" }
         ];
         Permission[] existingPermissions = db.Table<Permission>().ToArray();
         Permission[] permissionsToAdd =
@@ -74,5 +77,21 @@ public static class PermissionManager
             where up.UserId == user.Id && up.Value
             select p;
         return permissions.ToArray();
+    }
+
+    public static bool UserHasPermission(string sessionKey, string permission, out string? error)
+    {
+        User? user = UserManager.GetUserBySessionKey(sessionKey);
+        if (user == null) throw new Exception("Invalid session key.");
+        bool hasPermission = HasPermission(
+            GetPermissionByName(permission) ?? throw new Exception(permission + " permission not found."), user);
+        if (!hasPermission)
+        {
+            error = "Access denied.";
+            return false;
+        }
+
+        error = null;
+        return true;
     }
 }

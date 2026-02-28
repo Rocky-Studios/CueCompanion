@@ -1,8 +1,11 @@
-@inject ShowService ShowService
+
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
     <MudText Typo="Typo.h1">Show Info</MudText>
-    @if (_currentShow is { } show)
+    @if (_showInfoResult is
+        {
+            Show: { } show
+        })
     {
         <MudText Typo="Typo.subtitle1">Show Name: @show.Name</MudText>
         <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
@@ -15,15 +18,18 @@
 
 @code
 {
-    private Show? _currentShow;
+    private ShowRequestResult? _showInfoResult => ShowService is { } show && show.LatestInfo != null
+        ? show.LatestInfo
+        : null;
 
-    protected override async Task OnInitializedAsync()
+    [CascadingParameter]
+    public ShowService? ShowService { get; set; }
+
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        ShowService.OnStateChanged += ShowInfoChanged;
-        
-
-        await ShowService.StartAsync(Navigation.BaseUri);
-        _currentShow = await ShowService.GetCurrentShowAsync();
+        ShowService?.OnStateChanged += ShowInfoChanged;
+        return Task.CompletedTask;
     }
 
     private void ShowInfoChanged()

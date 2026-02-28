@@ -5,6 +5,7 @@ namespace CueCompanion.Services;
 public class ShowService : StateSubscriberService
 {
     private HubConnection? _showHub;
+    public ShowRequestResult? LatestInfo;
 
     public async Task StartAsync(string baseUrl)
     {
@@ -16,7 +17,7 @@ public class ShowService : StateSubscriberService
         await _showHub.StartAsync();
     }
 
-    public async Task<Show?> GetCurrentShowAsync()
+    public async Task<ShowRequestResult> GetCurrentShowAsync(string sessionKey)
     {
         if (_showHub == null)
             throw new InvalidOperationException("ShowHub connection is not established.");
@@ -24,6 +25,8 @@ public class ShowService : StateSubscriberService
         if (_showHub.State != HubConnectionState.Connected)
             throw new InvalidOperationException("ShowHub connection is not connected.");
 
-        return await _showHub.InvokeAsync<Show?>("GetCurrentShow");
+        LatestInfo = await _showHub.InvokeAsync<ShowRequestResult>("GetCurrentShow", sessionKey);
+        UpdateState();
+        return LatestInfo.Value!;
     }
 }

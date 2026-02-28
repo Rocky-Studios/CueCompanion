@@ -1,23 +1,55 @@
 <GridChild ColumnStart="1" ColumnEnd="2" RowStart="1" RowEnd="3">
     <MudText Typo="Typo.h1">Cue Explorer</MudText>
-    <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
-    <MudText Typo="Typo.h2">
-        <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"/>
-        3
-        <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"/>
-    </MudText>
-    <MudCard Elevation="4"  style="background-color: #141414">
-        <div class="d-flex justify-content-between">
-            <MudText Typo="Typo.subtitle1">CUES</MudText>
-            <MudText Typo="Typo.subtitle1">5 ITEMS</MudText>
-        </div>
-        <div>
-            <CueCard CueName="Cue" CueNumber="1"/>
-            <CueCard CueName="Cue" CueNumber="2"/>
-            <CueCard CueName="Cue" CueNumber="3"/>
-            <CueCard CueName="Cue" CueNumber="4"/>
-            <CueCard CueName="Cue" CueNumber="5"/>
-        </div>
-    </MudCard>
+    @if (_showInfoResult is
+        {
+            Show: { } show
+        } sr)
+    {
+        <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
+        @if (sr.CurrentCuePosition is { } cuePos)
+        {
+            <MudText Typo="Typo.h2">
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"/>
+                @sr.CurrentCuePosition
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"/>
+            </MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.body1">
+                Show not started.
+                <MudButton Color="Color.Primary" Variant="Variant.Outlined">Start</MudButton>
+            </MudText>
+        }
+
+        <MudCard Elevation="4" style="background-color: #141414">
+            <div class="d-flex justify-content-between">
+                <MudText Typo="Typo.subtitle1">CUES</MudText>
+                <MudText Typo="Typo.subtitle1">5 ITEMS</MudText>
+            </div>
+            <div>
+                <CueCard CueName="Cue" CueNumber="1"/>
+                <CueCard CueName="Cue" CueNumber="2"/>
+                <CueCard CueName="Cue" CueNumber="3"/>
+                <CueCard CueName="Cue" CueNumber="4"/>
+                <CueCard CueName="Cue" CueNumber="5"/>
+            </div>
+        </MudCard>
+    }
+    else
+    {
+        <MudText>No show loaded</MudText>
+    }
     
 </GridChild>
+
+
+@code
+{
+    private ShowRequestResult? _showInfoResult => ShowService is { } show && show.LatestInfo != null
+        ? show.LatestInfo
+        : null;
+
+    [CascadingParameter]
+    public ShowService? ShowService { get; set; }
+}

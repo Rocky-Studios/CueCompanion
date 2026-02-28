@@ -5,6 +5,7 @@ namespace CueCompanion;
 public static class ShowManager
 {
     public static Show? CurrentShow;
+    public static int? CurrentCuePosition;
 
     public static void CreateDefaultRoles()
     {
