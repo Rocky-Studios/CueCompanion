@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using CueCompanion.Components;
 using SQLite;
 
@@ -17,9 +16,26 @@ public static class DatabaseHandler
         Connection.CreateTable<SessionKey>();
         Connection.CreateTable<Permission>();
         Connection.CreateTable<UserPermission>();
+        Connection.CreateTable<Role>();
+        Connection.CreateTable<Cue>();
+        Connection.CreateTable<CueTask>();
+        Connection.CreateTable<ShowRoleAssignment>();
 
-        // Ensure permissions exist before seeding any users
+        ShowManager.CreateDefaultRoles();
         PermissionManager.CreateDefaultPermissions();
+
+        // Clear old show state, useful for development
+        if (true)
+        {
+            Connection.DeleteAll<Show>();
+            Connection.DeleteAll<Cue>();
+            Connection.DeleteAll<CueTask>();
+            Connection.DeleteAll<ShowRoleAssignment>();
+        }
+
+        // Create a default show
+        if (true) ShowManager.CreateDefaultShow();
+
 
         bool hasAdmin = Connection.Table<User>().ToList().Any(c => c.UserName == "admin");
         if (!hasAdmin)
@@ -37,7 +53,7 @@ public static class DatabaseHandler
             if (manageUsersPermission != null)
                 PermissionManager.SetPermission(manageUsersPermission, adminUser, true);
         }
-        
+
         RemoveExpiredSessionKeys();
     }
 
@@ -130,7 +146,7 @@ public static class DatabaseHandler
         Connection.Insert(sessionKey);
         return key;
     }
-    
+
     public static User GetUserById(int userId)
     {
         return Connection.Table<User>().FirstOrDefault(u => u.Id == userId, null);
