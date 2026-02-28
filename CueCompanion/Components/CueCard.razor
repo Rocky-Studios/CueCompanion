@@ -1,5 +1,5 @@
-<MudCard>
-    <p Class="d-flex justify-content-between">
+<MudCard Class="@GetClass()">
+    <p Class="d-flex justify-content-between m-1">
         <MudText Inline="true">@CueName</MudText>
         <MudText Inline="true">@CueNumber</MudText>
     </p>
@@ -9,4 +9,18 @@
 {
     [Parameter] public required string CueName { get; set; }
     [Parameter] public required int CueNumber { get; set; }
+
+    [Parameter]
+    public required CueCardColor Color { get; set; } = CueCardColor.Gray;
+
+    private string GetClass()
+    {
+        return Color switch
+        {
+            CueCardColor.Gray => "cue-card-gray",
+            CueCardColor.Green => "cue-card-green",
+            CueCardColor.Red => "cue-card-red",
+            _ => "cue-card-gray"
+        };
+    }
 }

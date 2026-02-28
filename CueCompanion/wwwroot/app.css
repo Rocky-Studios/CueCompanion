@@ -126,3 +126,23 @@ span.nav-label
     flex-basis: max(40%,400px);
     margin-bottom: 2rem;
 }
+
+.mud-paper.cue-card-gray {
+    background-color: #202020;
+    color: #bbb;
+}
+
+.mud-paper.cue-card-blue {
+    background-color: #007bff;
+    color: white;
+}
+
+.mud-paper.cue-card-green {
+    background-color: #28a745;
+    color: white;
+}
+
+.mud-paper.cue-card-red {
+    background-color: #dc3545;
+    color: white;
+}

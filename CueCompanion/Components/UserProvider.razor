@@ -1,5 +1,4 @@
 @using BitzArt.Blazor.Cookies
-@using CueCompanion.Services
 @inject IJSRuntime JS
 @inject AuthService Auth
 @inject ICookieService Cookies
@@ -14,6 +13,8 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    public Action? OnStateChanged { get; set; }
+
     public User? CurrentUser => Auth.User;
     
     protected override async Task OnInitializedAsync()
@@ -23,8 +24,6 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_initialized)
-        {
             _initialized = true;
             Auth.isLoading = true;
 
@@ -37,7 +36,7 @@
 
             Auth.isLoading = false;
             Auth.UpdateState();
-        }
+            OnStateChanged?.Invoke();
     }
 
     public async Task Logout()

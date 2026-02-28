@@ -5,9 +5,9 @@
             Show: { } show
         } sr)
     {
-        <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
         @if (sr.CurrentCuePosition is { } cuePos)
         {
+            <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
             <MudText Typo="Typo.h2">
                 <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"/>
                 @sr.CurrentCuePosition
@@ -27,8 +27,8 @@
                 <MudText Typo="Typo.subtitle1">CUES</MudText>
                 <MudText Typo="Typo.subtitle1">5 ITEMS</MudText>
             </div>
-            <div>
-                <CueCard CueName="Cue" CueNumber="1"/>
+            <div Class="d-flex flex-column gap-1">
+                <CueCard CueName="Cue" CueNumber="1" Color="CueCardColor.Green"/>
                 <CueCard CueName="Cue" CueNumber="2"/>
                 <CueCard CueName="Cue" CueNumber="3"/>
                 <CueCard CueName="Cue" CueNumber="4"/>
