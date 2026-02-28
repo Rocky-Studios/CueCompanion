@@ -1,5 +1,34 @@
 <GridChild ColumnStart="2" ColumnEnd="2" RowStart="1" RowEnd="3">
-    <MudText Typo="Typo.h1">Current Cue</MudText>
-    <CueTasksFilter/>
-    <CueTasksView/>
+    @if (ShowService is
+        {
+            CurrentShow: { } show,
+            CurrentCuePosition: { } cuePos,
+            TasksForCurrentCue: { } tasks
+        })
+    {
+        if (ShowService.CurrentCue is { } cue)
+        {
+            <MudText Typo="Typo.h1">Current Cue - @cue.Name </MudText>
+
+
+            <CueTasksFilter/>
+            <CueTasksView Tasks="tasks"/>
+        }
+    }
+    else
+    {
+        <MudText Typo="Typo.h1">Current Cue</MudText>
+    }
 </GridChild>
+
+
+@code
+{
+    [CascadingParameter]
+    public ShowService? ShowService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ShowService?.OnStateChanged += () => InvokeAsync(StateHasChanged);
+    }
+}

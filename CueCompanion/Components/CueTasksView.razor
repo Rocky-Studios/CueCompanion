@@ -1,0 +1,12 @@
+<div>
+    @foreach (CueTask cueTask in Tasks)
+    {
+        <p>@cueTask.Tasks</p>
+    }
+</div>
+
+@code
+{
+    [Parameter]
+    public required CueTask[] Tasks { get; set; } = [];
+}

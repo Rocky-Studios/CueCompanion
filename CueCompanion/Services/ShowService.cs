@@ -11,7 +11,10 @@ public class ShowService : StateSubscriberService
     public Show? CurrentShow => LatestShowInfo?.Show;
     public int? CurrentCuePosition => LatestShowInfo?.CurrentCuePosition;
     public Cue[] CurrentCues => LatestCueInfo?.Cues ?? [];
-    public CueTask[] CurrentTasks => LatestCueInfo?.Tasks ?? [];
+    public CueTask[] Tasks => LatestCueInfo?.Tasks ?? [];
+    public CueTask[] TasksForCurrentCue => Tasks.Where(t => t.CueId == CurrentCue?.Id).ToArray();
+
+    public Cue? CurrentCue => CurrentCues.FirstOrDefault(c => c.Position == CurrentCuePosition);
 
     public async Task StartAsync(string baseUrl)
     {
