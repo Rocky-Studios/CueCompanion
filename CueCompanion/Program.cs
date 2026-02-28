@@ -1,9 +1,8 @@
+using BitzArt.Blazor.Cookies;
 using CueCompanion.Components;
 using CueCompanion.Hubs;
 using CueCompanion.Services;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.AspNetCore.SignalR;
-using BitzArt.Blazor.Cookies;
 using MudBlazor.Services;
 
 namespace CueCompanion
@@ -13,6 +12,8 @@ namespace CueCompanion
         public static void Main(string[] args)
         {
             DatabaseHandler.Init();
+
+            ShowManager.Init();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             //builder.WebHost.UseUrls("http://0.0.0.0:5277");  // SIGNIFICANTLY SLOWS DOWN THE APP SO ONLY USE IF ABSOLUTELY NECESSARY
             // Add services to the container.
@@ -20,10 +21,13 @@ namespace CueCompanion
                 .AddInteractiveServerComponents();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddSingleton<AuthHub>();
-            
+
             builder.Services.AddScoped<UserManagementService>();
             builder.Services.AddSingleton<UserManagementHub>();
-            
+
+            builder.Services.AddScoped<ShowService>();
+            builder.Services.AddSingleton<ShowHub>();
+
             builder.Services.AddSignalR();
             builder.Services.AddBlazorCookiesServerSideServices();
             builder.Services.AddMudServices();
@@ -31,7 +35,7 @@ namespace CueCompanion
             builder.Services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    [ "application/octet-stream" ]);
+                    ["application/octet-stream"]);
             });
 
             WebApplication app = builder.Build();
@@ -46,8 +50,10 @@ namespace CueCompanion
             app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
             app.UseHttpsRedirection();
             app.UseAntiforgery();
-            app.MapHub<AuthHub>("/auth");
-            app.MapHub<UserManagementHub>("/user-management");
+            app.MapHub<AuthHub>("/api/auth");
+            app.MapHub<UserManagementHub>("/api/user-management");
+            app.MapHub<ShowHub>("/api/show");
+
 
             app.MapStaticAssets();
             app.MapRazorComponents<App>()

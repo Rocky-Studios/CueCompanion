@@ -4,6 +4,8 @@ namespace CueCompanion;
 
 public static class ShowManager
 {
+    public static Show? CurrentShow;
+
     public static void CreateDefaultRoles()
     {
         SQLiteConnection db = DatabaseHandler.Connection;
@@ -108,5 +110,11 @@ public static class ShowManager
         db.Insert(task1);
         db.Insert(task2);
         db.Insert(task3);
+    }
+
+    public static void Init()
+    {
+        SQLiteConnection db = DatabaseHandler.Connection;
+        CurrentShow = db.Table<Show>().FirstOrDefault();
     }
 }

@@ -1,3 +1,33 @@
+@inject ShowService ShowService
+
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
     <MudText Typo="Typo.h1">Show Info</MudText>
+    @if (_currentShow is { } show)
+    {
+        <MudText Typo="Typo.subtitle1">Show Name: @show.Name</MudText>
+        <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
+    }
+    else
+    {
+        <MudText>No show loaded</MudText>
+    }
 </GridChild>
+
+@code
+{
+    private Show? _currentShow;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ShowService.OnStateChanged += ShowInfoChanged;
+        
+
+        await ShowService.StartAsync(Navigation.BaseUri);
+        _currentShow = await ShowService.GetCurrentShowAsync();
+    }
+
+    private void ShowInfoChanged()
+    {
+        InvokeAsync(async () => { StateHasChanged(); });
+    }
+}

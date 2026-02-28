@@ -4,13 +4,11 @@ namespace CueCompanion.Services;
 
 public class AuthService : StateSubscriberService
 {
+    public readonly Dictionary<string, int> PermissionsCache = new();
     private HubConnection? _authHub;
     public User? User { get; private set; }
     public string? SessionKey { get; set; }
     public bool isLoading { get; set; } = false;
-
-
-    public readonly Dictionary<string, int> PermissionsCache = new();
 
 
     public void SetConnection(User user)
@@ -22,7 +20,7 @@ public class AuthService : StateSubscriberService
     public async Task StartAsync(string baseUrl)
     {
         _authHub = new HubConnectionBuilder()
-            .WithUrl($"{baseUrl}auth")
+            .WithUrl($"{baseUrl}api/auth")
             .WithAutomaticReconnect()
             .Build();
 
