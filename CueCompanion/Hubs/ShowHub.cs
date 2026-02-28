@@ -62,4 +62,42 @@ public class ShowHub : Hub
             }
         });
     }
+
+    public async Task NextCue(string sessionKey)
+    {
+        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);
+        if (!hasPermission)
+            return;
+
+        if (ShowManager.CurrentShow == null)
+            return;
+
+        Cue[] cues = ShowManager.GetCuesForShow(ShowManager.CurrentShow.Id);
+        int currentPosition = ShowManager.CurrentCuePosition ?? 0;
+        Cue? nextCue = cues.Where(c => c.Position > currentPosition).MinBy(c => c.Position);
+        if (nextCue != null)
+        {
+            ShowManager.CurrentCuePosition = nextCue.Position;
+            await BroadcastShowUpdate();
+        }
+    }
+
+    public async Task PreviousCue(string sessionKey)
+    {
+        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);
+        if (!hasPermission)
+            return;
+
+        if (ShowManager.CurrentShow == null)
+            return;
+
+        Cue[] cues = ShowManager.GetCuesForShow(ShowManager.CurrentShow.Id);
+        int currentPosition = ShowManager.CurrentCuePosition ?? 0;
+        Cue? previousCue = cues.Where(c => c.Position < currentPosition).MaxBy(c => c.Position);
+        if (previousCue != null)
+        {
+            ShowManager.CurrentCuePosition = previousCue.Position;
+            await BroadcastShowUpdate();
+        }
+    }
 }

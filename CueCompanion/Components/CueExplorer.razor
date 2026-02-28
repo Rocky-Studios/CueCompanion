@@ -8,9 +8,9 @@
         {
             <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
             <MudText Typo="Typo.h2">
-                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"/>
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="PreviousCue"/>
                 @cuePos
-                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"/>
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="NextCue"/>
             </MudText>
 
             <MudCard Elevation="4" style="background-color: #141414">
@@ -67,6 +67,22 @@
         if (ShowService?.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
         {
             await ShowService.StartShowAsync(key);
+        }
+    }
+
+    public async Task PreviousCue()
+    {
+        if (ShowService?.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
+        {
+            await ShowService.PreviousCueAsync(key);
+        }
+    }
+
+    public async Task NextCue()
+    {
+        if (ShowService?.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
+        {
+            await ShowService.NextCueAsync(key);
         }
     }
 
