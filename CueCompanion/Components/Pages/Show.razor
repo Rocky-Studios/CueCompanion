@@ -46,6 +46,10 @@
                 }, new DialogOptions { CloseOnEscapeKey = true });
             }
 
+            if (result.Success && result.Show is { } show)
+            {
+                CueRequestResult cueResult = await ShowService.GetCuesForShowAsync(key, show.Id);
+            }
             StateHasChanged();
         }
     }

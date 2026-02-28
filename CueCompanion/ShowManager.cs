@@ -6,6 +6,7 @@ public static class ShowManager
 {
     public static Show? CurrentShow;
     public static int? CurrentCuePosition;
+    public static bool IsShowActive { get; set; } = false;
 
     public static void CreateDefaultRoles()
     {
@@ -117,5 +118,19 @@ public static class ShowManager
     {
         SQLiteConnection db = DatabaseHandler.Connection;
         CurrentShow = db.Table<Show>().FirstOrDefault();
+    }
+
+    public static Cue[] GetCuesForShow(int showID)
+    {
+        SQLiteConnection db = DatabaseHandler.Connection;
+        return db.Table<Cue>().Where(c => c.ShowId == showID).ToArray();
+    }
+
+    public static CueTask[] GetTasksForShow(int showID)
+    {
+        SQLiteConnection db = DatabaseHandler.Connection;
+        Cue[] cues = GetCuesForShow(showID);
+        List<int> cueIds = cues.Select(c => c.Id).ToList();
+        return db.Table<CueTask>().Where(ct => cueIds.Contains(ct.CueId)).ToArray();
     }
 }

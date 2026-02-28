@@ -2,10 +2,7 @@
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
     <MudText Typo="Typo.h1">Show Info</MudText>
-    @if (_showInfoResult is
-        {
-            Show: { } show
-        })
+    @if (ShowService?.CurrentShow is { } show)
     {
         <MudText Typo="Typo.subtitle1">Show Name: @show.Name</MudText>
         <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
@@ -18,10 +15,6 @@
 
 @code
 {
-    private ShowRequestResult? _showInfoResult => ShowService is { } show && show.LatestInfo != null
-        ? show.LatestInfo
-        : null;
-
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
 

@@ -17,4 +17,25 @@ public class ShowHub : Hub
             CurrentCuePosition = hasPermission ? ShowManager.CurrentCuePosition : null
         };
     }
+
+    public async Task<CueRequestResult> GetCuesForShow(string sessionKey, int showID)
+    {
+        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ViewShow", out string? error);
+        if (!hasPermission)
+            return new CueRequestResult
+            {
+                Success = false,
+                ErrorMessage = error
+            };
+
+        Cue[] cues = ShowManager.GetCuesForShow(showID);
+        CueTask[] tasks = ShowManager.GetTasksForShow(showID);
+
+        return new CueRequestResult
+        {
+            Success = true,
+            Cues = cues,
+            Tasks = tasks
+        };
+    }
 }
