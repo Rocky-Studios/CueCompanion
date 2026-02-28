@@ -1,3 +1,5 @@
+@inject AuthService Auth
+
 <GridChild ColumnStart="1" ColumnEnd="2" RowStart="1" RowEnd="3">
     <MudText Typo="Typo.h1">Cue Explorer</MudText>
     @if (ShowService?.CurrentShow is { } show)
@@ -19,7 +21,7 @@
                 <div Class="d-flex flex-column gap-1">
                     @foreach (Cue cue in ShowService.CurrentCues)
                     {
-                        <CueCard CueName="@cue.Name" CueNumber="@cue.Position"/>
+                        <CueCard CueName="@cue.Name" CueNumber="@cue.Position" Color="GetCueColor(cue)"/>
                     }
                 </div>
             </MudCard>
@@ -28,7 +30,10 @@
         {
             <MudText Typo="Typo.body1">
                 Show not started.
-                <MudButton Color="Color.Primary" Variant="Variant.Outlined">Start</MudButton>
+                @if (HasControlPermissions)
+                {
+                    <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="OnStartShow">Start</MudButton>
+                }
             </MudText>
         }
     }
@@ -44,4 +49,33 @@
 {
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
+
+    [CascadingParameter]
+    public UserProvider? UserProvider { get; set; }
+
+    public bool HasControlPermissions
+    {
+        get
+        {
+            if (!Auth.PermissionsCache.TryGetValue("ControlShow", out int _)) return false;
+            return UserProvider?.CurrentUser?.HasPermission(Auth.PermissionsCache["ControlShow"]) ?? false;
+        }
+    }
+
+    private async Task OnStartShow()
+    {
+        if (ShowService?.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
+        {
+            await ShowService.StartShowAsync(key);
+        }
+    }
+
+    private CueCardColor GetCueColor(Cue cue)
+    {
+        if (ShowService?.CurrentCuePosition == cue.Position)
+            return CueCardColor.Green;
+        if (ShowService?.CurrentCuePosition is { } pos && cue.Position < pos)
+            return CueCardColor.Red;
+        return CueCardColor.Gray;
+    }
 }

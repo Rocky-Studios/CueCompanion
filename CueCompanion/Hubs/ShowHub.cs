@@ -38,4 +38,28 @@ public class ShowHub : Hub
             Tasks = tasks
         };
     }
+
+    public async Task StartShow(string sessionKey)
+    {
+        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);
+        if (hasPermission)
+            ShowManager.StartShow();
+
+        _ = BroadcastShowUpdate();
+    }
+
+    public async Task BroadcastShowUpdate()
+    {
+        await Clients.All.SendAsync("ShowUpdated", new ShowUpdate
+        {
+            Show = ShowManager.CurrentShow,
+            CurrentCuePosition = ShowManager.CurrentCuePosition,
+            Cues = new CueRequestResult
+            {
+                Success = true,
+                Cues = ShowManager.GetCuesForShow(ShowManager.CurrentShow?.Id ?? 0),
+                Tasks = ShowManager.GetTasksForShow(ShowManager.CurrentShow?.Id ?? 0)
+            }
+        });
+    }
 }

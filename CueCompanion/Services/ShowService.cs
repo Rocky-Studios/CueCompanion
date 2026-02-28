@@ -20,6 +20,18 @@ public class ShowService : StateSubscriberService
             .WithAutomaticReconnect()
             .Build();
 
+        _showHub.On("ShowUpdated", (ShowUpdate update) =>
+        {
+            LatestShowInfo = new ShowRequestResult
+            {
+                Success = true,
+                Show = update.Show,
+                CurrentCuePosition = update.CurrentCuePosition
+            };
+            LatestCueInfo = update.Cues;
+            UpdateState();
+        });
+
         await _showHub.StartAsync();
     }
 
@@ -47,5 +59,16 @@ public class ShowService : StateSubscriberService
         LatestCueInfo = await _showHub.InvokeAsync<CueRequestResult>("GetCuesForShow", sessionKey, showID);
         UpdateState();
         return LatestCueInfo.Value!;
+    }
+
+    public async Task StartShowAsync(string sessionKey)
+    {
+        if (_showHub == null)
+            throw new InvalidOperationException("ShowHub connection is not established.");
+
+        if (_showHub.State != HubConnectionState.Connected)
+            throw new InvalidOperationException("ShowHub connection is not connected.");
+
+        await _showHub.InvokeAsync("StartShow", sessionKey);
     }
 }
