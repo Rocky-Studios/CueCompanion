@@ -105,7 +105,16 @@
     }
     
     private Action? _stateChangeHandler;
-    public bool HasPermissions => UserProvider?.CurrentUser?.HasPermission(Auth.PermissionsCache["ManageUsers"]) ?? false;
+
+    public bool HasPermissions
+    {
+        get 
+        {
+            if(Auth.PermissionsCache.TryGetValue("ManageUsers", out int _) == false)
+                return false;
+            return UserProvider?.CurrentUser?.HasPermission(Auth.PermissionsCache["ManageUsers"]) ?? false;
+        }
+    }
     private UserInfo[] _users = [];
     
     readonly CreateUserModel model = new();
