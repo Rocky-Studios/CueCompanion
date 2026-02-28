@@ -14,7 +14,7 @@ namespace CueCompanion
         {
             DatabaseHandler.Init();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            builder.WebHost.UseUrls("http://0.0.0.0:5277");
+            //builder.WebHost.UseUrls("http://0.0.0.0:5277");  // SIGNIFICANTLY SLOWS DOWN THE APP SO ONLY USE IF ABSOLUTELY NECESSARY
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
