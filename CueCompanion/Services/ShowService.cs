@@ -129,4 +129,22 @@ public class ShowService : StateSubscriberService
 
         await _showHub.InvokeAsync("UpdateCue", sessionKey, cue);
     }
+
+    public async Task CreateNewCueAsync(string sessionKey, int showID)
+    {
+        if (_showHub == null)
+            throw new InvalidOperationException("ShowHub connection is not established.");
+
+        if (_showHub.State != HubConnectionState.Connected)
+            throw new InvalidOperationException("ShowHub connection is not connected.");
+
+        Cue newCue = new()
+        {
+            ShowId = showID,
+            Position = CurrentCues.Length > 0 ? CurrentCues.Max(c => c.Position) + 1 : 1,
+            Name = "New Cue"
+        };
+
+        await _showHub.InvokeAsync("CreateNewCue", sessionKey, newCue);
+    }
 }

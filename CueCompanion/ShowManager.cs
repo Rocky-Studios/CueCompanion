@@ -216,4 +216,10 @@ public static class ShowManager
 
         db.Update(newCue);
     }
+
+    public static void AddCue(Cue cue)
+    {
+        SQLiteConnection db = DatabaseHandler.Connection;
+        db.Insert(cue);
+    }
 }

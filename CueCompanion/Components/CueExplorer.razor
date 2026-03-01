@@ -19,6 +19,12 @@
             <MudCard Elevation="4" style="background-color: #141414">
                 <div class="d-flex justify-content-between">
                     <MudText Typo="Typo.subtitle1">CUES</MudText>
+                    @if (IsEditMode)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="CreateNewCue"
+                                       Size="Size.Small">Add new
+                        </MudIconButton>
+                    }
                     <MudText Typo="Typo.subtitle1">@ShowService.CurrentCues.Length ITEMS</MudText>
                 </div>
                 <div Class="d-flex flex-column gap-1">
@@ -114,6 +120,14 @@
             if (ShowService?.CurrentCuePosition is { } pos && cue.Position < pos)
                 return CueCardColor.Red;
             return CueCardColor.Gray;
+        }
+    }
+
+    private async Task CreateNewCue()
+    {
+        if (ShowService?.CurrentShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
+        {
+            await ShowService.CreateNewCueAsync(key, showID);
         }
     }
 }
