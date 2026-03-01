@@ -147,6 +147,11 @@ span.nav-label
     color: white;
 }
 
+.mud-paper.cue-card-dark-red {
+    background-color: #7a2227;
+    color: white;
+}
+
 .edit-mode-button.mud-button.mud-button-filled {
     position: fixed;
     bottom: 2rem;
