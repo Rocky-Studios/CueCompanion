@@ -8,6 +8,12 @@ public static class ShowManager
     public static int? CurrentCuePosition;
     public static bool IsShowActive { get; set; } = false;
 
+    public static Role[] GetRoles()
+    {
+        SQLiteConnection db = DatabaseHandler.Connection;
+        return db.Table<Role>().ToArray();
+    }
+
     public static void CreateDefaultRoles()
     {
         SQLiteConnection db = DatabaseHandler.Connection;

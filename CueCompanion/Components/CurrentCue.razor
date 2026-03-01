@@ -3,7 +3,8 @@
         {
             CurrentShow: { } show,
             CurrentCuePosition: { } cuePos,
-            TasksForCurrentCue: { } tasks
+            TasksForCurrentCue: { } tasks,
+            CurrentRoles: { } roles
         })
     {
         if (ShowService.CurrentCue is { } cue)
@@ -11,8 +12,33 @@
             <MudText Typo="Typo.h1">Current Cue - @cue.Name </MudText>
 
 
-            <CueTasksFilter/>
-            <CueTasksView Tasks="tasks"/>
+            <div class="d-flex flex-grow-1 flex-wrap justify-center align-center px-8 pb-8 pt-2">
+                @foreach (Role role in roles)
+                {
+                    <MudCheckBox Color="Color.Primary" Label="@role.Name" T="bool" Dense="true"
+                                 @bind-Value="_roleFilters[role.Id]"/>
+                }
+
+            </div>
+            <div>
+                @foreach (CueTask cueTask in tasks)
+                {
+                    @if (cueTask.RoleId is null)
+                    {
+                        <MudText Typo="Typo.h3">Unassigned Role</MudText>
+                        <p>@cueTask.Tasks</p>
+                    }
+                    else if (_roleFilters[cueTask.RoleId.Value])
+                    {
+                        Role? role = roles.FirstOrDefault(r => r.Id == cueTask.RoleId.Value);
+                        if (role is not null)
+                        {
+                            <MudText Typo="Typo.h3">@role.Name </MudText>
+                            <p>@cueTask.Tasks</p>
+                        }
+                    }
+                }
+            </div>
         }
     }
     else
@@ -27,8 +53,18 @@
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
 
+    //              RoleID, IsChecked
+    private Dictionary<int, bool> _roleFilters = new();
     protected override async Task OnInitializedAsync()
     {
         ShowService?.OnStateChanged += () => InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ShowService?.CurrentRoles is { } roles && !_roleFilters.Any())
+        {
+            _roleFilters = roles.ToDictionary(r => r.Id, _ => false);
+        }
     }
 }

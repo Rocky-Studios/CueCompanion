@@ -14,7 +14,8 @@ public class ShowHub : Hub
             Success = hasPermission,
             ErrorMessage = error,
             Show = hasPermission ? ShowManager.CurrentShow : null,
-            CurrentCuePosition = hasPermission ? ShowManager.CurrentCuePosition : null
+            CurrentCuePosition = hasPermission ? ShowManager.CurrentCuePosition : null,
+            Roles = hasPermission ? ShowManager.GetRoles() : null
         };
     }
 
@@ -59,7 +60,8 @@ public class ShowHub : Hub
                 Success = true,
                 Cues = ShowManager.GetCuesForShow(ShowManager.CurrentShow?.Id ?? 0),
                 Tasks = ShowManager.GetTasksForShow(ShowManager.CurrentShow?.Id ?? 0)
-            }
+            },
+            Roles = ShowManager.GetRoles()
         });
     }
 

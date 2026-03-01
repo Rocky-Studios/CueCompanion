@@ -15,6 +15,7 @@ public class ShowService : StateSubscriberService
     public CueTask[] TasksForCurrentCue => Tasks.Where(t => t.CueId == CurrentCue?.Id).ToArray();
 
     public Cue? CurrentCue => CurrentCues.FirstOrDefault(c => c.Position == CurrentCuePosition);
+    public Role[] CurrentRoles => LatestShowInfo?.Roles ?? [];
 
     public async Task StartAsync(string baseUrl)
     {
@@ -29,7 +30,8 @@ public class ShowService : StateSubscriberService
             {
                 Success = true,
                 Show = update.Show,
-                CurrentCuePosition = update.CurrentCuePosition
+                CurrentCuePosition = update.CurrentCuePosition,
+                Roles = update.Roles
             };
             LatestCueInfo = update.Cues;
             UpdateState();
