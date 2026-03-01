@@ -6,6 +6,22 @@
     {
         <MudText Typo="Typo.subtitle1">Show Name: @show.Name</MudText>
         <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
+
+        <MudText Typo="Typo.body1">
+            <br/>
+            @show.Description
+            <br/>
+            @show.Notes
+            <br/>
+        </MudText>
+
+        <MudDivider/>
+        <MudText Typo="Typo.body1">Date: @show.Start.Date.ToShortDateString()</MudText>
+        <MudText Typo="Typo.body1">Start time: @show.Start.ToLocalTime().ToLongTimeString()</MudText>
+        <MudText Typo="Typo.body1">End time: @show.End.ToLocalTime().ToLongTimeString()</MudText>
+        <MudDivider/>
+        <MudText Typo="Typo.body1">Active: @(ShowService.CurrentCuePosition == null ? "False" : "True")</MudText>
+        <MudText Typo="Typo.body1">Number of Cues: @ShowService.CurrentCues.Length</MudText>
     }
     else
     {
