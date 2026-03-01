@@ -1,1 +1,18 @@
+.edit-mode-overlay {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    border: 2px solid red;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
 
+.edit-mode-label {
+    font-size: 20px;
+    color: red;
+    font-weight: bold;
+}

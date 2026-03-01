@@ -7,6 +7,13 @@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <CascadingValue Value="ShowService">
         <CascadingValue Name="IsEditMode" Value="isEditMode">
+            <MudOverlay @bind-Visible="isEditMode" AutoClose="false" Style="z-index: 2000 !important;">
+                <div class="edit-mode-overlay">
+                    <div class="edit-mode-label">
+                        EDIT MODE ACTIVE
+                    </div>
+                </div>
+            </MudOverlay>
             <GridContainer AutoVertical="true">
                 <CueExplorer/>
                 <CurrentCue/>
@@ -23,7 +30,8 @@
                Variant="Variant.Filled"
                Color="@editButtonColor"
                StartIcon="@Icons.Material.Filled.Edit"
-               Size="Size.Small">
+               Size="Size.Small"
+               Style="z-index: 2500 !important;">
         Edit
     </MudButton>
 }
