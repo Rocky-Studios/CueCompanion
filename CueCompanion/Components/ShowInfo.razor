@@ -17,8 +17,8 @@
 
         <MudDivider/>
         <MudText Typo="Typo.body1">Date: @show.Start.Date.ToShortDateString()</MudText>
-        <MudText Typo="Typo.body1">Start time: @show.Start.ToLocalTime().ToLongTimeString()</MudText>
-        <MudText Typo="Typo.body1">End time: @show.End.ToLocalTime().ToLongTimeString()</MudText>
+        <MudText Typo="Typo.body1">Start time: @show.Start.ToLongTimeString()</MudText>
+        <MudText Typo="Typo.body1">End time: @show.End.ToLongTimeString()</MudText>
         <MudDivider/>
         <MudText Typo="Typo.body1">Active: @(ShowService.CurrentCuePosition == null ? "False" : "True")</MudText>
         <MudText Typo="Typo.body1">Number of Cues: @ShowService.CurrentCues.Length</MudText>
