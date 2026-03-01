@@ -98,4 +98,15 @@ public class ShowService : StateSubscriberService
 
         await _showHub.InvokeAsync("PreviousCue", sessionKey);
     }
+
+    public async Task UpdateShowAsync(string sessionKey)
+    {
+        if (_showHub == null)
+            throw new InvalidOperationException("ShowHub connection is not established.");
+
+        if (_showHub.State != HubConnectionState.Connected)
+            throw new InvalidOperationException("ShowHub connection is not connected.");
+
+        await _showHub.InvokeAsync("UpdateShow", sessionKey, CurrentShow);
+    }
 }

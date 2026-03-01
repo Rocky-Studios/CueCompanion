@@ -65,6 +65,19 @@ public class ShowHub : Hub
         });
     }
 
+    public async Task UpdateShow(string sessionKey, Show show)
+    {
+        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
+        if (!hasPermission)
+            return;
+
+        // Prevent changing the identity of the current show by validating the show ID.
+        if (ShowManager.CurrentShow != null && show.Id != ShowManager.CurrentShow.Id)
+            return;
+        ShowManager.CurrentShow = show;
+        await BroadcastShowUpdate();
+    }
+
     public async Task NextCue(string sessionKey)
     {
         bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);

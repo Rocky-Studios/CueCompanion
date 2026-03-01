@@ -6,20 +6,45 @@
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <CascadingValue Value="ShowService">
-        <GridContainer AutoVertical="true">
-            <CueExplorer/>
-            <CurrentCue/>
-            <CueNotes/>
-            <ShowInfo/>
-        </GridContainer>
+        <CascadingValue Name="IsEditMode" Value="isEditMode">
+            <GridContainer AutoVertical="true">
+                <CueExplorer/>
+                <CurrentCue/>
+                <CueNotes/>
+                <ShowInfo/>
+            </GridContainer>
+        </CascadingValue>
     </CascadingValue>
 </MudContainer>
-
+@if (HasEditPermissions)
+{
+    <MudButton OnClick="ToggleEditMode"
+               Class="edit-mode-button"
+               Variant="Variant.Filled"
+               Color="@editButtonColor"
+               StartIcon="@Icons.Material.Filled.Edit"
+               Size="Size.Small">
+        Edit
+    </MudButton>
+}
 
 @code
 {
+
+    public bool HasEditPermissions
+    {
+        get
+        {
+            if (!Auth.PermissionsCache.TryGetValue("EditShow", out int _)) return false;
+            return UserProvider?.CurrentUser?.HasPermission(Auth.PermissionsCache["EditShow"]) ?? false;
+        }
+    }
+
     [CascadingParameter]
     public UserProvider? UserProvider { get; set; }
+
+    private bool isEditMode;
+    private Color editButtonColor => isEditMode ? Color.Primary : Color.Default;
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,5 +77,11 @@
             }
             StateHasChanged();
         }
+    }
+
+    private void ToggleEditMode()
+    {
+        isEditMode = !isEditMode;
+        StateHasChanged();
     }
 }

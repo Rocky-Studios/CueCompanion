@@ -13,7 +13,8 @@ public static class PermissionManager
             new() { Name = "Admin" },
             new() { Name = "ManageUsers" },
             new() { Name = "ViewShow" },
-            new() { Name = "ControlShow" }
+            new() { Name = "ControlShow" },
+            new() { Name = "EditShow" }
         ];
         Permission[] existingPermissions = db.Table<Permission>().ToArray();
         Permission[] permissionsToAdd =

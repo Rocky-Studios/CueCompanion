@@ -1,10 +1,10 @@
-
+@inject AuthService Auth
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
     <MudText Typo="Typo.h1">Show Info</MudText>
     @if (ShowService?.CurrentShow is { } show)
     {
-        <MudText Typo="Typo.subtitle1">Show Name: @show.Name</MudText>
+        <EditableText @bind-Value="show.Name" IsEditMode="IsEditMode" OnValueChanged="ShowNameChanged"/>
         <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
 
         <MudText Typo="Typo.body1">
@@ -34,6 +34,8 @@
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
 
+    [CascadingParameter(Name = "IsEditMode")]
+    public bool IsEditMode { get; set; }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -43,6 +45,15 @@
 
     private void ShowInfoChanged()
     {
-        InvokeAsync(async () => { StateHasChanged(); });
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ShowNameChanged(string newName)
+    {
+        if (ShowService?.CurrentShow is { } show && Auth.SessionKey is { } key)
+        {
+            show.Name = newName;
+            await ShowService.UpdateShowAsync(key);
+        }
     }
 }
