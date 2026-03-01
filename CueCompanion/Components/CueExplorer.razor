@@ -4,14 +4,17 @@
     <MudText Typo="Typo.h1">Cue Explorer</MudText>
     @if (ShowService?.CurrentShow is { } show)
     {
-        @if (ShowService.CurrentCuePosition is { } cuePos)
+        @if (ShowService.CurrentCuePosition is not null || IsEditMode)
         {
-            <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
-            <MudText Typo="Typo.h2">
-                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="PreviousCue"/>
-                @cuePos
-                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="NextCue"/>
-            </MudText>
+            @if (ShowService.CurrentCuePosition is { } cuePos)
+            {
+                <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
+                <MudText Typo="Typo.h2">
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="PreviousCue"/>
+                    @cuePos
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="NextCue"/>
+                </MudText>
+            }
 
             <MudCard Elevation="4" style="background-color: #141414">
                 <div class="d-flex justify-content-between">
@@ -21,7 +24,8 @@
                 <div Class="d-flex flex-column gap-1">
                     @foreach (Cue cue in ShowService.CurrentCues)
                     {
-                        <CueCard CueName="@cue.Name" CueNumber="@cue.Position" Color="GetCueColor(cue)"/>
+                        <CueCard CueName="@cue.Name" CueNumber="@cue.Position" Color="GetCueColor(cue)"
+                                 OnClick="@(() => OnCueCardClick(cue))"/>
                     }
                 </div>
             </MudCard>
@@ -53,6 +57,8 @@
     [CascadingParameter]
     public UserProvider? UserProvider { get; set; }
 
+    [CascadingParameter(Name = "IsEditMode")]
+    public bool IsEditMode { get; set; }
     public bool HasControlPermissions
     {
         get
@@ -61,6 +67,13 @@
             return UserProvider?.CurrentUser?.HasPermission(Auth.PermissionsCache["ControlShow"]) ?? false;
         }
     }
+
+    private void OnCueCardClick(Cue cue)
+    {
+        if (!IsEditMode) return;
+        ShowService?.EditModeCuePosition = cue.Position;
+    }
+
 
     private async Task OnStartShow()
     {
@@ -88,10 +101,19 @@
 
     private CueCardColor GetCueColor(Cue cue)
     {
-        if (ShowService?.CurrentCuePosition == cue.Position)
-            return CueCardColor.Green;
-        if (ShowService?.CurrentCuePosition is { } pos && cue.Position < pos)
-            return CueCardColor.Red;
-        return CueCardColor.Gray;
+        if (IsEditMode)
+        {
+            if (ShowService?.EditModeCuePosition == cue.Position)
+                return CueCardColor.Green;
+            return CueCardColor.Gray;
+        }
+        else
+        {
+            if (ShowService?.CurrentCuePosition == cue.Position)
+                return CueCardColor.Green;
+            if (ShowService?.CurrentCuePosition is { } pos && cue.Position < pos)
+                return CueCardColor.Red;
+            return CueCardColor.Gray;
+        }
     }
 }

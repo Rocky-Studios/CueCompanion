@@ -1,7 +1,7 @@
 @if (IsEditMode)
 {
     <div style="display: flex; align-items: center; gap: 4px;">
-        <MudText Typo="Typo.subtitle1" style="margin: 0;">Show Name:</MudText>
+        <MudText Typo="Typo.subtitle1" style="margin: 0;">@Label</MudText>
         <MudTextField @bind-Value="@Value" style="flex: 1;" Class="no-padding-input" @onblur="OnBlur"
                       AdornmentIcon="@Icons.Material.Filled.Edit" Adornment="Adornment.End"
         ></MudTextField>
@@ -9,13 +9,16 @@
 }
 else
 {
-    <MudText Typo="Typo.subtitle1">Show Name: @Value</MudText>
+    <MudText Typo="Typo.subtitle1">@Label @Value</MudText>
 }
 
 @code
 {
     [Parameter]
     public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
 
     [Parameter]
     public EventCallback<string> ValueChanged { get; set; }

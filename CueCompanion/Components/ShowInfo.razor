@@ -4,7 +4,8 @@
     <MudText Typo="Typo.h1">Show Info</MudText>
     @if (ShowService?.CurrentShow is { } show)
     {
-        <EditableText @bind-Value="show.Name" IsEditMode="IsEditMode" OnValueChanged="ShowNameChanged"/>
+        <EditableText Label="Show Name:" @bind-Value="show.Name" IsEditMode="IsEditMode"
+                      OnValueChanged="ShowNameChanged"/>
         <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
 
         <MudText Typo="Typo.body1">

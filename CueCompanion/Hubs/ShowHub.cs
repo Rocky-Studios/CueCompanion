@@ -78,6 +78,19 @@ public class ShowHub : Hub
         await BroadcastShowUpdate();
     }
 
+    public async Task UpdateCue(string sessionKey, Cue cue)
+    {
+        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
+        if (!hasPermission)
+            return;
+
+        if (ShowManager.CurrentShow == null)
+            return;
+
+        ShowManager.OverwriteCue(cue.Id, cue);
+        await BroadcastShowUpdate();
+    }
+
     public async Task NextCue(string sessionKey)
     {
         bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);

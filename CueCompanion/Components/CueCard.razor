@@ -1,6 +1,8 @@
-<MudCard Class="@GetClass()">
+@inject AuthService Auth
+
+<MudCard Class="@GetClass()" @onclick="OnCardClick">
     <p Class="d-flex justify-content-between m-1">
-        <MudText Inline="true">@CueName</MudText>
+        <EditableText @bind-Value="@CueName" IsEditMode="IsEditMode" OnValueChanged="CueNameChanged"/>
         <MudText Inline="true">@CueNumber</MudText>
     </p>
 </MudCard>
@@ -10,8 +12,25 @@
     [Parameter] public required string CueName { get; set; }
     [Parameter] public required int CueNumber { get; set; }
 
+    [CascadingParameter]
+    public ShowService? ShowService { get; set; }
+
     [Parameter]
     public required CueCardColor Color { get; set; } = CueCardColor.Gray;
+
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+
+    [CascadingParameter(Name = "IsEditMode")]
+    public bool IsEditMode { get; set; }
+
+
+    private async Task OnCardClick()
+    {
+        await OnClick.InvokeAsync();
+    }
 
     private string GetClass()
     {
@@ -22,5 +41,15 @@
             CueCardColor.Red => "cue-card-red",
             _ => "cue-card-gray"
         };
+    }
+
+    private void CueNameChanged(string newName)
+    {
+        Cue? cue = ShowService?.CurrentCues.FirstOrDefault(c => c.Position == CueNumber);
+        if (cue is not null && Auth.SessionKey is { } key)
+        {
+            cue.Name = newName;
+            ShowService?.UpdateCueAsync(key, CueNumber);
+        }
     }
 }

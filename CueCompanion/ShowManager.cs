@@ -204,4 +204,16 @@ public static class ShowManager
         IsShowActive = true;
         CurrentCuePosition = cues.OrderBy(c => c.Position).FirstOrDefault()?.Position ?? 1;
     }
+
+    public static void OverwriteCue(int cueID, Cue newCue)
+    {
+        SQLiteConnection db = DatabaseHandler.Connection;
+        Cue? existingCue = db.Table<Cue>().FirstOrDefault(c => c.Id == cueID);
+        if (existingCue == null)
+            throw new InvalidOperationException($"Cue with ID {cueID} not found.");
+
+        newCue.Id = cueID;
+
+        db.Update(newCue);
+    }
 }
