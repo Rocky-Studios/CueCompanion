@@ -222,4 +222,10 @@ public static class ShowManager
         SQLiteConnection db = DatabaseHandler.Connection;
         db.Insert(cue);
     }
+
+    public static void AddCueTask(CueTask task)
+    {
+        SQLiteConnection db = DatabaseHandler.Connection;
+        db.Insert(task);
+    }
 }

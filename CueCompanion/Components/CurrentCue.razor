@@ -1,15 +1,26 @@
+@using System.ComponentModel.DataAnnotations
+@inject AuthService Auth
 <GridChild ColumnStart="2" ColumnEnd="2" RowStart="1" RowEnd="3">
     @if (ShowService is
         {
-            CurrentShow: { } show,
-            CurrentCuePosition: { } cuePos,
             TasksForCurrentCue: { } tasks,
             CurrentRoles: { } roles
         })
     {
-        if (ShowService.CurrentCue is { } cue)
+        if (IsEditMode)
         {
-            <MudText Typo="Typo.h1">Current Cue - @cue.Name </MudText>
+            _currentCue = ShowService.EditModeCue;
+            _currentTasks = ShowService.Tasks.Where(t => t.CueId == _currentCue?.Id).ToList();
+        }
+        else
+        {
+            _currentCue = ShowService.CurrentCue;
+            _currentTasks = tasks.ToList();
+        }
+
+        if (_currentCue is not null)
+        {
+            <MudText Typo="Typo.h1">Current Cue - @_currentCue.Name </MudText>
 
 
             <div class="d-flex flex-grow-1 flex-wrap justify-center align-center px-8 pb-8 pt-2">
@@ -21,24 +32,52 @@
 
             </div>
             <div>
-                @foreach (CueTask cueTask in tasks)
+                @foreach (CueTask cueTask in _currentTasks)
                 {
                     @if (cueTask.RoleId is null)
                     {
                         <MudText Typo="Typo.h3">Unassigned Role</MudText>
                         <p>@cueTask.Tasks</p>
                     }
-                    else if (_roleFilters[cueTask.RoleId.Value])
+                    else if (_roleFilters[cueTask.RoleId.Value] || IsEditMode)
                     {
                         Role? role = roles.FirstOrDefault(r => r.Id == cueTask.RoleId.Value);
                         if (role is not null)
                         {
                             <MudText Typo="Typo.h3">@role.Name </MudText>
                             <p>@cueTask.Tasks</p>
+                            <MudDivider/>
                         }
                     }
                 }
+                @if (IsEditMode)
+                {
+                    <MudCard Elevation="4" Outlined="true">
+                        <MudText Typo="Typo.h3">New task</MudText>
+                        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                            <DataAnnotationsValidator/>
+                            <MudTextField Label="Task" Class="mt-3" @bind-Value="model.Tasks"
+                                          For="@(() => model.Tasks)" InputType="InputType.Text"/>
+                            <MudSelect T="int?" Label="Role" Class="mt-3" @bind-Value="model.RoleId"
+                                       For="@(() => model.RoleId)">
+                                <MudSelectItem T="int?" Value="null">Unassigned</MudSelectItem>
+                                @foreach (Role role in roles)
+                                {
+                                    <MudSelectItem T="int?" Value="@role.Id">@role.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                       Class="ml-auto mt-2">
+                                Create new task
+                            </MudButton>
+                        </EditForm>
+                    </MudCard>
+                }
             </div>
+        }
+        else
+        {
+            <MudText Typo="Typo.h1">Current Cue</MudText>
         }
     }
     else
@@ -50,11 +89,38 @@
 
 @code
 {
+    [CascadingParameter(Name = "IsEditMode")]
+    public bool IsEditMode { get; set; }
+
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
 
     //              RoleID, IsChecked
     private Dictionary<int, bool> _roleFilters = new();
+
+    private Cue? _currentCue;
+    private List<CueTask>? _currentTasks;
+
+    private readonly NewTaskModel model = new();
+
+    private class NewTaskModel
+    {
+        [Required]
+        public string Tasks { get; set; } = string.Empty;
+
+        public int? RoleId { get; set; }
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            await ShowService?.CreateCueTaskAsync(key, _currentCue.Id, model.RoleId, model.Tasks);
+            model.Tasks = string.Empty;
+            model.RoleId = null;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         ShowService?.OnStateChanged += () => InvokeAsync(StateHasChanged);
@@ -66,5 +132,7 @@
         {
             _roleFilters = roles.ToDictionary(r => r.Id, _ => false);
         }
+
+        InvokeAsync(StateHasChanged);
     }
 }

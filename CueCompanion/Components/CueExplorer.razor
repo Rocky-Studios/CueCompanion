@@ -6,7 +6,7 @@
     {
         @if (ShowService.CurrentCuePosition is not null || IsEditMode)
         {
-            @if (ShowService.CurrentCuePosition is { } cuePos)
+            @if (ShowService.CurrentCuePosition is { } cuePos && !IsEditMode)
             {
                 <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
                 <MudText Typo="Typo.h2">
@@ -78,6 +78,7 @@
     {
         if (!IsEditMode) return;
         ShowService?.EditModeCuePosition = cue.Position;
+        ShowService?.UpdateState();
     }
 
 

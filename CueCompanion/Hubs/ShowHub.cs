@@ -141,4 +141,17 @@ public class ShowHub : Hub
             await BroadcastShowUpdate();
         }
     }
+
+    public async Task CreateCueTask(string sessionKey, CueTask task)
+    {
+        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
+        if (!hasPermission)
+            return;
+
+        if (ShowManager.CurrentShow == null)
+            return;
+
+        ShowManager.AddCueTask(task);
+        await BroadcastShowUpdate();
+    }
 }
