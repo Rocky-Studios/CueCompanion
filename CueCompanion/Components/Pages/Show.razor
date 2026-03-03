@@ -91,6 +91,7 @@
     private void ToggleEditMode()
     {
         isEditMode = !isEditMode;
+        ShowService.CurrentMode = isEditMode ? Mode.Edit : Mode.Live;
         StateHasChanged();
     }
 }

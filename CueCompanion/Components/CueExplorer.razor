@@ -77,7 +77,7 @@
     private void OnCueCardClick(Cue cue)
     {
         if (!IsEditMode) return;
-        ShowService?.EditModeCuePosition = cue.Position;
+        ShowService?.CurrentCuePosition = cue.Position;
         ShowService?.UpdateState();
     }
 
@@ -110,7 +110,7 @@
     {
         if (IsEditMode)
         {
-            if (ShowService?.EditModeCuePosition == cue.Position)
+            if (ShowService?.CurrentCuePosition == cue.Position)
                 return CueCardColor.Green;
             return CueCardColor.Gray;
         }

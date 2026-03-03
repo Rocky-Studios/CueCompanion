@@ -7,14 +7,14 @@
             CurrentRoles: { } roles
         })
     {
+        
+        _currentCue = ShowService.CurrentCue;
         if (IsEditMode)
         {
-            _currentCue = ShowService.EditModeCue;
             _currentTasks = ShowService.Tasks.Where(t => t.CueId == _currentCue?.Id).ToList();
         }
         else
         {
-            _currentCue = ShowService.CurrentCue;
             _currentTasks = tasks.ToList();
         }
 

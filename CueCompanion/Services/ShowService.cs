@@ -9,7 +9,31 @@ public class ShowService : StateSubscriberService
     private CueRequestResult? LatestCueInfo;
     private ShowRequestResult? LatestShowInfo;
     public Show? CurrentShow => LatestShowInfo?.Show;
-    public int? CurrentCuePosition => LatestShowInfo?.CurrentCuePosition;
+    public int? CurrentCuePosition
+    {
+        get => CurrentMode switch
+        {
+            Mode.Live => LiveModeCuePosition,
+            Mode.Edit => EditModeCuePosition,
+            Mode.Browse => BrowseModeCuePosition,
+            _ => null
+        };
+        set
+        {
+            switch (CurrentMode)
+            {
+                case Mode.Live:
+                    throw new ArgumentException("Cannot directly modify the live cue position. Use NextCue or PreviousCue instead.");
+                case Mode.Edit:
+                    EditModeCuePosition = value;
+                    break;
+                case Mode.Browse:
+                    BrowseModeCuePosition = value;
+                    break;
+            }
+        }
+    }
+
     public Cue[] CurrentCues => LatestCueInfo?.Cues ?? [];
     public CueTask[] Tasks => LatestCueInfo?.Tasks ?? [];
     public CueTask[] TasksForCurrentCue => Tasks.Where(t => t.CueId == CurrentCue?.Id).ToArray();
@@ -17,12 +41,11 @@ public class ShowService : StateSubscriberService
     public Cue? CurrentCue => CurrentCues.FirstOrDefault(c => c.Position == CurrentCuePosition);
     public Role[] CurrentRoles => LatestShowInfo?.Roles ?? [];
 
-    public int? EditModeCuePosition { get; set; }
+    private int? LiveModeCuePosition => LatestShowInfo?.CurrentCuePosition;
+    private int? EditModeCuePosition;
+    private int? BrowseModeCuePosition;
 
-    public Cue? EditModeCue => EditModeCuePosition.HasValue
-        ? CurrentCues.FirstOrDefault(c => c.Position == EditModeCuePosition.Value)
-        : null;
-
+    public Mode CurrentMode = Mode.Live;
 
     public async Task StartAsync(string baseUrl)
     {
@@ -165,4 +188,11 @@ public class ShowService : StateSubscriberService
 
         await _showHub.InvokeAsync("CreateCueTask", sessionKey, newTask);
     }
+}
+
+public enum Mode
+{
+    Live,
+    Edit,
+    Browse
 }
