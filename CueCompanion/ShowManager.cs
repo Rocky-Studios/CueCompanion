@@ -211,7 +211,7 @@ public static class ShowManager
 
     private static SQLiteConnection Db => DatabaseHandler.Connection;
     
-    public static EditActionResult EditAction(EditModeMethod method, object newObject, Type objectType)
+    public static EditActionResult EditAction(EditModeMethod method, object newObject, Type objectType, EditParameters? parameters)
     {
         if (!newObject.GetType().Equals(objectType))
         {
@@ -233,6 +233,37 @@ public static class ShowManager
             {
                 Db.Delete(newObject);
                 return true;
+            }
+            case EditModeMethod.Move:
+            {
+                if (newObject is Cue cue && parameters is
+                    {
+                        Direction: var direction
+                    })
+                {
+                    Cue? cueBefore = Db.Table<Cue>().ToList().FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position - 1);
+                    Cue? cueAfter = Db.Table<Cue>().ToList().FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position + 1);
+                    if (direction == -1 && cueBefore == null || direction == 1 && cueAfter == null)
+                    {
+                        return "Cannot move cue further in that direction.";
+                    }
+                    
+                    cue.Position += direction;
+                    Db.Update(cue);
+                    
+                    // Move the other cue in the opposite direction to swap positions
+                    Cue? otherCue = direction == -1 ? cueBefore : cueAfter;
+                    if (otherCue != null)
+                    {   
+                        otherCue.Position -= direction;
+                        Db.Update(otherCue);
+                    }
+                    return true;
+                }
+                else
+                {
+                    return "Move action is only implemented for Cues with a Direction parameter.";
+                }
             }
             default: return "Not implemented " + method + " " + objectType;
         }

@@ -28,9 +28,9 @@
                     <MudText Typo="Typo.subtitle1">@ShowService.CurrentCues.Length ITEMS</MudText>
                 </div>
                 <div Class="d-flex flex-column gap-1">
-                    @foreach (Cue cue in ShowService.CurrentCues)
+                    @foreach (Cue cue in GetSortedCues())
                     {
-                        <CueCard CueName="@cue.Name" CueNumber="@cue.Position" Color="GetCueColor(cue)"
+                        <CueCard Cue="@cue" Color="GetCueColor(cue)"
                                  OnClick="@(() => OnCueCardClick(cue))"/>
                     }
                 </div>
@@ -129,13 +129,19 @@
     {
         if (ShowService?.CurrentShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
         {
+            int lastCuePosition = ShowService.CurrentCues.Length > 0 ? ShowService.CurrentCues.Max(c => c.Position) : 0;
             Cue newCue = new()
             {
                 Name = "New Cue",
                 ShowId = showID,
-                Position = 100
+                Position = lastCuePosition+1
             };
             await ShowService.SendEditModeAction(key, EditModeMethod.Create, newCue);
         }
+    }
+    
+    private IEnumerable<Cue> GetSortedCues()
+    {
+        return ShowService?.CurrentCues.OrderBy(c => c.Position) ?? Enumerable.Empty<Cue>();
     }
 }

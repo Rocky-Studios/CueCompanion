@@ -111,7 +111,7 @@ public class ShowHub : Hub
     };
 
 
-    public async Task<EditActionResult> EditModeAction(string sessionKey, EditModeMethod method, JsonElement newObject, string objectTypeAsString)
+    public async Task<EditActionResult> EditModeAction(string sessionKey, EditModeMethod method, JsonElement newObject, string objectTypeAsString, EditParameters? parameters)
     {
         try
         {
@@ -127,7 +127,7 @@ public class ShowHub : Hub
                 };
             }
             
-            EditActionResult res = ShowManager.EditAction(method, obj, objectType);
+            EditActionResult res = ShowManager.EditAction(method, obj, objectType, parameters);
             _ = BroadcastShowUpdate();
             return res;
         }

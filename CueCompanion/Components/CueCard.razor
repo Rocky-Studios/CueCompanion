@@ -1,16 +1,27 @@
+@using System.Text.Json
 @inject AuthService Auth
 
 <MudCard Class="@GetClass()" @onclick="OnCardClick">
-    <p Class="d-flex justify-content-between m-1">
-        <EditableText @bind-Value="@CueName" IsEditMode="IsEditMode" OnValueChanged="CueNameChanged"/>
-        <MudText Inline="true">@CueNumber</MudText>
-    </p>
+    <div class="d-flex justify-content-between align-items-center m-1">
+        <div class="me-2 flex-grow-1">
+            <EditableText @bind-Value="@Cue.Name" IsEditMode="IsEditMode" OnValueChanged="CueNameChanged" />
+        </div>
+
+        <div class="d-flex align-items-center gap-1 flex-shrink-0">
+            <MudText Inline="true">@Cue.Position</MudText>
+            @if (IsEditMode)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Color="MudBlazor.Color.Primary" OnClick="@CueMovedUp" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="MudBlazor.Color.Primary" OnClick="@CueDeleted" />
+                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Color="MudBlazor.Color.Primary" OnClick="@CueMovedDown" />
+            }
+        </div>
+    </div>
 </MudCard>
 
 @code
 {
-    [Parameter] public required string CueName { get; set; }
-    [Parameter] public required int CueNumber { get; set; }
+    [Parameter] public required Cue Cue { get; set; }
 
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
@@ -46,11 +57,40 @@
 
     private void CueNameChanged(string newName)
     {
-        Cue? cue = ShowService?.CurrentCues.FirstOrDefault(c => c.Position == CueNumber);
-        if (cue is not null && Auth.SessionKey is { } key)
+        if (Auth.SessionKey is { } key)
         {
-            cue.Name = newName;
-            ShowService?.SendEditModeAction(key, EditModeMethod.Update, cue);
+            Cue.Name = newName;
+            ShowService?.SendEditModeAction(key, EditModeMethod.Update, Cue);
+        }
+    }
+    
+    private void CueDeleted()
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            ShowService?.SendEditModeAction(key, EditModeMethod.Delete, Cue);
+        }
+    }
+    
+    private void CueMovedUp()
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            ShowService?.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
+            {
+                Direction = -1
+            });
+        }
+    }
+    
+    private void CueMovedDown()
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            ShowService?.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
+            {
+                Direction = 1
+            });
         }
     }
 }

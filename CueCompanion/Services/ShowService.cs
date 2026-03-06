@@ -129,7 +129,7 @@ public class ShowService : StateSubscriberService
         await _showHub.InvokeAsync("PreviousCue", sessionKey);
     }
 
-    public async Task<EditActionResult> SendEditModeAction<T>(string sessionKey, EditModeMethod method, T newObject)
+    public async Task<EditActionResult> SendEditModeAction<T>(string sessionKey, EditModeMethod method, T newObject, EditParameters? parameters = null)
     {
         if (_showHub == null)
             throw new InvalidOperationException("ShowHub connection is not established.");
@@ -137,7 +137,7 @@ public class ShowService : StateSubscriberService
         if (_showHub.State != HubConnectionState.Connected)
             throw new InvalidOperationException("ShowHub connection is not connected.");
 
-        return await _showHub.InvokeAsync<EditActionResult>("EditModeAction", sessionKey, method, newObject, typeof(T).AssemblyQualifiedName);
+        return await _showHub.InvokeAsync<EditActionResult>("EditModeAction", sessionKey, method, newObject, typeof(T).AssemblyQualifiedName, parameters);
     }
 }
 
