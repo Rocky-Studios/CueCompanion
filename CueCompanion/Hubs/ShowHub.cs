@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 
 namespace CueCompanion.Hubs;
@@ -65,45 +67,6 @@ public class ShowHub : Hub
         });
     }
 
-    public async Task UpdateShow(string sessionKey, Show show)
-    {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
-        if (!hasPermission)
-            return;
-
-        // Prevent changing the identity of the current show by validating the show ID.
-        if (ShowManager.CurrentShow != null && show.Id != ShowManager.CurrentShow.Id)
-            return;
-        ShowManager.CurrentShow = show;
-        await BroadcastShowUpdate();
-    }
-
-    public async Task UpdateCue(string sessionKey, Cue cue)
-    {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
-        if (!hasPermission)
-            return;
-
-        if (ShowManager.CurrentShow == null)
-            return;
-
-        ShowManager.OverwriteCue(cue.Id, cue);
-        await BroadcastShowUpdate();
-    }
-
-    public async Task CreateNewCue(string sessionKey, Cue cue)
-    {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
-        if (!hasPermission)
-            return;
-
-        if (ShowManager.CurrentShow == null)
-            return;
-
-        ShowManager.AddCue(cue);
-        await BroadcastShowUpdate();
-    }
-
     public async Task NextCue(string sessionKey)
     {
         bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);
@@ -142,16 +105,35 @@ public class ShowHub : Hub
         }
     }
 
-    public async Task CreateCueTask(string sessionKey, CueTask task)
+    private readonly JsonSerializerOptions _options = new()
     {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
-        if (!hasPermission)
-            return;
+        PropertyNameCaseInsensitive = true
+    };
 
-        if (ShowManager.CurrentShow == null)
-            return;
 
-        ShowManager.AddCueTask(task);
-        await BroadcastShowUpdate();
+    public async Task<EditActionResult> EditModeAction(string sessionKey, EditModeMethod method, JsonElement newObject, string objectTypeAsString)
+    {
+        try
+        {
+            bool hasEditPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
+            Type objectType = Type.GetType(objectTypeAsString)!;
+            object? obj = newObject.Deserialize(objectType, _options);
+            if (!hasEditPermission)
+            {
+                return new EditActionResult
+                {
+                    Success = false,
+                    Error = error
+                };
+            }
+            
+            EditActionResult res = ShowManager.EditAction(method, obj, objectType);
+            _ = BroadcastShowUpdate();
+            return res;
+        }
+        catch (Exception e)
+        {
+            return e.ToString();
+        }
     }
 }

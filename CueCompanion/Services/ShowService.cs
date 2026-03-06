@@ -129,7 +129,7 @@ public class ShowService : StateSubscriberService
         await _showHub.InvokeAsync("PreviousCue", sessionKey);
     }
 
-    public async Task UpdateShowAsync(string sessionKey)
+    public async Task<EditActionResult> SendEditModeAction<T>(string sessionKey, EditModeMethod method, T newObject)
     {
         if (_showHub == null)
             throw new InvalidOperationException("ShowHub connection is not established.");
@@ -137,56 +137,7 @@ public class ShowService : StateSubscriberService
         if (_showHub.State != HubConnectionState.Connected)
             throw new InvalidOperationException("ShowHub connection is not connected.");
 
-        await _showHub.InvokeAsync("UpdateShow", sessionKey, CurrentShow);
-    }
-
-    public async Task UpdateCueAsync(string sessionKey, int cueNumber)
-    {
-        if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
-
-        if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
-
-        Cue? cue = CurrentCues.FirstOrDefault(c => c.Position == cueNumber);
-
-        await _showHub.InvokeAsync("UpdateCue", sessionKey, cue);
-    }
-
-    public async Task CreateNewCueAsync(string sessionKey, int showID)
-    {
-        if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
-
-        if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
-
-        Cue newCue = new()
-        {
-            ShowId = showID,
-            Position = CurrentCues.Length > 0 ? CurrentCues.Max(c => c.Position) + 1 : 1,
-            Name = "New Cue"
-        };
-
-        await _showHub.InvokeAsync("CreateNewCue", sessionKey, newCue);
-    }
-
-    public async Task CreateCueTaskAsync(string sessionKey, int cueId, int? roleId, string? tasks)
-    {
-        if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
-
-        if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
-
-        CueTask newTask = new()
-        {
-            CueId = cueId,
-            RoleId = roleId,
-            Tasks = tasks
-        };
-
-        await _showHub.InvokeAsync("CreateCueTask", sessionKey, newTask);
+        return await _showHub.InvokeAsync<EditActionResult>("EditModeAction", sessionKey, method, newObject, typeof(T).AssemblyQualifiedName);
     }
 }
 

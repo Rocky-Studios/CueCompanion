@@ -54,7 +54,7 @@
         if (ShowService?.CurrentShow is { } show && Auth.SessionKey is { } key)
         {
             show.Name = newName;
-            await ShowService.UpdateShowAsync(key);
+            await ShowService.SendEditModeAction(key, EditModeMethod.Update, show);
         }
     }
 }

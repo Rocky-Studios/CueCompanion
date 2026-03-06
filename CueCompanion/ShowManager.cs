@@ -1,10 +1,14 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.VisualBasic.CompilerServices;
 using SQLite;
 
 namespace CueCompanion;
 
 public static class ShowManager
 {
-    public static Show? CurrentShow;
+    public static Show? CurrentShow => CurrentShowID.HasValue ? Db.Table<Show>().FirstOrDefault(s => s.Id == CurrentShowID.Value) : null;
+    private static int? CurrentShowID;
     public static int? CurrentCuePosition;
     public static bool IsShowActive { get; set; } = false;
 
@@ -178,7 +182,7 @@ public static class ShowManager
     public static void Init()
     {
         SQLiteConnection db = DatabaseHandler.Connection;
-        CurrentShow = db.Table<Show>().FirstOrDefault();
+        CurrentShowID = db.Table<Show>().FirstOrDefault().Id;
     }
 
     public static Cue[] GetCuesForShow(int showID)
@@ -205,27 +209,32 @@ public static class ShowManager
         CurrentCuePosition = cues.OrderBy(c => c.Position).FirstOrDefault()?.Position ?? 1;
     }
 
-    public static void OverwriteCue(int cueID, Cue newCue)
+    private static SQLiteConnection Db => DatabaseHandler.Connection;
+    
+    public static EditActionResult EditAction(EditModeMethod method, object newObject, Type objectType)
     {
-        SQLiteConnection db = DatabaseHandler.Connection;
-        Cue? existingCue = db.Table<Cue>().FirstOrDefault(c => c.Id == cueID);
-        if (existingCue == null)
-            throw new InvalidOperationException($"Cue with ID {cueID} not found.");
-
-        newCue.Id = cueID;
-
-        db.Update(newCue);
-    }
-
-    public static void AddCue(Cue cue)
-    {
-        SQLiteConnection db = DatabaseHandler.Connection;
-        db.Insert(cue);
-    }
-
-    public static void AddCueTask(CueTask task)
-    {
-        SQLiteConnection db = DatabaseHandler.Connection;
-        db.Insert(task);
+        if (!newObject.GetType().Equals(objectType))
+        {
+            return "Type mismatch. Argument " + newObject + " is not of type" + objectType;
+        }
+        switch (method)
+        {
+            case EditModeMethod.Create:
+            {
+                Db.Insert(newObject);
+                return true;
+            }
+            case EditModeMethod.Update:
+            {
+                Db.Update(newObject);
+                return true;
+            }
+            case EditModeMethod.Delete:
+            {
+                Db.Delete(newObject);
+                return true;
+            }
+            default: return "Not implemented " + method + " " + objectType;
+        }
     }
 }

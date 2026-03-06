@@ -129,7 +129,13 @@
     {
         if (ShowService?.CurrentShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
         {
-            await ShowService.CreateNewCueAsync(key, showID);
+            Cue newCue = new()
+            {
+                Name = "New Cue",
+                ShowId = showID,
+                Position = 100
+            };
+            await ShowService.SendEditModeAction(key, EditModeMethod.Create, newCue);
         }
     }
 }
