@@ -15,4 +15,10 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.10.196-beta" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\.github\workflows\publish.yml">
+      <Link>.github\workflows\publish.yml</Link>
+    </Content>
+  </ItemGroup>
+
 </Project>
