@@ -61,7 +61,7 @@ namespace CueCompanion
             app.MapHub<UserManagementHub>("/api/user-management");
             app.MapHub<ShowHub>("/api/show");
 
-
+            app.UseStaticFiles();
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
