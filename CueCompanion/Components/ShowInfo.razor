@@ -1,4 +1,5 @@
 @inject AuthService Auth
+@implements IAsyncDisposable
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
     <MudText Typo="Typo.h1">Show Info</MudText>
@@ -17,9 +18,28 @@
         </MudText>
 
         <MudDivider/>
-        <MudText Typo="Typo.body1">Date: @show.Start.Date.ToShortDateString()</MudText>
-        <MudText Typo="Typo.body1">Start time: @show.Start.ToLongTimeString()</MudText>
-        <MudText Typo="Typo.body1">End time: @show.End.ToLongTimeString()</MudText>
+        @if (!IsEditMode)
+        {
+            <MudText Typo="Typo.body1">Date: @show.Start.Date.ToShortDateString()</MudText>
+            <MudText Typo="Typo.body1">Start time: @show.Start.ToLongTimeString()</MudText>
+            <MudText Typo="Typo.body1">End time: @show.End.ToLongTimeString()</MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.body1" Class="fw-bold">
+                Date
+                <MudDatePicker Date="@_selectedDate" DateChanged="OnDateChanged"/>
+            </MudText>
+            <MudText Typo="Typo.body1" Class="fw-bold">
+                Start
+                <MudTimePicker Time="@_selectedStart" TimeChanged="OnStartTimeChanged"/>
+            </MudText>
+            <MudText Typo="Typo.body1" Class="fw-bold">
+                End
+                <MudTimePicker Time="@_selectedEnd" TimeChanged="OnEndTimeChanged"/>
+            </MudText>
+        }
+
         <MudDivider/>
         <MudText Typo="Typo.body1">Active: @(ShowService.CurrentCuePosition == null ? "False" : "True")</MudText>
         <MudText Typo="Typo.body1">Number of Cues: @ShowService.CurrentCues.Length</MudText>
@@ -40,13 +60,65 @@
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        ShowService?.OnStateChanged += ShowInfoChanged;
+        if (firstRender)
+        {
+            ShowService?.OnStateChanged += ShowInfoChanged;
+        }
         return Task.CompletedTask;
     }
 
+    private DateTime? _selectedDate;
+    private TimeSpan? _selectedStart;
+    private TimeSpan? _selectedEnd;
+    private bool _updateLock;
+
     private void ShowInfoChanged()
     {
+        if (ShowService?.CurrentShow is { } show)
+        {
+            _updateLock = true;
+            _selectedDate = show.Start.Date;
+            _selectedStart = show.Start.TimeOfDay;
+            _selectedEnd = show.End.TimeOfDay;
+            _updateLock = false;
+        }
         InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnDateChanged(DateTime? newDate)
+    {
+        if (_updateLock) return;
+        _selectedDate = newDate;
+        await ShowDateOrTimeChanged();
+    }
+
+    private async Task OnStartTimeChanged(TimeSpan? newTime)
+    {
+        if (_updateLock) return;
+        _selectedStart = newTime;
+        await ShowDateOrTimeChanged();
+    }
+
+    private async Task OnEndTimeChanged(TimeSpan? newTime)
+    {
+        if (_updateLock) return;
+        _selectedEnd = newTime;
+        await ShowDateOrTimeChanged();
+    }
+
+    private async Task ShowDateOrTimeChanged()
+    {
+        if (_updateLock) return;
+        if (ShowService?.CurrentShow is { } show && Auth.SessionKey is { } key)
+        {
+            _updateLock = true;
+            DateTime newStart = _selectedDate?.Add(_selectedStart ?? TimeSpan.Zero) ?? show.Start;
+            DateTime newEnd = _selectedDate?.Add(_selectedEnd ?? TimeSpan.Zero) ?? show.End;
+            show.Start = newStart;
+            show.End = newEnd;
+            await ShowService.SendEditModeAction(key, EditModeMethod.Update, show);
+            _updateLock = false;
+        }
     }
 
     private async Task ShowNameChanged(string newName)
@@ -56,5 +128,15 @@
             show.Name = newName;
             await ShowService.SendEditModeAction(key, EditModeMethod.Update, show);
         }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (ShowService != null)
+        {
+            ShowService.OnStateChanged -= ShowInfoChanged;
+        }
+
+        await Task.CompletedTask;
     }
 }
