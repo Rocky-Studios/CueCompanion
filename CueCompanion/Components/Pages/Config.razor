@@ -1,0 +1,46 @@
+@page "/config"
+@inject AuthService AuthService
+@inject ShowService ShowService
+@inject ConfigService ConfigService
+
+<PageTitle>Config - Cue Companion</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h1">Config</MudText>
+    @if (AuthService.User == null)
+    {
+        <MudAlert Severity="Severity.Error">You must be logged in to access the config page.</MudAlert>
+    }
+    @if (!_hasPermission)
+    {
+        <MudAlert Severity="Severity.Error">Access denied.</MudAlert>
+    }
+    @if (_hasPermission)
+    {
+        <PanelContainer>
+
+        </PanelContainer>
+    }
+</MudContainer>
+
+@code
+{
+    private bool _hasPermission;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthService.OnStateChanged += () =>
+        {
+            if (AuthService.User != null)
+            {
+                _hasPermission = AuthService.HasPermission("Admin");
+            }
+            else
+            {
+                _hasPermission = false;
+            }
+
+            InvokeAsync(StateHasChanged);
+        };
+    }
+}

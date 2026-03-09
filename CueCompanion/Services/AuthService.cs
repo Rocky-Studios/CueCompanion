@@ -95,4 +95,12 @@ public class AuthService : StateSubscriberService
 
         return await _authHub.InvokeAsync<User>("GetUser", SessionKey, userID);
     }
+
+    public bool HasPermission(string permissionName)
+    {
+        if (User == null) return false;
+        if (!PermissionsCache.TryGetValue(permissionName, out int permissionId)) return false;
+
+        return User.HasPermission(permissionId);
+    }
 }
