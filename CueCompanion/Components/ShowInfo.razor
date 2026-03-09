@@ -18,37 +18,72 @@
         </MudText>
 
         <MudDivider/>
-        @if (!IsEditMode)
-        {
-            <MudText Typo="Typo.body1">Date: @show.Start.Date.ToShortDateString()</MudText>
-            <MudText Typo="Typo.body1">Start time: @show.Start.ToLongTimeString()</MudText>
-            <MudText Typo="Typo.body1">End time: @show.End.ToLongTimeString()</MudText>
-        }
-        else
-        {
-            <MudText Typo="Typo.body1" Class="fw-bold">
-                Date
-                <MudDatePicker Date="@_selectedDate" DateChanged="OnDateChanged"/>
-            </MudText>
-            <MudText Typo="Typo.body1" Class="fw-bold">
-                Start
-                <MudTimePicker Time="@_selectedStart" TimeChanged="OnStartTimeChanged"/>
-            </MudText>
-            <MudText Typo="Typo.body1" Class="fw-bold">
-                End
-                <MudTimePicker Time="@_selectedEnd" TimeChanged="OnEndTimeChanged"/>
-            </MudText>
-        }
-
-        <MudDivider/>
-        <MudText Typo="Typo.body1">Active: @(ShowService.CurrentCuePosition == null ? "False" : "True")</MudText>
-        <MudText Typo="Typo.body1">Number of Cues: @ShowService.CurrentCues.Length</MudText>
+        <table class="show-info-table">
+            @if (!IsEditMode)
+            {
+                <tr>
+                    <td>Date</td>
+                    <td>@show.Start.ToLongDateString()</td>
+                </tr>
+                <tr>
+                    <td>Start</td>
+                    <td>@show.Start.ToLongTimeString()</td>
+                </tr>
+                <tr>
+                    <td>End</td>
+                    <td>@show.End.ToLongTimeString()</td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>Date</td>
+                    <td>
+                        <MudDatePicker Date="@_selectedDate" DateChanged="OnDateChanged"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Start</td>
+                    <td>
+                        <MudTimePicker Time="@_selectedStart" TimeChanged="OnStartTimeChanged"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>End</td>
+                    <td>
+                        <MudTimePicker Time="@_selectedEnd" TimeChanged="OnEndTimeChanged"/>
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td>Active</td>
+                <td>@(ShowService.CurrentCuePosition == null ? "False" : "True")</td>
+            </tr>
+            <tr>
+                <td>Number of Cues</td>
+                <td>@ShowService.CurrentCues.Length</td>
+            </tr>
+        </table>
     }
     else
     {
         <MudText>No show loaded</MudText>
     }
 </GridChild>
+
+<style>
+    .show-info-table {
+        width: 100%;
+    }
+
+    .show-info-table td:first-child {
+        font-weight: 700;
+    }
+
+    .show-info-table td:last-child {
+        text-align: right;
+    }
+</style>
 
 @code
 {
@@ -64,6 +99,7 @@
         {
             ShowService?.OnStateChanged += ShowInfoChanged;
         }
+
         return Task.CompletedTask;
     }
 
@@ -82,6 +118,7 @@
             _selectedEnd = show.End.TimeOfDay;
             _updateLock = false;
         }
+
         InvokeAsync(StateHasChanged);
     }
 
