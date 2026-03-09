@@ -35,6 +35,9 @@ namespace CueCompanion
             builder.Services.AddScoped<ShowService>();
             builder.Services.AddSingleton<ShowHub>();
 
+            builder.Services.AddScoped<ChatService>();
+            builder.Services.AddSingleton<ChatHub>();
+
             builder.Services.AddSignalR();
             builder.Services.AddBlazorCookiesServerSideServices();
             builder.Services.AddMudServices();
@@ -60,6 +63,7 @@ namespace CueCompanion
             app.MapHub<AuthHub>("/api/auth");
             app.MapHub<UserManagementHub>("/api/user-management");
             app.MapHub<ShowHub>("/api/show");
+            app.MapHub<ChatHub>("/api/chat");
 
             app.UseStaticFiles();
             app.MapStaticAssets();

@@ -21,9 +21,17 @@ public class AuthHub : Hub
         User user = DatabaseHandler.GetUserById(userId);
         return PermissionManager.GetPermissionsForUser(user).ToArray();
     }
-    
+
     public async Task<Permission[]> GetPermissions()
     {
         return PermissionManager.GetPermissions().ToArray();
+    }
+
+    public async Task<User> GetUser(string sessionKey, int userId)
+    {
+        User user = DatabaseHandler.GetUserById(userId);
+        user.PasswordHash = "";
+        user.Password = ""; // Don't send the password to the client
+        return user;
     }
 }

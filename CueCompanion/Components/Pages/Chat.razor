@@ -1,0 +1,75 @@
+@page "/chat"
+@inject AuthService AuthService
+@inject ChatService ChatService
+
+<PageTitle>Chat - Cue Companion</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h1">Chat</MudText>
+    @if (AuthService.User == null)
+    {
+        <MudText>You must be logged in to view the chat.</MudText>
+    }
+    else
+    {
+        <MudPaper Class="p-4">
+            <MudText Typo="Typo.h6">Chat Messages</MudText>
+            @foreach (Message message in ChatService.Messages)
+            {
+                ChatService.UserIdToNameCache.TryGetValue(message.Sender, out string? sender);
+                <MudText>
+                    <b>@sender:</b> @message.Content
+                </MudText>
+            }
+
+        </MudPaper>
+        <MudPaper Class="p-4">
+            <MudText Typo="Typo.h6">Send</MudText>
+            <MudTextField @bind-Value="@messageContent"></MudTextField>
+            <MudButton EndIcon="@Icons.Material.Filled.Send" OnClick="Callback">Send</MudButton>
+
+        </MudPaper>
+    }
+</MudContainer>
+
+@code
+{
+    private string? messageContent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthService?.OnStateChanged += () =>
+        {
+            InvokeAsync(StateHasChanged);
+            ChatService?.GetAllMessages(AuthService.SessionKey);
+        };
+        ChatService?.OnStateChanged += async () =>
+        {
+            Message[] messages = ChatService.Messages.ToArray();
+            foreach (Message message in messages)
+            {
+                if (!ChatService.UserIdToNameCache.ContainsKey(message.Sender))
+                {
+                    User? user = await AuthService?.GetUserAsync(message.Sender);
+                    if (user != null)
+                    {
+                        ChatService.UserIdToNameCache[message.Sender] = user.UserName;
+                    }
+                }
+            }
+
+            await InvokeAsync(StateHasChanged);
+        };
+
+        ChatService?.StartAsync(Navigation.BaseUri);
+    }
+
+    private void Callback()
+    {
+        if (!string.IsNullOrEmpty(messageContent))
+        {
+            ChatService?.SendMessage(AuthService.SessionKey, messageContent);
+            messageContent = string.Empty;
+        }
+    }
+}

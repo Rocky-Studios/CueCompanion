@@ -87,4 +87,12 @@ public class AuthService : StateSubscriberService
 
         return perms;
     }
+
+    public async Task<User> GetUserAsync(int userID)
+    {
+        if (_authHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        return await _authHub.InvokeAsync<User>("GetUser", SessionKey, userID);
+    }
 }
