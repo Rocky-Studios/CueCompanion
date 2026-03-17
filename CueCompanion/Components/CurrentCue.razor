@@ -44,7 +44,14 @@
                         Role? role = roles.FirstOrDefault(r => r.Id == cueTask.RoleId.Value);
                         if (role is not null)
                         {
-                            <MudText Typo="Typo.h3">@role.Name </MudText>
+                            <MudText Typo="Typo.h3">@role.Name
+                                @if (IsEditMode)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   OnClick="@(() => { DeleteCueTask(cueTask); })"
+                                                   Color="Color.Primary"></MudIconButton>
+                                }
+                            </MudText>
                             <EditableText Value="@cueTask.Tasks" Label="" IsEditMode="@IsEditMode" OnValueChanged="s => {
                             CueTaskChanged(s,cueTask);
                                           }" MaxLines="20" Outlined="true"></EditableText>
@@ -151,6 +158,14 @@
         {
             cueTask.Tasks = newTask;
             ShowService?.SendEditModeAction(key, EditModeMethod.Update, cueTask);
+        }
+    }
+
+    private void DeleteCueTask(CueTask cueTask)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            ShowService?.SendEditModeAction(key, EditModeMethod.Delete, cueTask);
         }
     }
 }
