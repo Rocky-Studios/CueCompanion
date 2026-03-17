@@ -171,3 +171,6 @@ span.nav-label
     scale: 0.8 !important;
 }
 
+textarea.mud-input-slot {
+    margin: 0 !important;
+}

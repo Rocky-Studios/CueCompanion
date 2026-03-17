@@ -4,6 +4,10 @@
         <MudText Typo="Typo.subtitle1" style="margin: 0;">@Label</MudText>
         <MudTextField @bind-Value="@Value" style="flex: 1;" Class="no-padding-input" @onblur="OnBlur"
                       AdornmentIcon="@Icons.Material.Filled.Edit" Adornment="Adornment.End"
+                      Lines="@(DefaultLines)"
+                      MaxLines="@(MaxLines)"
+                      Sizing="InputSizing.Auto"
+                      Variant="@(Outlined ? Variant.Outlined : Variant.Text)"
         ></MudTextField>
     </div>
 }
@@ -28,6 +32,15 @@ else
 
     [Parameter]
     public bool IsEditMode { get; set; }
+
+    [Parameter]
+    public int MaxLines { get; set; } = 1;
+
+    [Parameter]
+    public int DefaultLines { get; set; } = 1;
+
+    [Parameter]
+    public bool Outlined { get; set; }
 
     private async Task OnBlur(FocusEventArgs e)
     {
