@@ -1,16 +1,19 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.VisualBasic.CompilerServices;
 using SQLite;
 
 namespace CueCompanion;
 
 public static class ShowManager
 {
-    public static Show? CurrentShow => CurrentShowID.HasValue ? Db.Table<Show>().FirstOrDefault(s => s.Id == CurrentShowID.Value) : null;
     private static int? CurrentShowID;
     public static int? CurrentCuePosition;
+
+    public static Show? CurrentShow => CurrentShowID.HasValue
+        ? Db.Table<Show>().FirstOrDefault(s => s.Id == CurrentShowID.Value)
+        : null;
+
     public static bool IsShowActive { get; set; } = false;
+
+    private static SQLiteConnection Db => DatabaseHandler.Connection;
 
     public static Role[] GetRoles()
     {
@@ -209,30 +212,30 @@ public static class ShowManager
         CurrentCuePosition = cues.OrderBy(c => c.Position).FirstOrDefault()?.Position ?? 1;
     }
 
-    private static SQLiteConnection Db => DatabaseHandler.Connection;
-    
-    public static EditActionResult EditAction(EditModeMethod method, object newObject, Type objectType, EditParameters? parameters)
+    public static Result EditAction(EditModeMethod method, object newObject, Type objectType,
+        EditParameters? parameters)
     {
         if (!newObject.GetType().Equals(objectType))
         {
             return "Type mismatch. Argument " + newObject + " is not of type" + objectType;
         }
+
         switch (method)
         {
             case EditModeMethod.Create:
             {
                 Db.Insert(newObject);
-                return true;
+                return Result.Success();
             }
             case EditModeMethod.Update:
             {
                 Db.Update(newObject);
-                return true;
+                return Result.Success();
             }
             case EditModeMethod.Delete:
             {
                 Db.Delete(newObject);
-                return true;
+                return Result.Success();
             }
             case EditModeMethod.Move:
             {
@@ -241,24 +244,27 @@ public static class ShowManager
                         Direction: var direction
                     })
                 {
-                    Cue? cueBefore = Db.Table<Cue>().ToList().FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position - 1);
-                    Cue? cueAfter = Db.Table<Cue>().ToList().FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position + 1);
+                    Cue? cueBefore = Db.Table<Cue>().ToList()
+                        .FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position - 1);
+                    Cue? cueAfter = Db.Table<Cue>().ToList()
+                        .FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position + 1);
                     if (direction == -1 && cueBefore == null || direction == 1 && cueAfter == null)
                     {
                         return "Cannot move cue further in that direction.";
                     }
-                    
+
                     cue.Position += direction;
                     Db.Update(cue);
-                    
+
                     // Move the other cue in the opposite direction to swap positions
                     Cue? otherCue = direction == -1 ? cueBefore : cueAfter;
                     if (otherCue != null)
-                    {   
+                    {
                         otherCue.Position -= direction;
                         Db.Update(otherCue);
                     }
-                    return true;
+
+                    return Result.Success();
                 }
                 else
                 {

@@ -80,19 +80,17 @@ public static class PermissionManager
         return permissions.ToArray();
     }
 
-    public static bool UserHasPermission(string sessionKey, string permission, out string? error)
+    public static Result<bool> UserHasPermission(string sessionKey, string permission)
     {
-        User? user = UserManager.GetUserBySessionKey(sessionKey);
-        if (user == null) throw new Exception("Invalid session key.");
-        bool hasPermission = HasPermission(
-            GetPermissionByName(permission) ?? throw new Exception(permission + " permission not found."), user);
-        if (!hasPermission)
-        {
-            error = "Access denied.";
-            return false;
-        }
+        Result<User?> r = UserManager.GetUserBySessionKey(sessionKey);
+        if (!r.IsSuccess) return r.Error!;
+        User? user = r.Value;
+        if (user == null) return "Invalid session key.";
+        Permission? perm = GetPermissionByName(permission);
+        if (perm == null) return $"Permission '{permission}' not found.";
+        bool hasPermission = HasPermission(perm, user);
+        if (!hasPermission) return "Access denied.";
 
-        error = null;
         return true;
     }
 }

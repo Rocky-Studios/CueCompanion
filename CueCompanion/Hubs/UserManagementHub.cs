@@ -1,4 +1,3 @@
-using CueCompanion.Components;
 using CueCompanion.UserManagement;
 using Microsoft.AspNetCore.SignalR;
 using UserManager = CueCompanion.UserManagement.UserManager;
@@ -7,28 +6,28 @@ namespace CueCompanion.Hubs;
 
 public class UserManagementHub : Hub
 {
-    public async Task<Or<UserInfo[], string>> GetUsers(string sessionKey)
+    public async Task<Result<UserInfo[]>> GetUsers(string sessionKey)
     {
         return UserManager.GetUsers(sessionKey);
     }
-    
-    public async Task<CreateNewUserResult> CreateNewUser(string sessionKey, string userName, string password)
+
+    public async Task<Result> CreateNewUser(string sessionKey, string userName, string password)
     {
         return UserManager.CreateNewUser(sessionKey, userName, password);
     }
-    
-    public async Task DeleteUser(string sessionKey, int userId)
+
+    public async Task<Result> DeleteUser(string sessionKey, int userId)
     {
-        UserManager.DeleteUser(sessionKey, userId);
+        return UserManager.DeleteUser(sessionKey, userId);
     }
 
-    public async Task AddPermissionToUser(string sessionKey, int userID, int permissionID)
+    public async Task<Result> AddPermissionToUser(string sessionKey, int userID, int permissionID)
     {
-        UserManager.AddPermissionToUser(sessionKey, userID, permissionID);
+        return UserManager.AddPermissionToUser(sessionKey, userID, permissionID);
     }
-    
-    public async Task RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
+
+    public async Task<Result> RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
     {
-        UserManager.RemovePermissionFromUser(sessionKey, userID, permissionID);
+        return UserManager.RemovePermissionFromUser(sessionKey, userID, permissionID);
     }
 }

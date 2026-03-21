@@ -5,10 +5,18 @@ namespace CueCompanion.Services;
 public class ShowService : StateSubscriberService
 {
     private HubConnection? _showHub;
+    private int? BrowseModeCuePosition;
 
-    private CueRequestResult? LatestCueInfo;
-    private ShowRequestResult? LatestShowInfo;
-    public Show? CurrentShow => LatestShowInfo?.Show;
+    public Cue[] Cues = [];
+
+    public Mode CurrentMode = Mode.Live;
+    private int? EditModeCuePosition;
+
+    private int? LiveModeCuePosition;
+    public Role[] Roles = [];
+    public CueTask[] Tasks = [];
+    public Show? CurrentShow { get; private set; }
+
     public int? CurrentCuePosition
     {
         get => CurrentMode switch
@@ -23,7 +31,8 @@ public class ShowService : StateSubscriberService
             switch (CurrentMode)
             {
                 case Mode.Live:
-                    throw new ArgumentException("Cannot directly modify the live cue position. Use NextCue or PreviousCue instead.");
+                    throw new ArgumentException(
+                        "Cannot directly modify the live cue position. Use NextCue or PreviousCue instead.");
                 case Mode.Edit:
                     EditModeCuePosition = value;
                     break;
@@ -34,18 +43,9 @@ public class ShowService : StateSubscriberService
         }
     }
 
-    public Cue[] CurrentCues => LatestCueInfo?.Cues ?? [];
-    public CueTask[] Tasks => LatestCueInfo?.Tasks ?? [];
     public CueTask[] TasksForCurrentCue => Tasks.Where(t => t.CueId == CurrentCue?.Id).ToArray();
 
-    public Cue? CurrentCue => CurrentCues.FirstOrDefault(c => c.Position == CurrentCuePosition);
-    public Role[] CurrentRoles => LatestShowInfo?.Roles ?? [];
-
-    private int? LiveModeCuePosition => LatestShowInfo?.CurrentCuePosition;
-    private int? EditModeCuePosition;
-    private int? BrowseModeCuePosition;
-
-    public Mode CurrentMode = Mode.Live;
+    public Cue? CurrentCue => Cues.FirstOrDefault(c => c.Position == CurrentCuePosition);
 
     public async Task StartAsync(string baseUrl)
     {
@@ -56,44 +56,54 @@ public class ShowService : StateSubscriberService
 
         _showHub.On("ShowUpdated", (ShowUpdate update) =>
         {
-            LatestShowInfo = new ShowRequestResult
-            {
-                Success = true,
-                Show = update.Show,
-                CurrentCuePosition = update.CurrentCuePosition,
-                Roles = update.Roles
-            };
-            LatestCueInfo = update.Cues;
+            CurrentShow = update.Show;
+            LiveModeCuePosition = update.CurrentCuePosition;
+            Roles = update.Roles;
             UpdateState();
         });
 
         await _showHub.StartAsync();
     }
 
-    public async Task<ShowRequestResult> GetCurrentShowAsync(string sessionKey)
+    public async Task<Result<Show?>> GetCurrentShowAsync(string sessionKey)
     {
         if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
+            return "ShowHub connection is not established.";
 
         if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
+            return "ShowHub connection is not connected.";
 
-        LatestShowInfo = await _showHub.InvokeAsync<ShowRequestResult>("GetCurrentShow", sessionKey);
+        Result<(Show?, int?, Role[])> r =
+            await _showHub.InvokeAsync<Result<(Show?, int?, Role[])>>("GetCurrentShow", sessionKey);
+        if (!r.IsSuccess) return r.Error!;
+        (Show? show, int? currentCuePosition, Role[] roles) = r.Value;
+
+        CurrentShow = show;
+        LiveModeCuePosition = currentCuePosition;
+        Roles = roles;
+
         UpdateState();
-        return LatestShowInfo.Value!;
+        return show;
     }
 
-    public async Task<CueRequestResult> GetCuesForShowAsync(string sessionKey, int showID)
+    public async Task<Result> GetCuesForShowAsync(string sessionKey, int showID)
     {
         if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
+            return "ShowHub connection is not established.";
 
         if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
+            return "ShowHub connection is not connected.";
 
-        LatestCueInfo = await _showHub.InvokeAsync<CueRequestResult>("GetCuesForShow", sessionKey, showID);
+        Result<(Cue[], CueTask[])> r =
+            await _showHub.InvokeAsync<Result<(Cue[], CueTask[])>>("GetCuesForShow", sessionKey, showID);
+        if (!r.IsSuccess) return r.Error!;
+        (Cue[] cues, CueTask[] tasks) = r.Value;
+
+        Cues = cues;
+        Tasks = tasks;
+
         UpdateState();
-        return LatestCueInfo.Value!;
+        return Result.Success();
     }
 
     public async Task StartShowAsync(string sessionKey)
@@ -129,7 +139,8 @@ public class ShowService : StateSubscriberService
         await _showHub.InvokeAsync("PreviousCue", sessionKey);
     }
 
-    public async Task<EditActionResult> SendEditModeAction<T>(string sessionKey, EditModeMethod method, T newObject, EditParameters? parameters = null)
+    public async Task<Result> SendEditModeAction<T>(string sessionKey, EditModeMethod method, T newObject,
+        EditParameters? parameters = null)
     {
         if (_showHub == null)
             throw new InvalidOperationException("ShowHub connection is not established.");
@@ -137,7 +148,8 @@ public class ShowService : StateSubscriberService
         if (_showHub.State != HubConnectionState.Connected)
             throw new InvalidOperationException("ShowHub connection is not connected.");
 
-        return await _showHub.InvokeAsync<EditActionResult>("EditModeAction", sessionKey, method, newObject, typeof(T).AssemblyQualifiedName, parameters);
+        return await _showHub.InvokeAsync<Result>("EditModeAction", sessionKey, method, newObject,
+            typeof(T).AssemblyQualifiedName, parameters);
     }
 }
 

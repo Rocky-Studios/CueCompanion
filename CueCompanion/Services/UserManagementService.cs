@@ -21,23 +21,23 @@ public class UserManagementService : StateSubscriberService
         await _userManagementHub.StartAsync();
     }
 
-    public async Task<UserInfo[]> GetUsers(string sessionKey)
+    public async Task<Result<UserInfo[]>> GetUsers(string sessionKey)
     {
         if (_userManagementHub is null)
             throw new InvalidOperationException("UserManagementHub connection is not established.");
-        Or<UserInfo[], string> result =
-            await _userManagementHub.InvokeAsync<Or<UserInfo[], string>>("GetUsers", sessionKey);
-        if (result.Option1 is { } users) return users;
-        if (result.Option2 is "Invalid session key.") await _userProvider.RemoveSessionKey();
-        Console.WriteLine("Error getting users:" + result.Option2);
-        return [];
+        Result<UserInfo[]> result = await _userManagementHub.InvokeAsync<Result<UserInfo[]>>("GetUsers", sessionKey);
+
+        if (result.Error is "Invalid session key.") _userProvider?.RemoveSessionKey();
+        if (!result.IsSuccess) return result.Error!;
+
+        return result.Value!;
     }
 
-    public async Task<CreateNewUserResult> CreateNewUser(string sessionKey, string userName, string password)
+    public async Task<Result> CreateNewUser(string sessionKey, string userName, string password)
     {
         if (_userManagementHub is null)
             throw new InvalidOperationException("UserManagementHub connection is not established.");
-        return await _userManagementHub.InvokeAsync<CreateNewUserResult>("CreateNewUser", sessionKey, userName,
+        return await _userManagementHub.InvokeAsync<Result>("CreateNewUser", sessionKey, userName,
             password);
     }
 

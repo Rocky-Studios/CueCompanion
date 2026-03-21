@@ -1,7 +1,6 @@
 @inject AuthService Auth
 @inject UserManagementService UserManagement
 @using System.ComponentModel.DataAnnotations
-@using CueCompanion.Services
 @using CueCompanion.UserManagement
 @implements IAsyncDisposable
 @inject IDialogService DialogService
@@ -92,7 +91,8 @@
         {
             if (HasPermissions && Auth.SessionKey is {} key)
             {
-                _users = await UserManagement.GetUsers(key);
+                Result<UserInfo[]> r = await UserManagement.GetUsers(key);
+                if (r.IsSuccess) _users = r.Value;
             }
             await InvokeAsync(StateHasChanged);
         };
@@ -126,28 +126,41 @@
         [Required] public string Password { get; set; } = string.Empty;
     }
 
+    private async Task ShowErrorDialog(string title, string text)
+    {
+        DialogOptions options = new() { CloseOnEscapeKey = true };
+        DialogParameters<ErrorDialog> parameters = new()
+        {
+            { x => x.Title, title },
+            { x => x.Text, text }
+        };
+        await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+    }
+
     private async Task OnValidSubmit(EditContext context)
     {
         string username = model.UserName;
         string password = model.Password;
-        
-        if (Auth.SessionKey is {} key)
+
+        if (Auth.SessionKey is { } key)
         {
-            CreateNewUserResult result = await UserManagement.CreateNewUser(key, username, password);
-            if (result.ErrorMessage is {} errorMessage)
+            Result r = await UserManagement.CreateNewUser(key, username, password);
+            if (r.Error is { } errorMessage)
             {
-                DialogOptions options = new() { CloseOnEscapeKey = true };
-                DialogParameters<ErrorDialog> parameters = new()
-                {
-                    { x => x.Title, "Create new user failed" },
-                    { x => x.Text, errorMessage }
-                };
-                await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+                await ShowErrorDialog("Create new user failed", errorMessage);
                 return;
             }
+
             model.UserName = "";
             model.Password = "";
-            _users = await UserManagement.GetUsers(key);
+            Result<UserInfo[]> r2 = await UserManagement.GetUsers(key);
+            if (r2.Error is { } errorMessage2)
+            {
+                await ShowErrorDialog("Failed to retrieve users", errorMessage2);
+                return;
+            }
+
+            if (r2.IsSuccess && r2.Value is { } users) _users = users;
             await InvokeAsync(StateHasChanged);
             
         }
@@ -169,7 +182,8 @@
         {
             int permissionID = Auth.PermissionsCache[permission];
             await UserManagement.AddPermissionToUser(Auth.SessionKey, userID, permissionID);
-            _users = await UserManagement.GetUsers(key);
+            Result<UserInfo[]> r = await UserManagement.GetUsers(key);
+            if (r.IsSuccess) _users = r.Value;
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -180,7 +194,8 @@
         {
             int permissionID = Auth.PermissionsCache[permission];
             await UserManagement.RemovePermissionFromUser(Auth.SessionKey, userID, permissionID);
-            _users = await UserManagement.GetUsers(key);
+            Result<UserInfo[]> r = await UserManagement.GetUsers(key);
+            if (r.IsSuccess) _users = r.Value;
             await InvokeAsync(StateHasChanged);
         }
     }

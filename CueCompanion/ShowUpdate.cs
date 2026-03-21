@@ -4,6 +4,7 @@ public struct ShowUpdate
 {
     public Show? Show { get; set; }
     public int? CurrentCuePosition { get; set; }
-    public CueRequestResult Cues { get; set; }
-    public Role[]? Roles { get; set; }
+    public Cue[] Cues { get; set; }
+    public CueTask[] Tasks { get; set; }
+    public Role[] Roles { get; set; }
 }

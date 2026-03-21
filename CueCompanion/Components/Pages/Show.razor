@@ -71,19 +71,19 @@
     {
         if (Auth.SessionKey is { } key)
         {
-            ShowRequestResult result = await ShowService.GetCurrentShowAsync(key);
-            if (!result.Success)
+            Result<CueCompanion.Show?> result = await ShowService.GetCurrentShowAsync(key);
+            if (!result.IsSuccess)
             {
                 await DialogService.ShowAsync<ErrorDialog>("Login failed", new DialogParameters<ErrorDialog>
                 {
                     { x => x.Title, "Getting show failed" },
-                    { x => x.Text, result.ErrorMessage }
+                    { x => x.Text, result.Error }
                 }, new DialogOptions { CloseOnEscapeKey = true });
             }
 
-            if (result.Success && result.Show is { } show)
+            if (result is { IsSuccess: true, Value: { } show })
             {
-                CueRequestResult cueResult = await ShowService.GetCuesForShowAsync(key, show.Id);
+                await ShowService.GetCuesForShowAsync(key, show.Id);
             }
             StateHasChanged();
         }

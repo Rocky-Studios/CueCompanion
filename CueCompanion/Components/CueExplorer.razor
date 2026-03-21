@@ -25,7 +25,7 @@
                                        Size="Size.Small">Add new
                         </MudIconButton>
                     }
-                    <MudText Typo="Typo.subtitle1">@ShowService.CurrentCues.Length ITEMS</MudText>
+                    <MudText Typo="Typo.subtitle1">@ShowService.Cues.Length ITEMS</MudText>
                 </div>
                 <div Class="d-flex flex-column gap-1">
                     @foreach (Cue cue in GetSortedCues())
@@ -118,7 +118,7 @@
         {
             if (ShowService?.CurrentCuePosition == cue.Position)
                 return CueCardColor.Green;
-            List<Cue> sortedByPosition = ShowService?.CurrentCues.OrderBy(c => c.Position).ToList() ?? [];
+            List<Cue> sortedByPosition = ShowService?.Cues.OrderBy(c => c.Position).ToList() ?? [];
             if (sortedByPosition.Last().Position == cue.Position)
                 return CueCardColor.DarkRed;
             return CueCardColor.Gray;
@@ -129,7 +129,7 @@
     {
         if (ShowService?.CurrentShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
         {
-            int lastCuePosition = ShowService.CurrentCues.Length > 0 ? ShowService.CurrentCues.Max(c => c.Position) : 0;
+            int lastCuePosition = ShowService.Cues.Length > 0 ? ShowService.Cues.Max(c => c.Position) : 0;
             Cue newCue = new()
             {
                 Name = "New Cue",
@@ -142,6 +142,6 @@
     
     private IEnumerable<Cue> GetSortedCues()
     {
-        return ShowService?.CurrentCues.OrderBy(c => c.Position) ?? Enumerable.Empty<Cue>();
+        return ShowService?.Cues.OrderBy(c => c.Position) ?? Enumerable.Empty<Cue>();
     }
 }

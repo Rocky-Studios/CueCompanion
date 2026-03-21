@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 
@@ -6,49 +5,49 @@ namespace CueCompanion.Hubs;
 
 public class ShowHub : Hub
 {
+    private readonly JsonSerializerOptions _options = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     public Show? CurrentShow => ShowManager.CurrentShow;
 
-    public async Task<ShowRequestResult> GetCurrentShow(string sessionKey)
+    public async Task<Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)>> GetCurrentShow(string sessionKey)
     {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ViewShow", out string? error);
-        return new ShowRequestResult
-        {
-            Success = hasPermission,
-            ErrorMessage = error,
-            Show = hasPermission ? ShowManager.CurrentShow : null,
-            CurrentCuePosition = hasPermission ? ShowManager.CurrentCuePosition : null,
-            Roles = hasPermission ? ShowManager.GetRoles() : null
-        };
+        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+        if (!r.IsSuccess) return r.Error!;
+        bool hasPermission = r.Value;
+        if (!hasPermission) return "Access denied.";
+        Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)> res = (ShowManager.CurrentShow,
+            ShowManager.CurrentCuePosition, ShowManager.GetRoles());
+        return res;
     }
 
-    public async Task<CueRequestResult> GetCuesForShow(string sessionKey, int showID)
+    public async Task<Result<(Cue[] cues, CueTask[] tasks)>> GetCuesForShow(string sessionKey, int showID)
     {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ViewShow", out string? error);
-        if (!hasPermission)
-            return new CueRequestResult
-            {
-                Success = false,
-                ErrorMessage = error
-            };
+        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+        if (!r.IsSuccess) return r.Error!;
+        bool hasPermission = r.Value;
+        if (!hasPermission) return "Access denied.";
 
         Cue[] cues = ShowManager.GetCuesForShow(showID);
         CueTask[] tasks = ShowManager.GetTasksForShow(showID);
 
-        return new CueRequestResult
-        {
-            Success = true,
-            Cues = cues,
-            Tasks = tasks
-        };
+        return (cues, tasks);
     }
 
-    public async Task StartShow(string sessionKey)
+    public async Task<Result> StartShow(string sessionKey)
     {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);
+        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+        if (!r.IsSuccess) return r.Error!;
+        bool hasPermission = r.Value;
+        if (!hasPermission) return "Access denied.";
+
         if (hasPermission)
             ShowManager.StartShow();
 
         _ = BroadcastShowUpdate();
+        return Result.Success();
     }
 
     public async Task BroadcastShowUpdate()
@@ -57,24 +56,21 @@ public class ShowHub : Hub
         {
             Show = ShowManager.CurrentShow,
             CurrentCuePosition = ShowManager.CurrentCuePosition,
-            Cues = new CueRequestResult
-            {
-                Success = true,
-                Cues = ShowManager.GetCuesForShow(ShowManager.CurrentShow?.Id ?? 0),
-                Tasks = ShowManager.GetTasksForShow(ShowManager.CurrentShow?.Id ?? 0)
-            },
+            Cues = ShowManager.GetCuesForShow(ShowManager.CurrentShow?.Id ?? 0),
+            Tasks = ShowManager.GetTasksForShow(ShowManager.CurrentShow?.Id ?? 0),
             Roles = ShowManager.GetRoles()
         });
     }
 
-    public async Task NextCue(string sessionKey)
+    public async Task<Result> NextCue(string sessionKey)
     {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);
-        if (!hasPermission)
-            return;
+        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+        if (!r.IsSuccess) return r.Error!;
+        bool hasPermission = r.Value;
+        if (!hasPermission) return "Access denied.";
 
         if (ShowManager.CurrentShow == null)
-            return;
+            return "No show loaded.";
 
         Cue[] cues = ShowManager.GetCuesForShow(ShowManager.CurrentShow.Id);
         int currentPosition = ShowManager.CurrentCuePosition ?? 0;
@@ -84,16 +80,19 @@ public class ShowHub : Hub
             ShowManager.CurrentCuePosition = nextCue.Position;
             await BroadcastShowUpdate();
         }
+
+        return Result.Success();
     }
 
-    public async Task PreviousCue(string sessionKey)
+    public async Task<Result> PreviousCue(string sessionKey)
     {
-        bool hasPermission = PermissionManager.UserHasPermission(sessionKey, "ControlShow", out string? error);
-        if (!hasPermission)
-            return;
+        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+        if (!r.IsSuccess) return r.Error!;
+        bool hasPermission = r.Value;
+        if (!hasPermission) return "Access denied.";
 
         if (ShowManager.CurrentShow == null)
-            return;
+            return "No show loaded.";
 
         Cue[] cues = ShowManager.GetCuesForShow(ShowManager.CurrentShow.Id);
         int currentPosition = ShowManager.CurrentCuePosition ?? 0;
@@ -103,31 +102,25 @@ public class ShowHub : Hub
             ShowManager.CurrentCuePosition = previousCue.Position;
             await BroadcastShowUpdate();
         }
+
+        return Result.Success();
     }
 
-    private readonly JsonSerializerOptions _options = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
 
-
-    public async Task<EditActionResult> EditModeAction(string sessionKey, EditModeMethod method, JsonElement newObject, string objectTypeAsString, EditParameters? parameters)
+    public async Task<Result> EditModeAction(string sessionKey, EditModeMethod method, JsonElement newObject,
+        string objectTypeAsString, EditParameters? parameters)
     {
         try
         {
-            bool hasEditPermission = PermissionManager.UserHasPermission(sessionKey, "EditShow", out string? error);
+            Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "EditShow");
+            if (!r.IsSuccess) return r.Error!;
+            bool hasPermission = r.Value;
+            if (!hasPermission) return "Access denied.";
+
             Type objectType = Type.GetType(objectTypeAsString)!;
             object? obj = newObject.Deserialize(objectType, _options);
-            if (!hasEditPermission)
-            {
-                return new EditActionResult
-                {
-                    Success = false,
-                    Error = error
-                };
-            }
-            
-            EditActionResult res = ShowManager.EditAction(method, obj, objectType, parameters);
+
+            Result res = ShowManager.EditAction(method, obj, objectType, parameters);
             _ = BroadcastShowUpdate();
             return res;
         }

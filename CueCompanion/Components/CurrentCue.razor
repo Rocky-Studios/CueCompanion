@@ -4,7 +4,7 @@
     @if (ShowService is
         {
             TasksForCurrentCue: { } tasks,
-            CurrentRoles: { } roles
+            Roles: { } roles
         })
     {
         
@@ -144,7 +144,7 @@
 
     protected override void OnParametersSet()
     {
-        if (ShowService?.CurrentRoles is { } roles && !_roleFilters.Any())
+        if (ShowService?.Roles is { } roles && !_roleFilters.Any())
         {
             _roleFilters = roles.ToDictionary(r => r.Id, _ => false);
         }
