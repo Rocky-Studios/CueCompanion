@@ -89,7 +89,7 @@
                 {
                     Direction = -1
                 });
-                res.IfError(e => Dialogs.ShowError("Error", "Failed to update cue name: " + e));
+                res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
             });
         }
     }
@@ -104,7 +104,7 @@
                 {
                     Direction = 1
                 });
-                res.IfError(e => Dialogs.ShowError("Error", "Failed to update cue name: " + e));
+                res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
             });
         }
     }

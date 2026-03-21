@@ -59,6 +59,8 @@ public class ShowService : StateSubscriberService
             CurrentShow = update.Show;
             LiveModeCuePosition = update.CurrentCuePosition;
             Roles = update.Roles;
+            Cues = update.Cues;
+            Tasks = update.Tasks;
             UpdateState();
         });
 

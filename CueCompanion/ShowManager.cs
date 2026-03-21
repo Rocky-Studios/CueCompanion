@@ -256,14 +256,12 @@ public static class ShowManager
                     cue.Position += direction;
                     Db.Update(cue);
 
-                    // Move the other cue in the opposite direction to swap positions
                     Cue? otherCue = direction == -1 ? cueBefore : cueAfter;
-                    if (otherCue != null)
-                    {
-                        otherCue.Position -= direction;
-                        Db.Update(otherCue);
-                    }
+                    if (otherCue == null) return "Internal server error";
 
+                    // Move the other cue in the opposite direction to swap positions
+                    otherCue.Position -= direction;
+                    Db.Update(otherCue);
                     return Result.Success();
                 }
                 else
