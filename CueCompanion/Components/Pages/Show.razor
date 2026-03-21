@@ -16,12 +16,18 @@
                     </div>
                 </div>
             </MudOverlay>
-            <GridContainer AutoVertical="true">
-                <CueExplorer/>
-                <CurrentCue/>
-                <CueNotes/>
-                <ShowInfo/>
-            </GridContainer>
+            <div class="show-columns">
+                <div class="show-column">
+                    <CueExplorer/>
+                </div>
+                <div class="show-column">
+                    <CurrentCue/>
+                </div>
+                <div class="show-column">
+                    <CueNotes/>
+                    <ShowInfo/>
+                </div>
+            </div>
         </CascadingValue>
     </CascadingValue>
 </MudContainer>

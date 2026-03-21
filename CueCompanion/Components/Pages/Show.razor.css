@@ -16,3 +16,24 @@
     color: red;
     font-weight: bold;
 }
+
+.show-columns {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.show-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+@media (min-width: 1000px) {
+    .show-columns {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(200px, 1fr));
+        gap: 16px;
+        align-items: start;
+    }
+}
