@@ -174,3 +174,12 @@ span.nav-label
 textarea.mud-input-slot {
     margin: 0 !important;
 }
+
+.role-select-popover.mud-popover .mud-list {
+    overflow-y: visible;
+    max-height: none;
+}
+
+.mud-input-outlined.mud-input.mud-input-outlined.mud-input-adorned-end {
+    padding: 8px 14px 8px 8px;
+}
