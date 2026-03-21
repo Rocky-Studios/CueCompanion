@@ -70,57 +70,34 @@ public static class DatabaseHandler
         }
     }
 
-    public static UserConnectionResult TryConnect(string connectionName, string password)
+    public static Result<(User user, string sessionKey)> TryConnect(string connectionName, string password)
     {
         RemoveExpiredSessionKeys();
         string passwordHash = Hash.HashPassword(password);
-        User? connection = Connection.Table<User>()
+        User? user = Connection.Table<User>()
             .FirstOrDefault(c => c?.UserName == connectionName && c.PasswordHash == passwordHash, null);
-        string? errorMessage = null;
-        string? sessionKey = null;
-        if (connection == null)
-            errorMessage = "Invalid connection name or password.";
-        else
-        {
-            sessionKey = GetOrAddSessionKey(connection);
-        }
+        if (user == null) return "Invalid username or password.";
+        string? sessionKey = GetOrAddSessionKey(user);
 
-        return new UserConnectionResult
-        {
-            User = connection,
-            ErrorMessage = errorMessage,
-            SessionKey = sessionKey
-        };
+        return (user, sessionKey);
     }
 
-    public static UserConnectionResult TryConnect(string connectionKey)
+    public static Result<(User user, string sessionKey)> TryConnect(string sessionKey)
     {
         RemoveExpiredSessionKeys();
-        SessionKey? sessionKey = Connection.Table<SessionKey>()
-            .FirstOrDefault(k => k?.Key == connectionKey, null);
+        SessionKey? sessionKeyObject = Connection.Table<SessionKey>()
+            .FirstOrDefault(k => k?.Key == sessionKey, null);
 
-        User? connection = null;
-        string? errorMessage = null;
-        if (sessionKey == null)
-        {
-            errorMessage = "Invalid connection key.";
-        }
-        else
-        {
-            int connectionId = sessionKey.ConnectionId;
-            connection = Connection.Table<User>()
-                .FirstOrDefault(c => c?.Id == connectionId, null);
-        }
+        if (sessionKeyObject == null)
+            return "Invalid session. Try reconnecting.";
 
-        if (connection == null)
-            errorMessage = "No connection found.";
+        int userID = sessionKeyObject.ConnectionId;
+        User? user = Connection.Table<User>().FirstOrDefault(c => c?.Id == userID, null);
 
-        return new UserConnectionResult
-        {
-            User = connection,
-            ErrorMessage = errorMessage,
-            SessionKey = connectionKey
-        };
+        if (user == null)
+            return "No connection found.";
+
+        return (user, sessionKey);
     }
 
     private static string GetOrAddSessionKey(User user, bool forceNew = false)
@@ -149,8 +126,8 @@ public static class DatabaseHandler
         return key;
     }
 
-    public static User GetUserById(int userId)
+    public static User? GetUserById(int userId)
     {
-        return Connection.Table<User>().FirstOrDefault(u => u.Id == userId, null);
+        return Connection.Table<User>().FirstOrDefault(u => u?.Id == userId, null);
     }
 }

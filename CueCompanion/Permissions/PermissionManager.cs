@@ -70,14 +70,21 @@ public static class PermissionManager
         return true;
     }
 
-    public static IEnumerable<Permission> GetPermissionsForUser(User user)
+    public static Result<Permission[]> GetPermissionsForUser(User user)
     {
-        SQLiteConnection db = DatabaseHandler.Connection;
-        IEnumerable<Permission> permissions = from p in db.Table<Permission>()
-            join up in db.Table<UserPermission>() on p.Id equals up.PermissionId
-            where up.UserId == user.Id && up.Value
-            select p;
-        return permissions.ToArray();
+        try
+        {
+            SQLiteConnection db = DatabaseHandler.Connection;
+            IEnumerable<Permission> permissions = from p in db.Table<Permission>()
+                join up in db.Table<UserPermission>() on p.Id equals up.PermissionId
+                where up.UserId == user.Id && up.Value
+                select p;
+            return permissions.ToArray();
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
     }
 
     public static Result<bool> UserHasPermission(string sessionKey, string permission)

@@ -41,6 +41,8 @@ namespace CueCompanion
             builder.Services.AddScoped<ConfigService>();
             builder.Services.AddSingleton<ConfigHub>();
 
+            builder.Services.AddScoped<SimpleDialogService>();
+
             builder.Services.AddSignalR();
             builder.Services.AddBlazorCookiesServerSideServices();
             builder.Services.AddMudServices();

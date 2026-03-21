@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
@@ -31,8 +32,7 @@ public class ShowService : StateSubscriberService
             switch (CurrentMode)
             {
                 case Mode.Live:
-                    throw new ArgumentException(
-                        "Cannot directly modify the live cue position. Use NextCue or PreviousCue instead.");
+                    break;
                 case Mode.Edit:
                     EditModeCuePosition = value;
                     break;
@@ -67,14 +67,10 @@ public class ShowService : StateSubscriberService
 
     public async Task<Result<Show?>> GetCurrentShowAsync(string sessionKey)
     {
-        if (_showHub == null)
-            return "ShowHub connection is not established.";
-
-        if (_showHub.State != HubConnectionState.Connected)
-            return "ShowHub connection is not connected.";
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
         Result<(Show?, int?, Role[])> r =
-            await _showHub.InvokeAsync<Result<(Show?, int?, Role[])>>("GetCurrentShow", sessionKey);
+            await hub.InvokeAsync<Result<(Show?, int?, Role[])>>("GetCurrentShow", sessionKey);
         if (!r.IsSuccess) return r.Error!;
         (Show? show, int? currentCuePosition, Role[] roles) = r.Value;
 
@@ -88,14 +84,11 @@ public class ShowService : StateSubscriberService
 
     public async Task<Result> GetCuesForShowAsync(string sessionKey, int showID)
     {
-        if (_showHub == null)
-            return "ShowHub connection is not established.";
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        if (_showHub.State != HubConnectionState.Connected)
-            return "ShowHub connection is not connected.";
 
         Result<(Cue[], CueTask[])> r =
-            await _showHub.InvokeAsync<Result<(Cue[], CueTask[])>>("GetCuesForShow", sessionKey, showID);
+            await hub.InvokeAsync<Result<(Cue[], CueTask[])>>("GetCuesForShow", sessionKey, showID);
         if (!r.IsSuccess) return r.Error!;
         (Cue[] cues, CueTask[] tasks) = r.Value;
 
@@ -106,50 +99,53 @@ public class ShowService : StateSubscriberService
         return Result.Success();
     }
 
-    public async Task StartShowAsync(string sessionKey)
+    public async Task<Result> StartShowAsync(string sessionKey)
     {
-        if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
-
-        await _showHub.InvokeAsync("StartShow", sessionKey);
+        return await hub.InvokeAsync<Result>("StartShow", sessionKey);
     }
 
-    public async Task NextCueAsync(string sessionKey)
+    public async Task<Result> NextCueAsync(string sessionKey)
     {
-        if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
-
-        await _showHub.InvokeAsync("NextCue", sessionKey);
+        return await hub.InvokeAsync<Result>("NextCue", sessionKey);
     }
 
-    public async Task PreviousCueAsync(string sessionKey)
+    public async Task<Result> PreviousCueAsync(string sessionKey)
     {
-        if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
-
-        await _showHub.InvokeAsync("PreviousCue", sessionKey);
+        return await hub.InvokeAsync<Result>("PreviousCue", sessionKey);
     }
 
     public async Task<Result> SendEditModeAction<T>(string sessionKey, EditModeMethod method, T newObject,
         EditParameters? parameters = null)
     {
-        if (_showHub == null)
-            throw new InvalidOperationException("ShowHub connection is not established.");
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        if (_showHub.State != HubConnectionState.Connected)
-            throw new InvalidOperationException("ShowHub connection is not connected.");
-
-        return await _showHub.InvokeAsync<Result>("EditModeAction", sessionKey, method, newObject,
+        return await hub.InvokeAsync<Result>("EditModeAction", sessionKey, method, newObject,
             typeof(T).AssemblyQualifiedName, parameters);
+    }
+
+    private bool TryGetConnectedHub([NotNullWhen(true)] out HubConnection? hub, out string? error)
+    {
+        hub = _showHub;
+        if (hub is null)
+        {
+            error = "ShowHub connection is not established.";
+            return false;
+        }
+
+        if (hub.State != HubConnectionState.Connected)
+        {
+            error = "ShowHub connection is not connected.";
+            return false;
+        }
+
+        error = null;
+        return true;
     }
 }
 

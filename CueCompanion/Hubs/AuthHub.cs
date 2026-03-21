@@ -4,32 +4,32 @@ namespace CueCompanion;
 
 public class AuthHub : Hub
 {
-    public async Task<UserConnectionResult> ConnectAsync(string connectionName, string password)
+    public Result<(User user, string sesionKey)> ConnectAsync(string connectionName, string password)
     {
-        UserConnectionResult userConnection = DatabaseHandler.TryConnect(connectionName, password);
-        return userConnection;
+        return DatabaseHandler.TryConnect(connectionName, password);
     }
 
-    public async Task<UserConnectionResult> ConnectAsyncWithKey(string connectionKey)
+    public Result<(User user, string sesionKey)> ConnectAsyncWithKey(string connectionKey)
     {
-        UserConnectionResult userConnection = DatabaseHandler.TryConnect(connectionKey);
-        return userConnection;
+        return DatabaseHandler.TryConnect(connectionKey);
     }
 
-    public async Task<Permission[]> GetPermissionsForUser(int userId)
+    public Result<Permission[]> GetPermissionsForUser(int userId)
     {
-        User user = DatabaseHandler.GetUserById(userId);
-        return PermissionManager.GetPermissionsForUser(user).ToArray();
+        User? user = DatabaseHandler.GetUserById(userId);
+        if (user == null) return "User not found.";
+        return PermissionManager.GetPermissionsForUser(user);
     }
 
-    public async Task<Permission[]> GetPermissions()
+    public Result<Permission[]> GetPermissions()
     {
         return PermissionManager.GetPermissions().ToArray();
     }
 
-    public async Task<User> GetUser(string sessionKey, int userId)
+    public Result<User> GetUser(string sessionKey, int userId)
     {
-        User user = DatabaseHandler.GetUserById(userId);
+        User? user = DatabaseHandler.GetUserById(userId);
+        if (user == null) return "User not found.";
         user.PasswordHash = "";
         user.Password = ""; // Don't send the password to the client
         return user;

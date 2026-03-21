@@ -1,5 +1,5 @@
-@using System.Text.Json
 @inject AuthService Auth
+@inject SimpleDialogService Dialogs
 
 <MudCard Class="@GetClass()" @onclick="OnCardClick">
     <div class="d-flex justify-content-between align-items-center m-1">
@@ -24,7 +24,7 @@
     [Parameter] public required Cue Cue { get; set; }
 
     [CascadingParameter]
-    public ShowService? ShowService { get; set; }
+    public required ShowService ShowService { get; set; }
 
     [Parameter]
     public required CueCardColor Color { get; set; } = CueCardColor.Gray;
@@ -59,8 +59,11 @@
     {
         if (Auth.SessionKey is { } key)
         {
-            Cue.Name = newName;
-            ShowService?.SendEditModeAction(key, EditModeMethod.Update, Cue);
+            Task.Run(async () =>
+            {
+                Result res = await ShowService.SendEditModeAction(key, EditModeMethod.Update, Cue);
+                res.IfError(e => Dialogs.ShowError("Error changing cue name", e));
+            });
         }
     }
     
@@ -68,7 +71,11 @@
     {
         if (Auth.SessionKey is { } key)
         {
-            ShowService?.SendEditModeAction(key, EditModeMethod.Delete, Cue);
+            Task.Run(async () =>
+            {
+                Result res = await ShowService.SendEditModeAction(key, EditModeMethod.Delete, Cue);
+                res.IfError(e => Dialogs.ShowError("Error deleting cue", e));
+            });
         }
     }
     
@@ -76,9 +83,13 @@
     {
         if (Auth.SessionKey is { } key)
         {
-            ShowService?.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
+            Task.Run(async () =>
             {
-                Direction = -1
+                Result res = await ShowService.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
+                {
+                    Direction = -1
+                });
+                res.IfError(e => Dialogs.ShowError("Error", "Failed to update cue name: " + e));
             });
         }
     }
@@ -87,9 +98,13 @@
     {
         if (Auth.SessionKey is { } key)
         {
-            ShowService?.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
+            Task.Run(async () =>
             {
-                Direction = 1
+                Result res = await ShowService.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
+                {
+                    Direction = 1
+                });
+                res.IfError(e => Dialogs.ShowError("Error", "Failed to update cue name: " + e));
             });
         }
     }

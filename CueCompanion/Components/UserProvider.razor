@@ -1,7 +1,7 @@
 @using BitzArt.Blazor.Cookies
-@inject IJSRuntime JS
 @inject AuthService Auth
 @inject ICookieService Cookies
+@inject SimpleDialogService Dialogs
 @rendermode InteractiveServer
 
 <CascadingValue Value="this">
@@ -9,7 +9,6 @@
 </CascadingValue>
 
 @code {
-    private bool _initialized;
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -24,19 +23,19 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-            _initialized = true;
-            Auth.isLoading = true;
+        Auth.isLoading = true;
 
-            string? key = await GetSessionKey();
+        string? key = await GetSessionKey();
 
-            if (key != null)
-            {
-                await Connect(key);
-            }
+        if (key != null)
+        {
+            Result<(User user, string sessionKey)> res = await Connect(key);
+            res.GetValue(s => Dialogs.ShowError("Failed to connect with session key", s));
+        }
 
-            Auth.isLoading = false;
-            Auth.UpdateState();
-            OnStateChanged?.Invoke();
+        Auth.isLoading = false;
+        Auth.UpdateState();
+        OnStateChanged?.Invoke();
     }
 
     public async Task Logout()
@@ -45,30 +44,31 @@
         _ = Auth.ClearConnectionAsync();
     }
 
-    public async Task<UserConnectionResult> Connect(string sessionKey)
+    public async Task<Result<(User user, string sessionKey)>> Connect(string sessionKey)
     {
-        UserConnectionResult result = await Auth.ConnectAsync(sessionKey);
-        if (result.SessionKey != null)
+        Result<(User user, string sessionKey)> connectResult = await Auth.ConnectAsync(sessionKey);
+        if (connectResult.Value.sessionKey is { } key)
         {
-            await SetSessionKey(sessionKey);
+            await SetSessionKey(key);
         }
 
-        if (result.User is { } user)
+        if (connectResult.Value.user is { } user)
         {
-            Permission[] permissions = await Auth.GetPermissionsForUserAsync();
-            user.SetPermissions(permissions);
+            Result<Permission[]> permissionsResult = await Auth.GetPermissionsForUserAsync();
+            user.SetPermissions(permissionsResult.GetValue(s => Dialogs.ShowError("Failed to get permissions", s)));
         }
-        return result;
+
+        return connectResult;
     }
 
-    public async Task<UserConnectionResult> Connect(string username, string password)
+    public async Task<Result<(User user, string sessionKey)>> Connect(string username, string password)
     {
-        UserConnectionResult result = await Auth.ConnectAsync(username, password);
-        if (result.SessionKey != null)
+        Result<(User user, string sessionKey)> result = await Auth.ConnectAsync(username, password);
+        if (result.Value.sessionKey is { } key)
         {
-            await SetSessionKey(result.SessionKey);
-            Permission[] permissions = await Auth.GetPermissionsForUserAsync();
-            Auth.User?.SetPermissions(permissions);
+            await SetSessionKey(key);
+            Result<Permission[]> permissionsResult = await Auth.GetPermissionsForUserAsync();
+            Auth.User?.SetPermissions(permissionsResult.GetValue(s => Dialogs.ShowError("Failed to get permissions", s)));
         }
 
         return result;

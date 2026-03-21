@@ -3,7 +3,7 @@
 
 @inject ShowService ShowService
 @inject AuthService Auth
-@inject IDialogService DialogService
+@inject SimpleDialogService Dialogs
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <CascadingValue Value="ShowService">
@@ -27,7 +27,7 @@
 </MudContainer>
 @if (HasEditPermissions)
 {
-    <MudButton OnClick="ToggleEditMode"
+    <MudButton OnClick="@ToggleEditMode"
                Class="edit-mode-button"
                Variant="Variant.Filled"
                Color="@editButtonColor"
@@ -46,12 +46,12 @@
         get
         {
             if (!Auth.PermissionsCache.TryGetValue("EditShow", out int _)) return false;
-            return UserProvider?.CurrentUser?.HasPermission(Auth.PermissionsCache["EditShow"]) ?? false;
+            return UserProvider.CurrentUser?.HasPermission(Auth.PermissionsCache["EditShow"]) ?? false;
         }
     }
 
     [CascadingParameter]
-    public UserProvider? UserProvider { get; set; }
+    public required UserProvider UserProvider { get; set; }
 
     private bool isEditMode;
     private Color editButtonColor => isEditMode ? Color.Primary : Color.Default;
@@ -60,7 +60,7 @@
     {
         ShowService.OnStateChanged += () => InvokeAsync(StateHasChanged);
         Auth.OnStateChanged += () => InvokeAsync(StateHasChanged);
-        UserProvider?.OnStateChanged += () => InvokeAsync(FetchShowInfo);
+        UserProvider.OnStateChanged += () => InvokeAsync(FetchShowInfo);
 
         await ShowService.StartAsync(Navigation.BaseUri);
         await FetchShowInfo();
@@ -72,18 +72,15 @@
         if (Auth.SessionKey is { } key)
         {
             Result<CueCompanion.Show?> result = await ShowService.GetCurrentShowAsync(key);
-            if (!result.IsSuccess)
+            if (result is { IsSuccess: false, Error: { } e } && e != "Access denied.")
             {
-                await DialogService.ShowAsync<ErrorDialog>("Login failed", new DialogParameters<ErrorDialog>
-                {
-                    { x => x.Title, "Getting show failed" },
-                    { x => x.Text, result.Error }
-                }, new DialogOptions { CloseOnEscapeKey = true });
+                await Dialogs.ShowError("Failed to load show information", e);
+                return;
             }
 
             if (result is { IsSuccess: true, Value: { } show })
             {
-                await ShowService.GetCuesForShowAsync(key, show.Id);
+                (await ShowService.GetCuesForShowAsync(key, show.Id)).IfError(e => Dialogs.ShowError("Failed to load cues", e));
             }
             StateHasChanged();
         }

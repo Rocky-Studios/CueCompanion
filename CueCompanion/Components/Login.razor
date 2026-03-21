@@ -1,9 +1,7 @@
-@using System.ComponentModel.DataAnnotations
-@using CueCompanion.Services
-@using MudBlazor
-@inject IDialogService DialogService
+@inject SimpleDialogService Dialogs
 @inject AuthService Auth
 @inject UserManagementService UserManagement
+@using System.ComponentModel.DataAnnotations
 @implements IAsyncDisposable
 
 <Panel>
@@ -42,7 +40,9 @@
 </Panel>
 
 @code {
-    [CascadingParameter] public UserProvider? UserProvider { get; set; }
+
+    [CascadingParameter]
+    public required UserProvider UserProvider { get; set; }
     readonly LoginForm model = new();
     bool isLoading;
 
@@ -71,52 +71,33 @@
 
     private async Task OnLogout()
     {
-        if (UserProvider != null)
-        {
-            await UserProvider.Logout();
-        }
-        else throw new ArgumentNullException(nameof(UserProvider), "UserProvider is null, cannot log out");
+        await UserProvider.Logout();
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
         if (Auth.User != null) // Already logged in
         {
-            DialogOptions options = new() { CloseOnEscapeKey = true };
-            DialogParameters<ErrorDialog> parameters = new()
-            {
-                { x => x.Title, "Login failed" },
-                { x => x.Text, "Already logged in" }
-            };
-            await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+            await Dialogs.ShowError("Login failed", "Already logged in");
             return;
         }
 
         isLoading = true;
-        UserConnectionResult result = await UserProvider!.Connect(model.UserName, model.Password);
-        if (result.ErrorMessage is { } error)
+        Result<(User user, string sessionKey)> result = await UserProvider.Connect(model.UserName, model.Password);
+        if (result.Error is { } error)
         {
-            DialogOptions options = new() { CloseOnEscapeKey = true };
-            DialogParameters<ErrorDialog> parameters = new()
-            {
-                { x => x.Title, "Login failed" },
-                { x => x.Text, error }
-            };
-            await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
+            await Dialogs.ShowError("Login failed", error);
+            isLoading = false;
+            return;
         }
-        else
-        {
-            model.UserName = string.Empty;
-            model.Password = string.Empty;
-            string key = result.SessionKey ?? throw new InvalidOperationException("Session key is null");
-            if (UserProvider != null)
-            {
-                await UserProvider.SetSessionKey(key);
-            }
-            else throw new ArgumentNullException(nameof(UserProvider), "UserProvider is null, cannot set session key");
-            
-            UserManagement.UpdateState();
-        }
+
+        model.UserName = string.Empty;
+        model.Password = string.Empty;
+        string key = result.Value.sessionKey;
+
+        await UserProvider.SetSessionKey(key);
+
+        UserManagement.UpdateState();
 
         isLoading = false;
     }

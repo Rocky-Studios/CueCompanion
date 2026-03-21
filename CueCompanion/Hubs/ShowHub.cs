@@ -41,13 +41,14 @@ public class ShowHub : Hub
         Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
         if (!r.IsSuccess) return r.Error!;
         bool hasPermission = r.Value;
-        if (!hasPermission) return "Access denied.";
-
         if (hasPermission)
-            ShowManager.StartShow();
+        {
+            Result r2 = ShowManager.StartShow();
+            _ = BroadcastShowUpdate();
+            return r2;
+        }
 
-        _ = BroadcastShowUpdate();
-        return Result.Success();
+        return "Access denied.";
     }
 
     public async Task BroadcastShowUpdate()

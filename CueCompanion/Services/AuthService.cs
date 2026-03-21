@@ -11,7 +11,7 @@ public class AuthService : StateSubscriberService
     public bool isLoading { get; set; } = false;
 
 
-    public void SetConnection(User user)
+    public void SetUser(User user)
     {
         User = user;
         UpdateState();
@@ -35,65 +35,62 @@ public class AuthService : StateSubscriberService
         UpdateState();
     }
 
-    public async Task<UserConnectionResult> ConnectAsync(string connectionName, string password)
+    public async Task<Result<(User user, string sessionKey)>> ConnectAsync(string username, string password)
     {
         if (_authHub == null)
-            throw new InvalidOperationException("AuthHub connection is not established.");
+            return "Connection is not established. Please wait.";
 
+        Result<(User user, string sessionKey)> result =
+            await _authHub.InvokeAsync<Result<(User, string)>>("ConnectAsync", username, password);
+        if (result.Value.user is { } user) SetUser(user);
 
-        UserConnectionResult userConnection =
-            await _authHub.InvokeAsync<UserConnectionResult>("ConnectAsync", connectionName, password);
-        if (userConnection.User != null) SetConnection(userConnection.User);
-
-        return userConnection;
+        return result;
     }
 
 
-    public async Task<UserConnectionResult> ConnectAsync(string connectionKey)
+    public async Task<Result<(User user, string sessionKey)>> ConnectAsync(string sessionKey)
     {
         if (_authHub == null)
-            throw new InvalidOperationException("AuthHub connection is not established.");
+            return "Connection is not established. Please wait.";
 
+        Result<(User user, string sessionKey)> result =
+            await _authHub.InvokeAsync<Result<(User, string)>>("ConnectAsyncWithKey", sessionKey);
+        if (result.Value.user is { } user) SetUser(user);
 
-        UserConnectionResult userConnection =
-            await _authHub.InvokeAsync<UserConnectionResult>("ConnectAsyncWithKey", connectionKey);
-        if (userConnection.User != null) SetConnection(userConnection.User);
-
-        return userConnection;
+        return result;
     }
 
-    public async Task<Permission[]> GetPermissionsForUserAsync()
+    public async Task<Result<Permission[]>> GetPermissionsForUserAsync()
     {
         if (_authHub == null)
-            throw new InvalidOperationException("AuthHub connection is not established.");
+            return "AuthHub connection is not established.";
 
         if (User == null)
-            throw new InvalidOperationException("User is not connected.");
+            return "User is not connected.";
 
-        return await _authHub.InvokeAsync<Permission[]>("GetPermissionsForUser", User.Id);
+        return await _authHub.InvokeAsync<Result<Permission[]>>("GetPermissionsForUser", User.Id);
     }
 
-    public async Task<Permission[]> GetPermissionsAsync()
+    public async Task<Result<Permission[]>> GetPermissionsAsync()
     {
         if (_authHub == null)
-            throw new InvalidOperationException("AuthHub connection is not established.");
+            return "AuthHub connection is not established.";
 
-        Permission[] perms = await _authHub.InvokeAsync<Permission[]>("GetPermissions");
+        Result<Permission[]> result = await _authHub.InvokeAsync<Result<Permission[]>>("GetPermissions");
 
-        foreach (Permission permission in perms)
-        {
-            PermissionsCache[permission.Name] = permission.Id;
-        }
+        if (result.IsSuccess && result.Value is { } perms)
+            foreach (Permission permission in perms)
+                PermissionsCache[permission.Name] = permission.Id;
 
-        return perms;
+        return result;
     }
 
-    public async Task<User> GetUserAsync(int userID)
+    public async Task<Result<User>> GetUserAsync(int userID)
     {
         if (_authHub == null)
-            throw new InvalidOperationException("AuthHub connection is not established.");
+            return "AuthHub connection is not established.";
 
-        return await _authHub.InvokeAsync<User>("GetUser", SessionKey, userID);
+        return await _authHub.InvokeAsync<Result<User>>("GetUser", SessionKey, userID);
     }
 
     public bool HasPermission(string permissionName)

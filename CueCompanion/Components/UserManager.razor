@@ -3,7 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using CueCompanion.UserManagement
 @implements IAsyncDisposable
-@inject IDialogService DialogService
+@inject SimpleDialogService Dialogs
 
 <Panel>
     <MudText Typo="Typo.h2">User Manager</MudText>
@@ -17,6 +17,7 @@
     }
     else
     {
+        // TODO Add toggle to enable/disable logging in for user 
         <MudCard Elevation="10" Outlined="true" Style="max-height: 40vh; overflow-y: auto;">
             <MudTable Items="_users" Dense="true">
                 <HeaderContent>
@@ -126,17 +127,6 @@
         [Required] public string Password { get; set; } = string.Empty;
     }
 
-    private async Task ShowErrorDialog(string title, string text)
-    {
-        DialogOptions options = new() { CloseOnEscapeKey = true };
-        DialogParameters<ErrorDialog> parameters = new()
-        {
-            { x => x.Title, title },
-            { x => x.Text, text }
-        };
-        await DialogService.ShowAsync<ErrorDialog>("Login failed", parameters, options);
-    }
-
     private async Task OnValidSubmit(EditContext context)
     {
         string username = model.UserName;
@@ -147,7 +137,7 @@
             Result r = await UserManagement.CreateNewUser(key, username, password);
             if (r.Error is { } errorMessage)
             {
-                await ShowErrorDialog("Create new user failed", errorMessage);
+                await Dialogs.ShowError("Create new user failed", errorMessage);
                 return;
             }
 
@@ -156,7 +146,7 @@
             Result<UserInfo[]> r2 = await UserManagement.GetUsers(key);
             if (r2.Error is { } errorMessage2)
             {
-                await ShowErrorDialog("Failed to retrieve users", errorMessage2);
+                await Dialogs.ShowError("Failed to retrieve users", errorMessage2);
                 return;
             }
 

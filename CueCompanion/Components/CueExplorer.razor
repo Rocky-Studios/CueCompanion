@@ -1,8 +1,9 @@
 @inject AuthService Auth
+@inject SimpleDialogService Dialogs
 
 <GridChild ColumnStart="1" ColumnEnd="2" RowStart="1" RowEnd="3">
     <MudText Typo="Typo.h1">Cue Explorer</MudText>
-    @if (ShowService?.CurrentShow is { } show)
+    @if (ShowService.CurrentShow is { } show)
     {
         @if (ShowService.CurrentCuePosition is not null || IsEditMode)
         {
@@ -10,9 +11,9 @@
             {
                 <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
                 <MudText Typo="Typo.h2">
-                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="PreviousCue"/>
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="@PreviousCue"/>
                     @cuePos
-                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="NextCue"/>
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="@NextCue"/>
                 </MudText>
             }
 
@@ -21,7 +22,7 @@
                     <MudText Typo="Typo.subtitle1">CUES</MudText>
                     @if (IsEditMode)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="CreateNewCue"
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="@CreateNewCue"
                                        Size="Size.Small">Add new
                         </MudIconButton>
                     }
@@ -42,7 +43,7 @@
                 Show not started.
                 @if (HasControlPermissions)
                 {
-                    <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="OnStartShow">Start</MudButton>
+                    <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStartShow">Start</MudButton>
                 }
             </MudText>
         }
@@ -58,10 +59,10 @@
 @code
 {
     [CascadingParameter]
-    public ShowService? ShowService { get; set; }
+    public required ShowService ShowService { get; set; }
 
     [CascadingParameter]
-    public UserProvider? UserProvider { get; set; }
+    public required UserProvider UserProvider { get; set; }
 
     [CascadingParameter(Name = "IsEditMode")]
     public bool IsEditMode { get; set; }
@@ -70,39 +71,39 @@
         get
         {
             if (!Auth.PermissionsCache.TryGetValue("ControlShow", out int _)) return false;
-            return UserProvider?.CurrentUser?.HasPermission(Auth.PermissionsCache["ControlShow"]) ?? false;
+            return UserProvider.CurrentUser?.HasPermission(Auth.PermissionsCache["ControlShow"]) ?? false;
         }
     }
 
     private void OnCueCardClick(Cue cue)
     {
         if (!IsEditMode) return;
-        ShowService?.CurrentCuePosition = cue.Position;
-        ShowService?.UpdateState();
+        ShowService.CurrentCuePosition = cue.Position;
+        ShowService.UpdateState();
     }
 
 
     private async Task OnStartShow()
     {
-        if (ShowService?.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
+        if (ShowService.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
         {
-            await ShowService.StartShowAsync(key);
+            (await ShowService.StartShowAsync(key)).IfError(e => Dialogs.ShowError("Error starting show", e));
         }
     }
 
     public async Task PreviousCue()
     {
-        if (ShowService?.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
+        if (ShowService.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
         {
-            await ShowService.PreviousCueAsync(key);
+            (await ShowService.PreviousCueAsync(key)).IfError(e => Dialogs.ShowError("Error moving to previous cue", e));
         }
     }
 
     public async Task NextCue()
     {
-        if (ShowService?.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
+        if (ShowService.CurrentShow is not null && HasControlPermissions && Auth.SessionKey is { } key)
         {
-            await ShowService.NextCueAsync(key);
+            (await ShowService.NextCueAsync(key)).IfError(e => Dialogs.ShowError("Error moving to next cue", e));
         }
     }
 
@@ -110,15 +111,15 @@
     {
         if (IsEditMode)
         {
-            if (ShowService?.CurrentCuePosition == cue.Position)
+            if (ShowService.CurrentCuePosition == cue.Position)
                 return CueCardColor.Green;
             return CueCardColor.Gray;
         }
         else
         {
-            if (ShowService?.CurrentCuePosition == cue.Position)
+            if (ShowService.CurrentCuePosition == cue.Position)
                 return CueCardColor.Green;
-            List<Cue> sortedByPosition = ShowService?.Cues.OrderBy(c => c.Position).ToList() ?? [];
+            List<Cue> sortedByPosition = ShowService.Cues.OrderBy(c => c.Position).ToList();
             if (sortedByPosition.Last().Position == cue.Position)
                 return CueCardColor.DarkRed;
             return CueCardColor.Gray;
@@ -127,7 +128,7 @@
 
     private async Task CreateNewCue()
     {
-        if (ShowService?.CurrentShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
+        if (ShowService.CurrentShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
         {
             int lastCuePosition = ShowService.Cues.Length > 0 ? ShowService.Cues.Max(c => c.Position) : 0;
             Cue newCue = new()
@@ -136,12 +137,12 @@
                 ShowId = showID,
                 Position = lastCuePosition+1
             };
-            await ShowService.SendEditModeAction(key, EditModeMethod.Create, newCue);
+            (await ShowService.SendEditModeAction(key, EditModeMethod.Create, newCue)).IfError(e => Dialogs.ShowError("Error creating new cue", e));
         }
     }
     
     private IEnumerable<Cue> GetSortedCues()
     {
-        return ShowService?.Cues.OrderBy(c => c.Position) ?? Enumerable.Empty<Cue>();
+        return ShowService.Cues.OrderBy(c => c.Position);
     }
 }

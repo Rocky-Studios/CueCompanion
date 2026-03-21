@@ -202,14 +202,14 @@ public static class ShowManager
         return db.Table<CueTask>().Where(ct => cueIds.Contains(ct.CueId)).ToArray();
     }
 
-    public static void StartShow()
+    public static Result StartShow()
     {
-        if (CurrentShow == null)
-            throw new InvalidOperationException("No show is currently loaded.");
+        if (CurrentShow == null) return "Cannot start show. No show loaded.";
         Cue[] cues = GetCuesForShow(CurrentShow.Id);
 
         IsShowActive = true;
         CurrentCuePosition = cues.OrderBy(c => c.Position).FirstOrDefault()?.Position ?? 1;
+        return Result.Success();
     }
 
     public static Result EditAction(EditModeMethod method, object newObject, Type objectType,

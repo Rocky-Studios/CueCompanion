@@ -39,6 +39,17 @@ public sealed class Result<T>
     {
         return Failure(error);
     }
+
+    public T GetValue(Action<string>? onError = null)
+    {
+        if (!IsSuccess)
+        {
+            if (onError != null) onError(Error ?? "Unknown error");
+            return default!;
+        }
+
+        return Value!;
+    }
 }
 
 // Custom converter needed to correctly serialize tuples
@@ -172,5 +183,12 @@ public sealed class Result
     public static implicit operator Result(string error)
     {
         return Failure(error);
+    }
+
+    public void IfError(Action<string>? action = null)
+    {
+        if (!IsSuccess)
+            if (action != null)
+                action(Error ?? "Unknown error");
     }
 }

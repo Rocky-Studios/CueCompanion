@@ -13,10 +13,9 @@ public static class UserManager
         if (!r.IsSuccess) return r.Error ?? "Unknown session key.";
         User? user = r.Value;
         if (user == null) return "Invalid session key.";
-        bool hasManageUsersPermission = PermissionManager.HasPermission(
-            PermissionManager.GetPermissionByName("ManageUsers") ??
-            throw new Exception("ManageUsers permission not found."),
-            user);
+        Permission? perm = PermissionManager.GetPermissionByName("ManageUsers");
+        if (perm == null) return "Permission not found.";
+        bool hasManageUsersPermission = PermissionManager.HasPermission(perm, user);
         if (!hasManageUsersPermission) return "Access denied.";
         return true;
     }
@@ -31,21 +30,23 @@ public static class UserManager
         if (!r2.IsSuccess) return r.Error!;
 
         User[] users = _db.Table<User>().ToArray();
-        UserInfo[] userInfos = users.Select(u => new UserInfo()
+        List<UserInfo> userInfos = [];
+        foreach (User u in users)
         {
-            UserID = u.Id,
-            UserName = u.UserName,
-            Permissions = GetPerms(u.Id)
-        }).ToArray();
-
-
-        Permission[] GetPerms(int userId)
-        {
-            User u = users.First(u => u.Id == userId);
-            return PermissionManager.GetPermissionsForUser(u).ToArray();
+            Result<Permission[]> perms = PermissionManager.GetPermissionsForUser(u);
+            string? error = null;
+            Permission[] p = perms.GetValue(s => { error = s; });
+            userInfos.Add(new UserInfo
+            {
+                UserID = u.Id,
+                UserName = u.UserName,
+                Permissions = p
+            });
+            if (error != null)
+                return $"Error retrieving permissions for user {u.UserName}: {error}";
         }
 
-        return Result<UserInfo[]>.Success(userInfos);
+        return Result<UserInfo[]>.Success(userInfos.ToArray());
     }
 
     public static Result<User?> GetUserBySessionKey(string sessionKey)
@@ -95,7 +96,7 @@ public static class UserManager
         Result<bool> r = HasManageUsersPermission(sessionKey);
         if (!r.IsSuccess) return r.Error!;
 
-        User? user = _db.Table<User>().FirstOrDefault(u => u.Id == userId, null);
+        User? user = _db.Table<User>().FirstOrDefault(u => u?.Id == userId, null);
         if (user == null) return "User not found.";
         _db.Delete(user);
         return Result.Success();
@@ -123,7 +124,7 @@ public static class UserManager
         if (!r.IsSuccess) return r.Error!;
 
         UserPermission? userPermission = _db.Table<UserPermission>()
-            .FirstOrDefault(up => up.UserId == userID && up.PermissionId == permissionID, null);
+            .FirstOrDefault(up => up?.UserId == userID && up.PermissionId == permissionID, null);
         if (userPermission == null) return "User permission not found.";
         _db.Delete(userPermission);
         return Result.Success();
