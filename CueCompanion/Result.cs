@@ -10,7 +10,7 @@ public sealed class Result<T>
     {
     }
 
-    private Result(bool isSuccess, T? value, string? error, Dictionary<string, object>? meta)
+    private Result(bool isSuccess, T? value, string? error, Dictionary<string, string>? meta)
     {
         (IsSuccess, Value, Error, Meta) = (isSuccess, value, error, meta);
     }
@@ -18,14 +18,14 @@ public sealed class Result<T>
     public bool IsSuccess { get; set; }
     public T? Value { get; set; }
     public string? Error { get; set; }
-    public Dictionary<string, object>? Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 
-    public static Result<T> Success(T value, Dictionary<string, object>? meta = null)
+    public static Result<T> Success(T value, Dictionary<string, string>? meta = null)
     {
         return new Result<T>(true, value, null, meta);
     }
 
-    public static Result<T> Failure(string error, Dictionary<string, object>? meta = null)
+    public static Result<T> Failure(string error, Dictionary<string, string>? meta = null)
     {
         return new Result<T>(false, default, error, meta);
     }
@@ -92,7 +92,7 @@ public sealed class ResultJsonConverter<T> : JsonConverter<Result<T>>
         bool hasIsSuccess = false;
         T? value = default;
         string? error = null;
-        Dictionary<string, object>? meta = null;
+        Dictionary<string, string>? meta = null;
 
         while (reader.Read())
         {
@@ -122,7 +122,7 @@ public sealed class ResultJsonConverter<T> : JsonConverter<Result<T>>
                     break;
                 case "meta":
                 case "Meta":
-                    meta = JsonSerializer.Deserialize<Dictionary<string, object>>(ref reader, options);
+                    meta = JsonSerializer.Deserialize<Dictionary<string, string>>(ref reader, options);
                     break;
                 default:
                     JsonSerializer.Deserialize<JsonElement>(ref reader, options);
@@ -161,21 +161,21 @@ public sealed class Result
     {
     }
 
-    private Result(bool isSuccess, string? error, Dictionary<string, object>? meta)
+    private Result(bool isSuccess, string? error, Dictionary<string, string>? meta)
     {
         (IsSuccess, Error, Meta) = (isSuccess, error, meta);
     }
 
     public bool IsSuccess { get; set; }
     public string? Error { get; set; }
-    public Dictionary<string, object>? Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 
-    public static Result Success(Dictionary<string, object>? meta = null)
+    public static Result Success(Dictionary<string, string>? meta = null)
     {
         return new Result(true, null, meta);
     }
 
-    public static Result Failure(string error, Dictionary<string, object>? meta = null)
+    public static Result Failure(string error, Dictionary<string, string>? meta = null)
     {
         return new Result(false, error, meta);
     }

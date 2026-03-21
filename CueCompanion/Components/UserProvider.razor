@@ -52,6 +52,11 @@
             await SetSessionKey(key);
         }
 
+        if (connectResult.Meta is { } meta && meta.TryGetValue("clearSessionKey", out string? clear) && clear == "true")
+        {
+            await RemoveSessionKey();
+        }
+
         if (connectResult.Value.user is { } user)
         {
             Result<Permission[]> permissionsResult = await Auth.GetPermissionsForUserAsync();
@@ -69,6 +74,11 @@
             await SetSessionKey(key);
             Result<Permission[]> permissionsResult = await Auth.GetPermissionsForUserAsync();
             Auth.User?.SetPermissions(permissionsResult.GetValue(s => Dialogs.ShowError("Failed to get permissions", s)));
+        }
+
+        if (result.Meta is { } meta && meta.TryGetValue("clearSessionKey", out string? clear) && clear == "true")
+        {
+            await RemoveSessionKey();
         }
 
         return result;

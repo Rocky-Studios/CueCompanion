@@ -64,4 +64,20 @@ public class UserManagementService : StateSubscriberService
 
         await _userManagementHub.InvokeAsync("RemovePermissionFromUser", sessionKey, userID, permissionID);
     }
+
+    public async Task<Result> EnableLoggingIn(string sessionKey, int userID)
+    {
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        return await _userManagementHub.InvokeAsync<Result>("EnableLoggingInForUser", sessionKey, userID);
+    }
+
+    public async Task<Result> DisableLoggingIn(string sessionKey, int userID)
+    {
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        return await _userManagementHub.InvokeAsync<Result>("DisableLoggingInForUser", sessionKey, userID);
+    }
 }

@@ -5,18 +5,25 @@ namespace CueCompanion;
 [Table("users")]
 public class User
 {
+    private Permission[]? _permissions;
+
     [Column("id")]
     [PrimaryKey]
     [AutoIncrement]
     public int Id { get; set; }
 
-    [Column("name")] public string UserName { get; set; }
+    [Column("name")]
+    public string UserName { get; set; }
 
-    [Ignore] public string Password { get; set; }
+    [Ignore]
+    public string Password { get; set; }
 
-    [Column("passwordHash")] public string PasswordHash { get; set; }
-    
-    private Permission[]? _permissions;
+    [Column("passwordHash")]
+    public string PasswordHash { get; set; }
+
+    [Column("canLogIn")]
+    public bool CanLogin { get; set; } = true;
+
     public void SetPermissions(Permission[] permissions)
     {
         _permissions = permissions;
@@ -24,7 +31,7 @@ public class User
 
     public bool HasPermission(int permissionID)
     {
-        if(_permissions == null || _permissions.Length == 0) return false;
+        if (_permissions == null || _permissions.Length == 0) return false;
         return _permissions.Any(p => p.Id == permissionID);
     }
 }

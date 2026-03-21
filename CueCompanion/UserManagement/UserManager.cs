@@ -40,7 +40,8 @@ public static class UserManager
             {
                 UserID = u.Id,
                 UserName = u.UserName,
-                Permissions = p
+                Permissions = p,
+                CanLogin = u.CanLogin
             });
             if (error != null)
                 return $"Error retrieving permissions for user {u.UserName}: {error}";
@@ -53,7 +54,7 @@ public static class UserManager
     {
         SessionKey? session = _db.Table<SessionKey>().FirstOrDefault(sk => sk?.Key == sessionKey, null);
         if (session == null) return "Invalid session key.";
-        User? user = _db.Table<User>().FirstOrDefault(u => u != null && u.Id == session.ConnectionId, null);
+        User? user = _db.Table<User>().FirstOrDefault(u => u != null && u.Id == session.UserID, null);
         if (user == null) return "User not found for session key.";
         return user;
     }
@@ -127,6 +128,30 @@ public static class UserManager
             .FirstOrDefault(up => up?.UserId == userID && up.PermissionId == permissionID, null);
         if (userPermission == null) return "User permission not found.";
         _db.Delete(userPermission);
+        return Result.Success();
+    }
+
+    public static Result EnableLoggingInForUser(string sessionKey, int userID)
+    {
+        Result<bool> r = HasManageUsersPermission(sessionKey);
+        if (!r.IsSuccess) return r.Error!;
+
+        User? user = _db.Table<User>().FirstOrDefault(u => u?.Id == userID, null);
+        if (user == null) return "User not found.";
+        user.CanLogin = true;
+        _db.Update(user);
+        return Result.Success();
+    }
+
+    public static Result DisableLoggingInForUser(string sessionKey, int userID)
+    {
+        Result<bool> r = HasManageUsersPermission(sessionKey);
+        if (!r.IsSuccess) return r.Error!;
+
+        User? user = _db.Table<User>().FirstOrDefault(u => u?.Id == userID, null);
+        if (user == null) return "User not found.";
+        user.CanLogin = false;
+        _db.Update(user);
         return Result.Success();
     }
 }

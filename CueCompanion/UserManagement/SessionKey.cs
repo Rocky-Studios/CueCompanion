@@ -10,11 +10,15 @@ public class SessionKey
     [AutoIncrement]
     public int Id { get; set; }
 
-    [Column("key")] public string Key { get; set; }
+    [Column("key")]
+    public string Key { get; set; }
 
-    [Column("connectionId")] public int ConnectionId { get; set; }
+    [Column("userID")]
+    public int UserID { get; set; }
 
-    [Column("issuedAt")] public DateTime IssuedAt { get; set; }
+    [Column("issuedAt")]
+    public DateTime IssuedAt { get; set; }
 
-    [Column("expiresAt")] public DateTime ExpiresAt { get; set; }
+    [Column("expiresAt")]
+    public DateTime ExpiresAt { get; set; }
 }

@@ -16,7 +16,7 @@ public static class ChatManager
         }
 
 
-        User user = Db.Table<User>().FirstOrDefault(u => u.Id == session.ConnectionId);
+        User user = Db.Table<User>().FirstOrDefault(u => u.Id == session.UserID);
         if (user == null)
         {
             success = false;
@@ -40,7 +40,7 @@ public static class ChatManager
         SessionKey session = Db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);
         if (session == null) return [];
 
-        User user = Db.Table<User>().FirstOrDefault(u => u.Id == session.ConnectionId);
+        User user = Db.Table<User>().FirstOrDefault(u => u.Id == session.UserID);
         if (user == null) return [];
 
         return Db.Table<Message>().ToArray();

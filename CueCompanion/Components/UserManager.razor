@@ -17,7 +17,6 @@
     }
     else
     {
-        // TODO Add toggle to enable/disable logging in for user 
         <MudCard Elevation="10" Outlined="true" Style="max-height: 40vh; overflow-y: auto;">
             <MudTable Items="_users" Dense="true">
                 <HeaderContent>
@@ -51,6 +50,25 @@
                                     }
                                 </ChildContent>
                             </MudMenu>
+                        }
+                    </MudTd>
+                    <MudTd>
+                        @if (context.UserName != "admin")
+                        {
+                            @if (context.CanLogin)
+                            {
+                                <MudTooltip Text="Logging in enabled">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Error"
+                                                   OnClick="@(() => { DisableLoggingIn(context.UserID); })"/>
+                                </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudTooltip Text="Logging in disabled">
+                                    <MudIconButton Icon="@Icons.Material.Filled.PersonOff" Color="Color.Error"
+                                                   OnClick="@(() => { EnableLoggingIn(context.UserID); })"/>
+                                </MudTooltip>
+                            }
                         }
                     </MudTd>
                     <MudTd>
@@ -156,11 +174,31 @@
         }
     }
 
+    private async Task DisableLoggingIn(int userID)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            await UserManagement.DisableLoggingIn(key, userID);
+
+            UserManagement.UpdateState();
+        }
+    }
+
+    private async Task EnableLoggingIn(int userID)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            await UserManagement.EnableLoggingIn(key, userID);
+
+            UserManagement.UpdateState();
+        }
+    }
+
     private async Task DeleteUser(int userID)
     {
         if (Auth.SessionKey is { } key)
         {
-            UserManagement.DeleteUser(key, userID);
+            await UserManagement.DeleteUser(key, userID);
             
             UserManagement.UpdateState();
         }

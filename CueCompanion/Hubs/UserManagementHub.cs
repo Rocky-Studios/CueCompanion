@@ -30,4 +30,14 @@ public class UserManagementHub : Hub
     {
         return UserManager.RemovePermissionFromUser(sessionKey, userID, permissionID);
     }
+
+    public async Task<Result> EnableLoggingInForUser(string sessionKey, int userID)
+    {
+        return UserManager.EnableLoggingInForUser(sessionKey, userID);
+    }
+
+    public async Task<Result> DisableLoggingInForUser(string sessionKey, int userID)
+    {
+        return UserManager.DisableLoggingInForUser(sessionKey, userID);
+    }
 }

@@ -76,7 +76,28 @@ public static class DatabaseHandler
         string passwordHash = Hash.HashPassword(password);
         User? user = Connection.Table<User>()
             .FirstOrDefault(c => c?.UserName == connectionName && c.PasswordHash == passwordHash, null);
-        if (user == null) return "Invalid username or password.";
+        if (user == null)
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Invalid username or password.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
+
+        if (!user.CanLogin)
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Login disabled.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
+
         string? sessionKey = GetOrAddSessionKey(user);
 
         return (user, sessionKey);
@@ -89,13 +110,40 @@ public static class DatabaseHandler
             .FirstOrDefault(k => k?.Key == sessionKey, null);
 
         if (sessionKeyObject == null)
-            return "Invalid session. Try reconnecting.";
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Invalid session. Try reconnecting.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
 
-        int userID = sessionKeyObject.ConnectionId;
+        int userID = sessionKeyObject.UserID;
         User? user = Connection.Table<User>().FirstOrDefault(c => c?.Id == userID, null);
 
         if (user == null)
-            return "No connection found.";
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Invalid username or password.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
+
+        if (!user.CanLogin)
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Login disabled.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
 
         return (user, sessionKey);
     }
@@ -103,7 +151,7 @@ public static class DatabaseHandler
     private static string GetOrAddSessionKey(User user, bool forceNew = false)
     {
         SessionKey? existingKeyForConnection = Connection.Table<SessionKey>()
-            .FirstOrDefault(k => k?.ConnectionId == user.Id, null);
+            .FirstOrDefault(k => k?.UserID == user.Id, null);
         if (existingKeyForConnection != null)
         {
             if (existingKeyForConnection.ExpiresAt < DateTime.UtcNow) Connection.Delete(existingKeyForConnection);
@@ -117,7 +165,7 @@ public static class DatabaseHandler
         string key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         SessionKey sessionKey = new()
         {
-            ConnectionId = user.Id,
+            UserID = user.Id,
             Key = key,
             IssuedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(1)
