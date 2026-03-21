@@ -183,3 +183,39 @@ textarea.mud-input-slot {
 .mud-input-outlined.mud-input.mud-input-outlined.mud-input-adorned-end {
     padding: 8px 14px 8px 8px;
 }
+
+.mud-paper:not(.mud-card) {
+    background-color: color-mix(var(--mud-palette-surface) 85%, #000 15%);
+}
+
+.mud-table-dense * .mud-table-row .mud-table-cell.permissions-cell {
+    height: 100%;
+}
+
+.mud-table-dense * .mud-table-row .mud-table-cell.permissions-cell .permissions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.1rem;
+    align-items: center;
+    height: 100%;
+}
+
+.mud-table-root .mud-table-dense .mud-table-row .mud-table-cell {
+    padding: 6px 16px 6px 16px;
+    padding-inline-start: 16px;
+    padding-inline-end: 16px;
+}
+
+.mud-table-dense * .mud-table-body .mud-table-row .mud-table-cell {
+    padding: 6px 16px 6px 16px;
+    padding-inline-start: 16px;
+    padding-inline-end: 16px;
+}
+
+.mud-input-control > .mud-input-control-input-container > div.mud-input.mud-input-text.mud-input-text-with-label {
+    margin-top: 16px !important;
+}
+
+.mud-container {
+    padding-top: 2rem;
+}

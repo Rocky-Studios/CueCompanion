@@ -17,8 +17,14 @@
     }
     else
     {
-        <MudCard Elevation="10" Outlined="true" Style="max-height: 40vh; overflow-y: auto;">
-            <MudTable Items="_users" Dense="true">
+        <MudCard Elevation="10" Style="max-height: 40vh; overflow-y: auto;">
+            <MudTable Items="_users" Dense="true" Elevation="0">
+                <ColGroup>
+                    <col style="width: 12.5%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="width: 45%;"/>
+                    <col style="width: 20%;"/>
+                </ColGroup>
                 <HeaderContent>
                     <MudTh>User ID</MudTh>
                     <MudTh>Username</MudTh>
@@ -28,29 +34,35 @@
                 <RowTemplate>
                     <MudTd>@context.UserID</MudTd>
                     <MudTd>@context.UserName</MudTd>
-                    <MudTd>
-                        @foreach (var perm in GetPermissionsString(context).Split(", "))
-                        {
-                            @if (perm == "") continue;
-                            <MudCard Class="d-inline">
-                                @perm
-                                <MudIconButton Class="d-inline p-0" Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => { RemovePermissionFromUser(context.UserID, perm);})"/>
-                            </MudCard>
-                        }
-                        @if(PermissionsNotAdded(context.Permissions).Length != 0)
-                        {
-                            <MudMenu Dense="true" Style="padding: 0;">
-                                <ActivatorContent Context="activator_context">
-                                    <MudIconButton Size="Size.Small" OnClick="@activator_context.ToggleAsync" Icon="@Icons.Material.Filled.Add"/>
-                                </ActivatorContent>
-                                <ChildContent>
-                                    @foreach (string perm in PermissionsNotAdded(context.Permissions))
-                                    {
-                                        <MudMenuItem Label="@perm" @onclick="@(() => {AddPermissionToUser(context.UserID, perm);})"/>
-                                    }
-                                </ChildContent>
-                            </MudMenu>
-                        }
+                    <MudTd Class="permissions-cell">
+                        <div class="permissions-container">
+                            @foreach (string perm in GetPermissionsString(context).Split(", "))
+                            {
+                                @if (perm == "") continue;
+                                <MudCard Class="d-inline" Style="padding: 0.1rem">
+                                    @perm
+                                    <MudIconButton Class="d-inline p-0" Icon="@Icons.Material.Filled.Close"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => { RemovePermissionFromUser(context.UserID, perm); })"/>
+                                </MudCard>
+                            }
+                            @if (PermissionsNotAdded(context.Permissions).Length != 0)
+                            {
+                                <MudMenu Dense="true" Style="padding: 0;">
+                                    <ActivatorContent Context="activator_context">
+                                        <MudIconButton Size="Size.Small" OnClick="@activator_context.ToggleAsync"
+                                                       Icon="@Icons.Material.Filled.Add"/>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @foreach (string perm in PermissionsNotAdded(context.Permissions))
+                                        {
+                                            <MudMenuItem Label="@perm"
+                                                         @onclick="@(() => { AddPermissionToUser(context.UserID, perm); })"/>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
+                            }
+                        </div>
                     </MudTd>
                     <MudTd>
                         @if (context.UserName != "admin")
@@ -58,31 +70,33 @@
                             @if (context.CanLogin)
                             {
                                 <MudTooltip Text="Logging in enabled">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Error"
+                                    <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Primary"
                                                    OnClick="@(() => { DisableLoggingIn(context.UserID); })"/>
                                 </MudTooltip>
                             }
                             else
                             {
                                 <MudTooltip Text="Logging in disabled">
-                                    <MudIconButton Icon="@Icons.Material.Filled.PersonOff" Color="Color.Error"
+                                    <MudIconButton Icon="@Icons.Material.Filled.PersonOff" Color="Color.Primary"
                                                    OnClick="@(() => { EnableLoggingIn(context.UserID); })"/>
                                 </MudTooltip>
                             }
                         }
-                    </MudTd>
-                    <MudTd>
                         @if (context.UserName != "admin")
                         {
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => { DeleteUser(context.UserID); })"/>
+                            <MudTooltip Text="Delete">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Primary"
+                                               OnClick="@(() => { DeleteUser(context.UserID); })"/>
+                            </MudTooltip>
                         }
                     </MudTd>
                 </RowTemplate>
             </MudTable>
         </MudCard>
         <br/>
-        <MudCard Elevation="10" Outlined="true">
+        <MudCard Elevation="10">
             <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                <MudText Typo="Typo.h3" Style="margin-bottom: -16px">Create new user</MudText>
                 <MudTextField Label="Username" Class="mt-3" @bind-Value="model.UserName"
                               For="@(() => model.UserName)" InputType="InputType.Text"/>
                 <MudTextField Label="Password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)"
