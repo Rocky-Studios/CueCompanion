@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using CueCompanion.Components;
 using SQLite;
 
@@ -168,5 +169,122 @@ public static class UserManager
         user.PasswordHash = Hash.HashPassword(newPassword);
         _db.Update(user);
         return Result.Success();
+    }
+
+    public static void RemoveExpiredSessionKeys()
+    {
+        List<SessionKey> expiredKeys = _db.Table<SessionKey>()
+            .Where(k => k.ExpiresAt < DateTime.UtcNow)
+            .ToList();
+        foreach (SessionKey key in expiredKeys) _db.Delete(key);
+    }
+
+    public static Result<(User user, string sessionKey)> TryConnect(string connectionName, string password)
+    {
+        RemoveExpiredSessionKeys();
+        string passwordHash = Hash.HashPassword(password);
+        User? user = _db.Table<User>()
+            .FirstOrDefault(c => c?.UserName == connectionName && c.PasswordHash == passwordHash, null);
+        if (user == null)
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Invalid username or password.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
+
+        if (!user.CanLogin)
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Login disabled.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
+
+        string? sessionKey = GetOrAddSessionKey(user);
+
+        return (user, sessionKey);
+    }
+
+    public static Result<(User user, string sessionKey)> TryConnect(string sessionKey)
+    {
+        RemoveExpiredSessionKeys();
+        SessionKey? sessionKeyObject = _db.Table<SessionKey>()
+            .FirstOrDefault(k => k?.Key == sessionKey, null);
+
+        if (sessionKeyObject == null)
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Invalid session. Try reconnecting.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
+
+        int userID = sessionKeyObject.UserID;
+        User? user = _db.Table<User>().FirstOrDefault(c => c?.Id == userID, null);
+
+        if (user == null)
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Invalid username or password.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
+
+        if (!user.CanLogin)
+        {
+            Result<(User user, string sessionKey)> r =
+                Result<(User user, string sessionKey)>.Failure("Login disabled.");
+            r.Meta = new Dictionary<string, string>
+            {
+                ["clearSessionKey"] = "true"
+            };
+            return r;
+        }
+
+        return (user, sessionKey);
+    }
+
+    private static string GetOrAddSessionKey(User user, bool forceNew = false)
+    {
+        SessionKey? existingKeyForConnection = _db.Table<SessionKey>()
+            .FirstOrDefault(k => k?.UserID == user.Id, null);
+        if (existingKeyForConnection != null)
+        {
+            if (existingKeyForConnection.ExpiresAt < DateTime.UtcNow) _db.Delete(existingKeyForConnection);
+
+            if (forceNew)
+                _db.Delete(existingKeyForConnection);
+            else
+                return existingKeyForConnection.Key;
+        }
+
+        string key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        SessionKey sessionKey = new()
+        {
+            UserID = user.Id,
+            Key = key,
+            IssuedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(1)
+        };
+        _db.Insert(sessionKey);
+        return key;
+    }
+
+    public static User? GetUserById(int userId)
+    {
+        return _db.Table<User>().FirstOrDefault(u => u?.Id == userId, null);
     }
 }

@@ -1,3 +1,4 @@
+using CueCompanion.UserManagement;
 using Microsoft.AspNetCore.SignalR;
 
 namespace CueCompanion;
@@ -6,17 +7,17 @@ public class AuthHub : Hub
 {
     public Result<(User user, string sesionKey)> ConnectAsync(string connectionName, string password)
     {
-        return DatabaseHandler.TryConnect(connectionName, password);
+        return UserManager.TryConnect(connectionName, password);
     }
 
     public Result<(User user, string sesionKey)> ConnectAsyncWithKey(string connectionKey)
     {
-        return DatabaseHandler.TryConnect(connectionKey);
+        return UserManager.TryConnect(connectionKey);
     }
 
     public Result<Permission[]> GetPermissionsForUser(int userId)
     {
-        User? user = DatabaseHandler.GetUserById(userId);
+        User? user = UserManager.GetUserById(userId);
         if (user == null) return "User not found.";
         return PermissionManager.GetPermissionsForUser(user);
     }
@@ -28,7 +29,7 @@ public class AuthHub : Hub
 
     public Result<User> GetUser(string sessionKey, int userId)
     {
-        User? user = DatabaseHandler.GetUserById(userId);
+        User? user = UserManager.GetUserById(userId);
         if (user == null) return "User not found.";
         user.PasswordHash = "";
         user.Password = ""; // Don't send the password to the client
