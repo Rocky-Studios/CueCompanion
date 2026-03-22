@@ -4,16 +4,31 @@
     <UserProvider>
         <MudAppBar Elevation="1">
             <MudText Typo="Typo.h5">CueCompanion</MudText>
-            <MudSpacer></MudSpacer>
+            <MudSpacer/>
             <UserDisplay/>
         </MudAppBar>
-        <MudDrawer Open="true" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Persistent">
-            <NavMenu/>
-        </MudDrawer>
-        <MudMainContent>
+
+        @* Desktop/tablet drawer *@
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDrawer Open="true"
+                       ClipMode="DrawerClipMode.Always"
+                       Elevation="2"
+                       Variant="DrawerVariant.Persistent">
+                <NavMenu/>
+            </MudDrawer>
+        </MudHidden>
+
+        <MudMainContent Class="main-content-with-mobile-nav">
             <MudDialogProvider/>
             <MudPopoverProvider/>
             @Body
         </MudMainContent>
+
+        @* Mobile bottom nav *@
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <div class="mobile-bottom-nav">
+                <NavMenu IsBottom="true"/>
+            </div>
+        </MudHidden>
     </UserProvider>
 </MudLayout>

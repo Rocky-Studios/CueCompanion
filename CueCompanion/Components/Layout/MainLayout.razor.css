@@ -96,3 +96,20 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.mobile-bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1200;
+    background: var(--mud-palette-surface);
+    border-top: 1px solid var(--mud-palette-lines-default);
+    padding-bottom: env(safe-area-inset-bottom);
+
+}
+
+.main-content-with-mobile-nav {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+    

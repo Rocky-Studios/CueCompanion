@@ -219,3 +219,11 @@ textarea.mud-input-slot {
 .mud-container {
     padding-top: 2rem;
 }
+
+
+.mobile-bottom-nav .mud-navmenu {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    overflow: scroll;
+}
