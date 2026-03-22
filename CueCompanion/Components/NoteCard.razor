@@ -1,0 +1,24 @@
+<MudCard>
+    <div style="display: flex; flex-direction: row; gap: 16px; align-items: center; padding: 8px;">
+        <MudIcon Icon="@Icons.Material.Filled.StickyNote2"/>
+        <div>
+            <MudText Typo="Typo.body1">@Text</MudText>
+            <MudText Typo="Typo.body2">@Role @Show @Cue</MudText>
+        </div>
+    </div>
+</MudCard>
+
+@code
+{
+    [Parameter]
+    public required string Text { get; set; }
+
+    [Parameter]
+    public string? Role { get; set; }
+
+    [Parameter]
+    public string? Show { get; set; }
+
+    [Parameter]
+    public string? Cue { get; set; }
+}

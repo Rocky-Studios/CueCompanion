@@ -1,5 +1,4 @@
 using BitzArt.Blazor.Cookies;
-using CueCompanion.Components;
 using CueCompanion.Hubs;
 using CueCompanion.Services;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
@@ -41,6 +40,9 @@ namespace CueCompanion
             builder.Services.AddScoped<ConfigService>();
             builder.Services.AddSingleton<ConfigHub>();
 
+            builder.Services.AddScoped<NotesService>();
+            builder.Services.AddSingleton<NotesHub>();
+
             builder.Services.AddScoped<SimpleDialogService>();
 
             builder.Services.AddSignalR();
@@ -70,6 +72,7 @@ namespace CueCompanion
             app.MapHub<ShowHub>("/api/show");
             app.MapHub<ChatHub>("/api/chat");
             app.MapHub<ConfigHub>("/api/config");
+            app.MapHub<NotesHub>("/api/notes");
 
             app.UseStaticFiles();
             app.MapStaticAssets();

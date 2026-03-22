@@ -1,3 +1,58 @@
+@using CueCompanion.Notes
+@inject AuthService Auth
+@inject NotesService NotesService
+@inject SimpleDialogService Dialogs
+@inject IDialogService DialogService
+
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="1" RowEnd="2">
     <MudText Typo="Typo.h1">Notes</MudText>
+    @if (NotesService.Notes is { } notes)
+    {
+        <div class="d-flex flex-column gap-2">
+            @foreach (Note note in notes)
+            {
+                <NoteCard Text="@note.NoteText" Role="All" Show="" Cue=""/>
+            }
+        </div>
+    }
+    else
+    {
+        <MudText>No notes found for this show.</MudText>
+    }
 </GridChild>
+
+@code
+{
+
+    protected override async Task OnInitializedAsync()
+    {
+        Auth.OnStateChanged += async () =>
+        {
+            if (Auth.SessionKey is { } key)
+            {
+                Result<Note[]> notesResult = await NotesService.GetAllNotes(key);
+                notesResult.GetValue(s => Dialogs.ShowError("Failed to load notes", s));
+            }
+
+            _ = InvokeAsync(StateHasChanged);
+        };
+
+        await NotesService.StartAsync(Navigation.BaseUri);
+    }
+
+    private async Task CreateNote(string noteText, int? roleID, int? showID, int? cueID)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            Note note = new()
+            {
+                NoteText = noteText,
+                RoleId = roleID,
+                ShowId = showID,
+                CueId = cueID
+            };
+            Result noteResult = await NotesService.CreateNote(key, note);
+            noteResult.IfError(e => Dialogs.ShowError("Failed to create note", e));
+        }
+    }
+}

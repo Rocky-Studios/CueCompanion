@@ -1,4 +1,5 @@
 using CueCompanion.Components;
+using CueCompanion.Notes;
 using CueCompanion.UserManagement;
 using SQLite;
 
@@ -21,6 +22,7 @@ public static class DatabaseHandler
         Connection.CreateTable<CueTask>();
         Connection.CreateTable<ShowRoleAssignment>();
         Connection.CreateTable<Message>();
+        Connection.CreateTable<Note>();
 
 
         ShowManager.CreateDefaultRoles();
