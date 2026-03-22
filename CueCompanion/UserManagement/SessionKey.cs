@@ -13,12 +13,12 @@ public class SessionKey
     [Column("key")]
     public string Key { get; set; }
 
-    [Column("userID")]
+    [Column("user_id")]
     public int UserID { get; set; }
 
-    [Column("issuedAt")]
+    [Column("issued_at")]
     public DateTime IssuedAt { get; set; }
 
-    [Column("expiresAt")]
+    [Column("expires_at")]
     public DateTime ExpiresAt { get; set; }
 }

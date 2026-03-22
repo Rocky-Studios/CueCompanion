@@ -13,7 +13,7 @@ public class Message
     [Column("timestamp")]
     public DateTime Timestamp { get; set; }
 
-    [Column("senderID")]
+    [Column("user_id")]
     public int Sender { get; set; }
 
     [Column("content")]

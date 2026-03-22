@@ -10,9 +10,12 @@ public class UserPermission
     [AutoIncrement]
     public int Id { get; set; }
 
-    [Column("userId")] public int UserId { get; set; }
+    [Column("user_id")]
+    public int UserId { get; set; }
 
-    [Column("permissionId")] public int PermissionId { get; set; }
+    [Column("permission_id")]
+    public int PermissionId { get; set; }
 
-    [Column("value")] public bool Value { get; set; }
+    [Column("value")]
+    public bool Value { get; set; }
 }
