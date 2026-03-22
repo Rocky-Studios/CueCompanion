@@ -1,0 +1,165 @@
+@inject SimpleDialogService Dialogs
+@inject AuthService Auth
+@inject UserManagementService UserManagement
+@inject IDialogService DialogService
+@using System.ComponentModel.DataAnnotations
+@implements IAsyncDisposable
+
+<Panel>
+    <MudText Typo="Typo.h2">Account</MudText>
+    @if (Auth.User is not { } user)
+    {
+        <MudText Typo="Typo.h2">Login</MudText>
+        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator/>
+            <MudTextField Label="Username" Class="mt-3" @bind-Value="model.UserName"
+                          For="@(() => model.UserName)" InputType="InputType.Text"/>
+            <MudTextField Label="Password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)"
+                          InputType="InputType.Password"/>
+
+            <div>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                           Class="ml-auto mt-2" Disabled="isLoading">
+                    Login
+                    @if (isLoading)
+                    {
+                        <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
+                    }
+                </MudButton>
+
+            </div>
+        </EditForm>
+    }
+    else
+    {
+        <MudText Typo="Typo.h3">You are logged in as <strong>@user.UserName</strong></MudText>
+        <MudButton OnClick="@OnLogout" Variant="Variant.Outlined" Color="Color.Primary"
+                   Class="ml-auto mt-2">
+            Log out
+        </MudButton>
+
+        <MudButton OnClick="@(() => isPasswordChangeOpen = true)" Variant="Variant.Outlined" Color="Color.Primary"
+                   Class="ml-2 mt-2">
+            Change password
+        </MudButton>
+        <MudPopover Open="@isPasswordChangeOpen" Fixed="true" Class="px-4 pt-4" Style="min-width: 20vw">
+            <MudText Typo="Typo.h6">Change password</MudText>
+            <MudTextField Label="Current password" Class="mt-3" InputType="InputType.Password"
+                          @bind-Value="currentPasswordField"/>
+            <MudTextField Label="New password" Class="mt-3" InputType="InputType.Password"
+                          @bind-Value="newPasswordField"/>
+            <MudTextField Label="Confirm new password" Class="mt-3" InputType="InputType.Password"
+                          @bind-Value="confirmNewPasswordField"/>
+            <div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto mt-2"
+                           OnClick="@PasswordChanged">
+                    Change password
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="ml-auto mt-2"
+                           OnClick="@(() => isPasswordChangeOpen = false)">
+                    Close
+                </MudButton>
+            </div>
+        </MudPopover>
+    }
+
+</Panel>
+
+@code {
+
+    [CascadingParameter]
+    public required UserProvider UserProvider { get; set; }
+
+    readonly LoginForm model = new();
+    bool isLoading;
+    bool isPasswordChangeOpen;
+
+    string? currentPasswordField;
+    string? newPasswordField;
+    string? confirmNewPasswordField;
+
+    public class LoginForm
+    {
+        [Required]
+        public string UserName { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    private Action? _stateChangeHandler;
+
+    protected override void OnInitialized()
+    {
+        _stateChangeHandler = () => InvokeAsync(StateHasChanged);
+        Auth.OnStateChanged += _stateChangeHandler;
+        isLoading = false;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_stateChangeHandler != null)
+            Auth.OnStateChanged -= _stateChangeHandler;
+    }
+
+
+    private async Task OnLogout()
+    {
+        await UserProvider.Logout();
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        if (Auth.User != null) // Already logged in
+        {
+            await Dialogs.ShowError("Login failed", "Already logged in");
+            return;
+        }
+
+        isLoading = true;
+        Result<(User user, string sessionKey)> result = await UserProvider.Connect(model.UserName, model.Password);
+        if (result.Error is { } error)
+        {
+            await Dialogs.ShowError("Login failed", error);
+            isLoading = false;
+            return;
+        }
+
+        model.UserName = string.Empty;
+        model.Password = string.Empty;
+        string key = result.Value.sessionKey;
+
+        await UserProvider.SetSessionKey(key);
+
+        UserManagement.UpdateState();
+
+        isLoading = false;
+    }
+
+    private void PasswordChanged()
+    {
+        Task.Run(async () =>
+        {
+            if (newPasswordField != confirmNewPasswordField)
+            {
+                await Dialogs.ShowError("Error", "New password and confirmation do not match");
+                return;
+            }
+
+            if (currentPasswordField == null || newPasswordField == null)
+            {
+                await Dialogs.ShowError("Error", "Current and new password must be filled out");
+                return;
+            }
+
+
+            Result r = await UserManagement.ChangePassword(Auth.SessionKey!, currentPasswordField, newPasswordField);
+            r.IfError(error => { Dialogs.ShowError("Error changing password", error); });
+            currentPasswordField = null;
+            newPasswordField = null;
+            confirmNewPasswordField = null;
+            isPasswordChangeOpen = false;
+        });
+    }
+
+}

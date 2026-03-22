@@ -80,4 +80,12 @@ public class UserManagementService : StateSubscriberService
 
         return await _userManagementHub.InvokeAsync<Result>("DisableLoggingInForUser", sessionKey, userID);
     }
+
+    public async Task<Result> ChangePassword(string sessionKey, string currentPassword, string newPassword)
+    {
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        return await _userManagementHub.InvokeAsync<Result>("ChangePassword", sessionKey, currentPassword, newPassword);
+    }
 }

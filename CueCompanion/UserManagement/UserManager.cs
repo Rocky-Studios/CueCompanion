@@ -154,4 +154,19 @@ public static class UserManager
         _db.Update(user);
         return Result.Success();
     }
+
+    public static async Task<Result> ChangePassword(string sessionKey, string currentPassword, string newPassword)
+    {
+        Result<User?> userResult = GetUserBySessionKey(sessionKey);
+        if (!userResult.IsSuccess) return userResult.Error ?? "User not found.";
+
+        string hashedProvidedPassword = Hash.HashPassword(currentPassword);
+        User user = userResult.Value!;
+        if (hashedProvidedPassword != user.PasswordHash)
+            return "Current password is incorrect.";
+
+        user.PasswordHash = Hash.HashPassword(newPassword);
+        _db.Update(user);
+        return Result.Success();
+    }
 }

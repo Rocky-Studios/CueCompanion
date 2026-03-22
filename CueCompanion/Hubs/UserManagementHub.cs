@@ -40,4 +40,9 @@ public class UserManagementHub : Hub
     {
         return UserManager.DisableLoggingInForUser(sessionKey, userID);
     }
+
+    public async Task<Result> ChangePassword(string sessionKey, string currentPassword, string newPassword)
+    {
+        return await UserManager.ChangePassword(sessionKey, currentPassword, newPassword);
+    }
 }
