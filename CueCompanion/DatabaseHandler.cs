@@ -29,16 +29,17 @@ public static class DatabaseHandler
         PermissionManager.CreateDefaultPermissions();
 
         // Clear old show state, useful for development
-        if (false)
+        if (true)
         {
             Connection.DeleteAll<Show>();
             Connection.DeleteAll<Cue>();
             Connection.DeleteAll<CueTask>();
             Connection.DeleteAll<ShowRoleAssignment>();
+            Connection.DeleteAll<Note>();
         }
 
         // Create a default show
-        if (false) ShowManager.CreateDefaultShow();
+        if (true) ShowManager.CreateDefaultShow();
 
 
         bool hasAdmin = Connection.Table<User>().ToList().Any(c => c.UserName == "admin");
@@ -46,11 +47,11 @@ public static class DatabaseHandler
         {
             User adminUser = new()
             {
-                UserName = "admin",
+                UserName     = "admin",
                 PasswordHash = Hash.HashPassword("admin")
             };
             Connection.Insert(adminUser);
-            Permission? adminPermission = PermissionManager.GetPermissionByName("Admin");
+            Permission? adminPermission       = PermissionManager.GetPermissionByName("Admin");
             Permission? manageUsersPermission = PermissionManager.GetPermissionByName("ManageUsers");
             if (adminPermission != null)
                 PermissionManager.SetPermission(adminPermission, adminUser, true);
