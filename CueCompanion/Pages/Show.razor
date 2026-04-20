@@ -8,30 +8,45 @@
 @implements IAsyncDisposable
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <CascadingValue Value="ShowService">
-        <CascadingValue Name="IsEditMode" Value="isEditMode">
-            <MudOverlay @bind-Visible="isEditMode" AutoClose="false"
-                        Style="z-index: 2000 !important; pointer-events: none;">
-                <div class="edit-mode-overlay">
-                    <div class="edit-mode-label">
-                        EDIT MODE ACTIVE
+    @if (Auth.User == null)
+    {
+        <MudAlert Severity="Severity.Error">You must be logged in to access the show page.</MudAlert>
+    }
+    else
+    {
+        @if (!HasViewPermissions)
+        {
+            <MudAlert Severity="Severity.Error">Access denied.</MudAlert>
+        }
+
+        @if (HasViewPermissions)
+        {
+            <CascadingValue Value="ShowService">
+                <CascadingValue Name="IsEditMode" Value="isEditMode">
+                    <MudOverlay @bind-Visible="isEditMode" AutoClose="false"
+                                Style="z-index: 2000 !important; pointer-events: none;">
+                        <div class="edit-mode-overlay">
+                            <div class="edit-mode-label">
+                                EDIT MODE ACTIVE
+                            </div>
+                        </div>
+                    </MudOverlay>
+                    <div class="show-columns">
+                        <div class="show-column">
+                            <CueExplorer/>
+                        </div>
+                        <div class="show-column">
+                            <CurrentCue/>
+                        </div>
+                        <div class="show-column">
+                            <CueNotes/>
+                            <ShowInfo/>
+                        </div>
                     </div>
-                </div>
-            </MudOverlay>
-            <div class="show-columns">
-                <div class="show-column">
-                    <CueExplorer/>
-                </div>
-                <div class="show-column">
-                    <CurrentCue/>
-                </div>
-                <div class="show-column">
-                    <CueNotes/>
-                    <ShowInfo/>
-                </div>
-            </div>
-        </CascadingValue>
-    </CascadingValue>
+                </CascadingValue>
+            </CascadingValue>
+        }
+    }
 </MudContainer>
 @if (HasEditPermissions)
 {
@@ -57,6 +72,8 @@
             return UserProvider.CurrentUser?.HasPermission(Auth.PermissionsCache["EditShow"]) ?? false;
         }
     }
+
+    private bool HasViewPermissions;
 
     [CascadingParameter]
     public required UserProvider UserProvider { get; set; }
@@ -98,6 +115,7 @@
 
             if (result is { IsSuccess: true, Value: { } show })
             {
+                HasViewPermissions = true;
                 (await ShowService.GetCuesForShowAsync(key, show.Id)).IfError(e => Dialogs.ShowError("Failed to load cues", e));
             }
             StateHasChanged();

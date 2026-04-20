@@ -1,4 +1,5 @@
 @page "/config"
+@using CueCompanion.Components.Dashboard
 @inject AuthService AuthService
 @inject ShowService ShowService
 @inject ConfigService ConfigService
@@ -11,15 +12,19 @@
     {
         <MudAlert Severity="Severity.Error">You must be logged in to access the config page.</MudAlert>
     }
-    @if (!_hasPermission)
+    else
     {
-        <MudAlert Severity="Severity.Error">Access denied.</MudAlert>
-    }
-    @if (_hasPermission)
-    {
-        <PanelContainer>
+        @if (!_hasPermission)
+        {
+            <MudAlert Severity="Severity.Error">Access denied.</MudAlert>
+        }
 
-        </PanelContainer>
+        @if (_hasPermission)
+        {
+            <PanelContainer>
+
+            </PanelContainer>
+        }
     }
 </MudContainer>
 
