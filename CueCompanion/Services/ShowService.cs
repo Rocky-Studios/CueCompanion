@@ -146,12 +146,6 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
             return false;
         }
 
-        if (hub.State != HubConnectionState.Connected)
-        {
-            error = "ShowHub connection is not connected.";
-            return false;
-        }
-
         error = null;
         return true;
     }
