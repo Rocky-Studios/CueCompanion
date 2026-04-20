@@ -3,30 +3,19 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
 
-public class ShowService : StateSubscriberService
+public class ShowService : StateSubscriberService, IAsyncDisposable
 {
-    private HubConnection? _showHub;
-    private int? BrowseModeCuePosition;
-
-    public Cue[] Cues = [];
-
-    public Mode CurrentMode = Mode.Live;
-    private int? EditModeCuePosition;
-
-    private int? LiveModeCuePosition;
-    public Role[] Roles = [];
-    public CueTask[] Tasks = [];
     public Show? CurrentShow { get; private set; }
 
     public int? CurrentCuePosition
     {
         get => CurrentMode switch
-        {
-            Mode.Live => LiveModeCuePosition,
-            Mode.Edit => EditModeCuePosition,
-            Mode.Browse => BrowseModeCuePosition,
-            _ => null
-        };
+               {
+                   Mode.Live   => LiveModeCuePosition,
+                   Mode.Edit   => EditModeCuePosition,
+                   Mode.Browse => BrowseModeCuePosition,
+                   _           => null,
+               };
         set
         {
             switch (CurrentMode)
@@ -47,22 +36,39 @@ public class ShowService : StateSubscriberService
 
     public Cue? CurrentCue => Cues.FirstOrDefault(c => c.Position == CurrentCuePosition);
 
+    public async ValueTask DisposeAsync()
+    {
+        if (_showHub != null) await _showHub.DisposeAsync();
+    }
+
+    private HubConnection? _showHub;
+    private int?           BrowseModeCuePosition;
+
+    public Cue[] Cues = [];
+
+    public  Mode CurrentMode = Mode.Live;
+    private int? EditModeCuePosition;
+
+    private int?      LiveModeCuePosition;
+    public  Role[]    Roles = [];
+    public  CueTask[] Tasks = [];
+
     public async Task StartAsync(string baseUrl)
     {
         _showHub = new HubConnectionBuilder()
-            .WithUrl($"{baseUrl}api/show")
-            .WithAutomaticReconnect()
-            .Build();
+                  .WithUrl($"{baseUrl}api/show")
+                  .WithAutomaticReconnect()
+                  .Build();
 
         _showHub.On("ShowUpdated", (ShowUpdate update) =>
-        {
-            CurrentShow = update.Show;
-            LiveModeCuePosition = update.CurrentCuePosition;
-            Roles = update.Roles;
-            Cues = update.Cues;
-            Tasks = update.Tasks;
-            UpdateState();
-        });
+                                   {
+                                       CurrentShow         = update.Show;
+                                       LiveModeCuePosition = update.CurrentCuePosition;
+                                       Roles               = update.Roles;
+                                       Cues                = update.Cues;
+                                       Tasks               = update.Tasks;
+                                       UpdateState();
+                                   });
 
         await _showHub.StartAsync();
     }
@@ -76,9 +82,9 @@ public class ShowService : StateSubscriberService
         if (!r.IsSuccess) return r.Error!;
         (Show? show, int? currentCuePosition, Role[] roles) = r.Value;
 
-        CurrentShow = show;
+        CurrentShow         = show;
         LiveModeCuePosition = currentCuePosition;
-        Roles = roles;
+        Roles               = roles;
 
         UpdateState();
         return show;
@@ -94,7 +100,7 @@ public class ShowService : StateSubscriberService
         if (!r.IsSuccess) return r.Error!;
         (Cue[] cues, CueTask[] tasks) = r.Value;
 
-        Cues = cues;
+        Cues  = cues;
         Tasks = tasks;
 
         UpdateState();
@@ -122,13 +128,13 @@ public class ShowService : StateSubscriberService
         return await hub.InvokeAsync<Result>("PreviousCue", sessionKey);
     }
 
-    public async Task<Result> SendEditModeAction<T>(string sessionKey, EditModeMethod method, T newObject,
-        EditParameters? parameters = null)
+    public async Task<Result> SendEditModeAction<T>(string          sessionKey, EditModeMethod method, T newObject,
+                                                    EditParameters? parameters = null)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
         return await hub.InvokeAsync<Result>("EditModeAction", sessionKey, method, newObject,
-            typeof(T).AssemblyQualifiedName, parameters);
+                                             typeof(T).AssemblyQualifiedName, parameters);
     }
 
     private bool TryGetConnectedHub([NotNullWhen(true)] out HubConnection? hub, out string? error)

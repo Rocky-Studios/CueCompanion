@@ -1,10 +1,11 @@
 @page "/show"
-@using CueCompanion.Components.Show
 <PageTitle>Show - Cue Companion</PageTitle>
 
-@inject ShowService ShowService
-@inject AuthService Auth
+@inject ShowService         ShowService
+@inject AuthService         Auth
 @inject SimpleDialogService Dialogs
+@using CueCompanion.Components.Show
+@implements IAsyncDisposable
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <CascadingValue Value="ShowService">
@@ -60,18 +61,28 @@
     [CascadingParameter]
     public required UserProvider UserProvider { get; set; }
 
-    private bool isEditMode;
+    private bool  isEditMode;
     private Color editButtonColor => isEditMode ? Color.Primary : Color.Default;
 
     protected override async Task OnInitializedAsync()
     {
-        ShowService.OnStateChanged += () => InvokeAsync(StateHasChanged);
-        Auth.OnStateChanged += () => InvokeAsync(StateHasChanged);
-        UserProvider.OnStateChanged += () => InvokeAsync(FetchShowInfo);
+        ShowService.OnStateChanged  += InvokeAsyncStateChanged;
+        Auth.OnStateChanged         += InvokeAsyncStateChanged;
+        UserProvider.OnStateChanged += UserProviderOnStateChanged();
 
         await ShowService.StartAsync(Navigation.BaseUri);
         await FetchShowInfo();
         ShowService.UpdateState();
+    }
+
+    private Action UserProviderOnStateChanged()
+    {
+        return () => InvokeAsync(FetchShowInfo);
+    }
+
+    private void InvokeAsyncStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task FetchShowInfo()
@@ -95,8 +106,17 @@
 
     private void ToggleEditMode()
     {
-        isEditMode = !isEditMode;
+        isEditMode              = !isEditMode;
         ShowService.CurrentMode = isEditMode ? Mode.Edit : Mode.Live;
         StateHasChanged();
+    }
+
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        ShowService.OnStateChanged  -= InvokeAsyncStateChanged;
+        Auth.OnStateChanged         -= InvokeAsyncStateChanged;
+        UserProvider.OnStateChanged -= UserProviderOnStateChanged();
+        await ShowService.DisposeAsync();
     }
 }

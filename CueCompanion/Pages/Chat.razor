@@ -1,7 +1,8 @@
 @page "/chat"
-@inject AuthService AuthService
-@inject ChatService ChatService
+@inject AuthService         AuthService
+@inject ChatService         ChatService
 @inject SimpleDialogService Dialogs
+@implements IAsyncDisposable
 
 <PageTitle>Chat - Cue Companion</PageTitle>
 
@@ -39,30 +40,40 @@
 
     protected override async Task OnInitializedAsync()
     {
-        AuthService?.OnStateChanged += () =>
-        {
-            InvokeAsync(StateHasChanged);
-            if (AuthService.SessionKey is { } key) ChatService?.GetAllMessages(key);
-        };
-        ChatService?.OnStateChanged += async () =>
-        {
-            Message[] messages = ChatService.Messages.ToArray();
-            foreach (Message message in messages)
-            {
-                if (!ChatService.UserIdToNameCache.ContainsKey(message.Sender))
-                {
-                    User? user = (await AuthService?.GetUserAsync(message.Sender)!).Value;
-                    if (user != null)
-                    {
-                        ChatService.UserIdToNameCache[message.Sender] = user.UserName;
-                    }
-                }
-            }
-
-            await InvokeAsync(StateHasChanged);
-        };
+        AuthService?.OnStateChanged += AuthServiceOnOnStateChanged();
+        ChatService?.OnStateChanged += ChatServiceOnOnStateChanged();
 
         ChatService?.StartAsync(Navigation.BaseUri);
+    }
+
+    private Action? AuthServiceOnOnStateChanged()
+    {
+        return () =>
+               {
+                   InvokeAsync(StateHasChanged);
+                   if (AuthService.SessionKey is { } key) ChatService?.GetAllMessages(key);
+               };
+    }
+
+    private Action? ChatServiceOnOnStateChanged()
+    {
+        return async () =>
+               {
+                   Message[] messages = ChatService.Messages.ToArray();
+                   foreach (Message message in messages)
+                   {
+                       if (!ChatService.UserIdToNameCache.ContainsKey(message.Sender))
+                       {
+                           User? user = (await AuthService?.GetUserAsync(message.Sender)!).Value;
+                           if (user != null)
+                           {
+                               ChatService.UserIdToNameCache[message.Sender] = user.UserName;
+                           }
+                       }
+                   }
+
+                   await InvokeAsync(StateHasChanged);
+               };
     }
 
     private void OnSendButtonClicked()
@@ -72,5 +83,13 @@
             ChatService?.SendMessage(key, messageContent);
             messageContent = string.Empty;
         }
+    }
+
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (AuthService != null) AuthService.OnStateChanged -= AuthServiceOnOnStateChanged();
+        if (ChatService != null) ChatService.OnStateChanged -= ChatServiceOnOnStateChanged();
+        if (ChatService != null) await ChatService.DisposeAsync();
     }
 }

@@ -2,24 +2,30 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
 
-public class ChatService : StateSubscriberService
+public class ChatService : StateSubscriberService, IAsyncDisposable
 {
-    public readonly List<Message> Messages = [];
-    private HubConnection? _chatHub;
-    public Dictionary<int, string> UserIdToNameCache = new();
+    public async ValueTask DisposeAsync()
+    {
+        Messages.Clear();
+        if (_chatHub != null) await _chatHub.DisposeAsync();
+    }
+
+    public readonly List<Message>           Messages = [];
+    private         HubConnection?          _chatHub;
+    public          Dictionary<int, string> UserIdToNameCache = new();
 
     public async Task StartAsync(string baseUrl)
     {
         _chatHub = new HubConnectionBuilder()
-            .WithUrl($"{baseUrl}api/chat")
-            .WithAutomaticReconnect()
-            .Build();
+                  .WithUrl($"{baseUrl}api/chat")
+                  .WithAutomaticReconnect()
+                  .Build();
 
         _chatHub.On("MessageSent", (Message message) =>
-        {
-            Messages.Add(message);
-            UpdateState();
-        });
+                                   {
+                                       Messages.Add(message);
+                                       UpdateState();
+                                   });
 
         await _chatHub.StartAsync();
         UpdateState();
