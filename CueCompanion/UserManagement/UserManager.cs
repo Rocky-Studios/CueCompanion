@@ -30,19 +30,19 @@ public static class UserManager
         Result<bool> r2 = HasManageUsersPermission(sessionKey);
         if (!r2.IsSuccess) return r.Error!;
 
-        User[] users = _db.Table<User>().ToArray();
+        var            users     = _db.Table<User>().ToArray();
         List<UserInfo> userInfos = [];
         foreach (User u in users)
         {
             Result<Permission[]> perms = PermissionManager.GetPermissionsForUser(u);
-            string? error = null;
-            Permission[] p = perms.GetValue(s => { error = s; });
+            string?              error = null;
+            Permission[]         p     = perms.GetValue(s => { error = s; });
             userInfos.Add(new UserInfo
             {
-                UserID = u.Id,
-                UserName = u.UserName,
+                UserID      = u.Id,
+                UserName    = u.UserName,
                 Permissions = p,
-                CanLogin = u.CanLogin
+                CanLogin    = u.CanLogin,
             });
             if (error != null)
                 return $"Error retrieving permissions for user {u.UserName}: {error}";
@@ -78,7 +78,7 @@ public static class UserManager
 
         User newUser = new()
         {
-            UserName = userName,
+            UserName     = userName,
             PasswordHash = Hash.HashPassword(password),
         };
         _db.Insert(newUser);
@@ -111,9 +111,9 @@ public static class UserManager
 
         UserPermission userPermission = new()
         {
-            UserId = userID,
+            UserId       = userID,
             PermissionId = permissionID,
-            Value = true
+            Value        = true,
         };
 
         _db.Insert(userPermission);
@@ -126,7 +126,7 @@ public static class UserManager
         if (!r.IsSuccess) return r.Error!;
 
         UserPermission? userPermission = _db.Table<UserPermission>()
-            .FirstOrDefault(up => up?.UserId == userID && up.PermissionId == permissionID, null);
+                                            .FirstOrDefault(up => up?.UserId == userID && up.PermissionId == permissionID, null);
         if (userPermission == null) return "User permission not found.";
         _db.Delete(userPermission);
         return Result.Success();
@@ -162,7 +162,7 @@ public static class UserManager
         if (!userResult.IsSuccess) return userResult.Error ?? "User not found.";
 
         string hashedProvidedPassword = Hash.HashPassword(currentPassword);
-        User user = userResult.Value!;
+        User   user                   = userResult.Value!;
         if (hashedProvidedPassword != user.PasswordHash)
             return "Current password is incorrect.";
 
@@ -174,8 +174,8 @@ public static class UserManager
     public static void RemoveExpiredSessionKeys()
     {
         List<SessionKey> expiredKeys = _db.Table<SessionKey>()
-            .Where(k => k.ExpiresAt < DateTime.UtcNow)
-            .ToList();
+                                          .Where(k => k.ExpiresAt < DateTime.UtcNow)
+                                          .ToList();
         foreach (SessionKey key in expiredKeys) _db.Delete(key);
     }
 
@@ -184,7 +184,7 @@ public static class UserManager
         RemoveExpiredSessionKeys();
         string passwordHash = Hash.HashPassword(password);
         User? user = _db.Table<User>()
-            .FirstOrDefault(c => c?.UserName == connectionName && c.PasswordHash == passwordHash, null);
+                        .FirstOrDefault(c => c?.UserName == connectionName && c.PasswordHash == passwordHash, null);
         if (user == null)
         {
             Result<(User user, string sessionKey)> r =
@@ -216,7 +216,7 @@ public static class UserManager
     {
         RemoveExpiredSessionKeys();
         SessionKey? sessionKeyObject = _db.Table<SessionKey>()
-            .FirstOrDefault(k => k?.Key == sessionKey, null);
+                                          .FirstOrDefault(k => k?.Key == sessionKey, null);
 
         if (sessionKeyObject == null)
         {
@@ -229,8 +229,8 @@ public static class UserManager
             return r;
         }
 
-        int userID = sessionKeyObject.UserID;
-        User? user = _db.Table<User>().FirstOrDefault(c => c?.Id == userID, null);
+        int   userID = sessionKeyObject.UserID;
+        User? user   = _db.Table<User>().FirstOrDefault(c => c?.Id == userID, null);
 
         if (user == null)
         {
@@ -260,7 +260,7 @@ public static class UserManager
     private static string GetOrAddSessionKey(User user, bool forceNew = false)
     {
         SessionKey? existingKeyForConnection = _db.Table<SessionKey>()
-            .FirstOrDefault(k => k?.UserID == user.Id, null);
+                                                  .FirstOrDefault(k => k?.UserID == user.Id, null);
         if (existingKeyForConnection != null)
         {
             if (existingKeyForConnection.ExpiresAt < DateTime.UtcNow) _db.Delete(existingKeyForConnection);
@@ -274,9 +274,9 @@ public static class UserManager
         string key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         SessionKey sessionKey = new()
         {
-            UserID = user.Id,
-            Key = key,
-            IssuedAt = DateTime.UtcNow,
+            UserID    = user.Id,
+            Key       = key,
+            IssuedAt  = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(1)
         };
         _db.Insert(sessionKey);
@@ -286,5 +286,18 @@ public static class UserManager
     public static User? GetUserById(int userId)
     {
         return _db.Table<User>().FirstOrDefault(u => u?.Id == userId, null);
+    }
+
+    public static Result RenameUser(string sessionKey, int userID, string newUserName)
+    {
+        var r = HasManageUsersPermission(sessionKey);
+        if (!r.IsSuccess) return r.Error!;
+
+        User? user = _db.Table<User>().FirstOrDefault(u => u?.Id == userID, null);
+        if (user == null) return "User not found.";
+
+        user.UserName = newUserName;
+        _db.Update(user);
+        return Result.Success();
     }
 }

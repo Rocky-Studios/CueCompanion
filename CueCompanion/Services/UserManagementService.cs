@@ -7,16 +7,16 @@ namespace CueCompanion.Services;
 public class UserManagementService : StateSubscriberService
 {
     private HubConnection? _userManagementHub;
-    private UserProvider? _userProvider;
+    private UserProvider?  _userProvider;
 
     public async Task StartAsync(string baseUrl, UserProvider userProvider)
     {
         _userProvider = userProvider;
 
         _userManagementHub = new HubConnectionBuilder()
-            .WithUrl($"{baseUrl}api/user-management")
-            .WithAutomaticReconnect()
-            .Build();
+                            .WithUrl($"{baseUrl}api/user-management")
+                            .WithAutomaticReconnect()
+                            .Build();
 
         await _userManagementHub.StartAsync();
     }
@@ -38,7 +38,14 @@ public class UserManagementService : StateSubscriberService
         if (_userManagementHub is null)
             throw new InvalidOperationException("UserManagementHub connection is not established.");
         return await _userManagementHub.InvokeAsync<Result>("CreateNewUser", sessionKey, userName,
-            password);
+                                                            password);
+    }
+
+    public async Task<Result> RenameUser(string sessionKey, int userID, string newUserName)
+    {
+        if (_userManagementHub is null)
+            throw new InvalidOperationException("UserManagementHub connection is not established.");
+        return await _userManagementHub.InvokeAsync<Result>("RenameUser", sessionKey, userID, newUserName);
     }
 
     public async Task DeleteUser(string sessionKey, int userId)
@@ -47,7 +54,6 @@ public class UserManagementService : StateSubscriberService
             throw new InvalidOperationException("UserManagementHub connection is not established.");
         await _userManagementHub.InvokeAsync("DeleteUser", sessionKey, userId);
     }
-
 
     public async Task AddPermissionToUser(string sessionKey, int userID, int permissionID)
     {

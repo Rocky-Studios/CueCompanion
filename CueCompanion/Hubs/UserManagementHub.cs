@@ -21,6 +21,8 @@ public class UserManagementHub : Hub
         return UserManager.DeleteUser(sessionKey, userId);
     }
 
+    public async Task<Result> RenameUser(string sessionKey, int userID, string newUserName) => UserManager.RenameUser(sessionKey, userID, newUserName);
+
     public async Task<Result> AddPermissionToUser(string sessionKey, int userID, int permissionID)
     {
         return UserManager.AddPermissionToUser(sessionKey, userID, permissionID);
