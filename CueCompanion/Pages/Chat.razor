@@ -2,6 +2,7 @@
 @inject AuthService         AuthService
 @inject ChatService         ChatService
 @inject SimpleDialogService Dialogs
+@inject IJSRuntime          JS
 @implements IAsyncDisposable
 
 <PageTitle>Chat - Cue Companion</PageTitle>
@@ -14,84 +15,100 @@
     }
     else
     {
-        <MudPaper Class="p-4">
-            <MudText Typo="Typo.h6">Chat Messages</MudText>
-            @foreach (Message message in ChatService.Messages)
-            {
-                ChatService.UserIdToNameCache.TryGetValue(message.Sender, out string? sender);
-                <MudText>
-                    <b>@sender:</b> @message.Content
-                </MudText>
-            }
-
-        </MudPaper>
-        <MudPaper Class="p-4">
-            <MudText Typo="Typo.h6">Send</MudText>
+        <div @ref="messagesContainer" style="max-height: 60vh; overflow-y: auto;">
+            <MudPaper Class="p-4">
+                @foreach (Message message in ChatService.Messages)
+                {
+                    ChatService.UserIdToNameCache.TryGetValue(message.Sender, out string? sender);
+                    <MudText>
+                        <b>@sender:</b> @message.Content
+                    </MudText>
+                }
+            </MudPaper>
+        </div>
             <MudTextField @bind-Value="@messageContent"></MudTextField>
             <MudButton EndIcon="@Icons.Material.Filled.Send" OnClick="@OnSendButtonClicked">Send</MudButton>
 
-        </MudPaper>
     }
 </MudContainer>
 
 @code
 {
-    //TODO send message box intersects navigation in mobile mode
-    //TODO messages can unnecessarily make the document longer than the viewport
     private string? messageContent;
+    private ElementReference messagesContainer;
+    private bool             shouldScrollToBottom;
+    private Action?          authStateChangedHandler;
+    private Action?          chatStateChangedHandler;
 
     protected override async Task OnInitializedAsync()
     {
-        AuthService?.OnStateChanged += AuthServiceOnOnStateChanged();
-        ChatService?.OnStateChanged += ChatServiceOnOnStateChanged();
+        authStateChangedHandler = AuthServiceOnOnStateChanged();
+        chatStateChangedHandler = ChatServiceOnOnStateChanged();
 
-        ChatService?.StartAsync(Navigation.BaseUri);
+        if (AuthService != null) AuthService.OnStateChanged += authStateChangedHandler;
+        if (ChatService != null) ChatService.OnStateChanged += chatStateChangedHandler;
+
+        if (ChatService != null) await ChatService.StartAsync(Navigation.BaseUri);
+        shouldScrollToBottom = true;
     }
 
-    private Action? AuthServiceOnOnStateChanged()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!shouldScrollToBottom) return;
+
+        shouldScrollToBottom = false;
+        await JS.InvokeVoidAsync("cueCompanionChat.scrollToBottom", messagesContainer);
+    }
+
+    private Action AuthServiceOnOnStateChanged()
     {
         return () =>
                {
                    InvokeAsync(StateHasChanged);
                    if (AuthService.SessionKey is { } key) ChatService?.GetAllMessages(key);
+                   shouldScrollToBottom = true;
                };
     }
 
-    private Action? ChatServiceOnOnStateChanged()
+    private Action ChatServiceOnOnStateChanged()
     {
-        return async () =>
-               {
-                   Message[] messages = ChatService.Messages.ToArray();
-                   foreach (Message message in messages)
-                   {
-                       if (!ChatService.UserIdToNameCache.ContainsKey(message.Sender))
-                       {
-                           User? user = (await AuthService?.GetUserAsync(message.Sender)!).Value;
-                           if (user != null)
-                           {
-                               ChatService.UserIdToNameCache[message.Sender] = user.UserName;
-                           }
-                       }
-                   }
-
-                   await InvokeAsync(StateHasChanged);
-               };
+        return () => _ = HandleChatStateChangedAsync();
     }
 
-    private void OnSendButtonClicked()
+    private async Task HandleChatStateChangedAsync()
+    {
+        Message[] messages = ChatService.Messages.ToArray();
+        foreach (Message message in messages)
+        {
+            if (!ChatService.UserIdToNameCache.ContainsKey(message.Sender))
+            {
+                User? user = (await AuthService?.GetUserAsync(message.Sender)!).Value;
+                if (user != null)
+                {
+                    ChatService.UserIdToNameCache[message.Sender] = user.UserName;
+                }
+            }
+        }
+
+        shouldScrollToBottom = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnSendButtonClicked()
     {
         if (!string.IsNullOrEmpty(messageContent) && AuthService.SessionKey is { } key)
         {
-            ChatService?.SendMessage(key, messageContent);
+            if (ChatService != null) await ChatService.SendMessage(key, messageContent);
             messageContent = string.Empty;
+            shouldScrollToBottom = true;
         }
     }
 
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (AuthService != null) AuthService.OnStateChanged -= AuthServiceOnOnStateChanged();
-        if (ChatService != null) ChatService.OnStateChanged -= ChatServiceOnOnStateChanged();
+        if (AuthService != null && authStateChangedHandler != null) AuthService.OnStateChanged -= authStateChangedHandler;
+        if (ChatService != null && chatStateChangedHandler != null) ChatService.OnStateChanged -= chatStateChangedHandler;
         if (ChatService != null) await ChatService.DisposeAsync();
     }
 }
