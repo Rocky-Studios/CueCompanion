@@ -15,10 +15,10 @@ public sealed class Result<T>
         (IsSuccess, Value, Error, Meta) = (isSuccess, value, error, meta);
     }
 
-    public bool IsSuccess { get; set; }
-    public T? Value { get; set; }
-    public string? Error { get; set; }
-    public Dictionary<string, string>? Meta { get; set; }
+    public bool                        IsSuccess { get; set; }
+    public T?                          Value     { get; set; }
+    public string?                     Error     { get; set; }
+    public Dictionary<string, string>? Meta      { get; set; }
 
     public static Result<T> Success(T value, Dictionary<string, string>? meta = null)
     {
@@ -50,6 +50,13 @@ public sealed class Result<T>
 
         return Value!;
     }
+
+    public void IfError(Action<string>? action = null)
+    {
+        if (!IsSuccess)
+            if (action != null)
+                action(Error ?? "Unknown error");
+    }
 }
 
 // Custom converter needed to correctly serialize tuples
@@ -62,7 +69,7 @@ public sealed class ResultJsonConverterFactory : JsonConverterFactory
 
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
-        Type valueType = typeToConvert.GetGenericArguments()[0];
+        Type valueType     = typeToConvert.GetGenericArguments()[0];
         Type converterType = typeof(ResultJsonConverter<>).MakeGenericType(valueType);
         return (JsonConverter)Activator.CreateInstance(converterType)!;
     }
@@ -88,11 +95,11 @@ public sealed class ResultJsonConverter<T> : JsonConverter<Result<T>>
 
         JsonSerializerOptions valueOptions = GetValueOptions(options);
 
-        bool isSuccess = false;
-        bool hasIsSuccess = false;
-        T? value = default;
-        string? error = null;
-        Dictionary<string, string>? meta = null;
+        bool                        isSuccess    = false;
+        bool                        hasIsSuccess = false;
+        T?                          value        = default;
+        string?                     error        = null;
+        Dictionary<string, string>? meta         = null;
 
         while (reader.Read())
         {
@@ -109,7 +116,7 @@ public sealed class ResultJsonConverter<T> : JsonConverter<Result<T>>
             {
                 case "isSuccess":
                 case "IsSuccess":
-                    isSuccess = JsonSerializer.Deserialize<bool>(ref reader, options);
+                    isSuccess    = JsonSerializer.Deserialize<bool>(ref reader, options);
                     hasIsSuccess = true;
                     break;
                 case "value":
@@ -133,9 +140,9 @@ public sealed class ResultJsonConverter<T> : JsonConverter<Result<T>>
         return new Result<T>
         {
             IsSuccess = hasIsSuccess && isSuccess,
-            Value = value,
-            Error = error,
-            Meta = meta
+            Value     = value,
+            Error     = error,
+            Meta      = meta,
         };
     }
 
@@ -166,9 +173,9 @@ public sealed class Result
         (IsSuccess, Error, Meta) = (isSuccess, error, meta);
     }
 
-    public bool IsSuccess { get; set; }
-    public string? Error { get; set; }
-    public Dictionary<string, string>? Meta { get; set; }
+    public bool                        IsSuccess { get; set; }
+    public string?                     Error     { get; set; }
+    public Dictionary<string, string>? Meta      { get; set; }
 
     public static Result Success(Dictionary<string, string>? meta = null)
     {

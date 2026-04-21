@@ -1,14 +1,19 @@
 @inject AuthService Auth
+@inject SimpleDialogService Dialogs
 @implements IAsyncDisposable
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
     <MudText Typo="Typo.h1">Show Info</MudText>
     <div style="display:flex; align-items:center; gap:8px;">
-        <MudSelect @bind-Value="@_selectedShow" T="Show?" Style="flex:1;" ToStringFunc="ShowToStringFunc">
+        @if (HasControlPermissions)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStartShow">Start</MudButton>
+        }
+        <MudSelect T="Show?" Style="flex:1;" ToStringFunc="ShowToStringFunc" @bind-Value="@SelectedShowBound">
             <MudSelectItem Value="@null" T="Show?"/>
             @foreach (Show showSelectOption in _availableShows)
             {
-                <MudSelectItem Value="@showSelectOption">
+                <MudSelectItem @key="showSelectOption.Id" Value="@showSelectOption">
                     @ShowToStringFunc(showSelectOption)
                     @if (IsShowToday(showSelectOption, true))
                     {
@@ -19,9 +24,12 @@
                 </MudSelectItem>
             }
         </MudSelect>
-        <MudTooltip Text="Create new">
-            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
-        </MudTooltip>
+        @if (HasEditPermissions)
+        {
+            <MudTooltip Text="Create new">
+                <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
+            </MudTooltip>
+        }
     </div>
     @if (ShowService?.CurrentShow is { } show)
     {
@@ -103,11 +111,42 @@
 
 @code
 {
+    public bool HasControlPermissions
+    {
+        get
+        {
+            if (!Auth.PermissionsCache.TryGetValue("ControlShow", out int _)) return false;
+            return UserProvider.CurrentUser?.HasPermission(Auth.PermissionsCache["ControlShow"]) ?? false;
+        }
+    }
+
+    public bool HasEditPermissions
+    {
+        get
+        {
+            if (!Auth.PermissionsCache.TryGetValue("EditShow", out int _)) return false;
+            return UserProvider.CurrentUser?.HasPermission(Auth.PermissionsCache["EditShow"]) ?? false;
+        }
+    }
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
 
     [CascadingParameter(Name = "IsEditMode")]
     public bool IsEditMode { get; set; }
+
+
+    [CascadingParameter]
+    public required UserProvider UserProvider { get; set; }
+
+    public Show? SelectedShowBound
+    {
+        get => _selectedShow;
+        set
+        {
+            _selectedShow = value;
+            SelectedShowChanged(value);
+        }
+    }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -131,6 +170,16 @@
         if (ShowService?.CurrentShow is { } show)
         {
             _updateLock = true;
+            _selectedShow = show;
+            int existingIndex = Array.FindIndex(_availableShows, s => s.Id == show.Id);
+            if (existingIndex >= 0)
+            {
+                _availableShows[existingIndex] = show;
+            }
+            else
+            {
+                _availableShows = _availableShows.Append(show).ToArray();
+            }
             _selectedDate = show.Start.Date;
             _selectedStart = show.Start.TimeOfDay;
             _selectedEnd = show.End.TimeOfDay;
@@ -185,17 +234,17 @@
         }
     }
 
-    async ValueTask IAsyncDisposable.DisposeAsync()
+    ValueTask IAsyncDisposable.DisposeAsync()
     {
         if (ShowService != null)
         {
             ShowService.OnStateChanged -= ShowInfoChanged;
         }
 
-        await Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    private void NewShowButtonPressed()
+    private async Task NewShowButtonPressed()
     {
         Show newShow = new()
         {
@@ -203,16 +252,51 @@
             Start = DateTime.Now,
             End   = DateTime.Now.AddHours(1),
         };
-        _selectedShow   = newShow;
-        _availableShows = _availableShows.Append(newShow).ToArray();
+        if (Auth.SessionKey is { } key)
+        {
+            var r = await ShowService.SendEditModeAction(key, EditModeMethod.Create, newShow);
+            r.IfError(e => Dialogs.ShowError("Failed to create new show", e));
+            if (r.Value is not { } returnedShow) return;
+            _availableShows = _availableShows.Append(returnedShow).ToArray();
+        }
     }
 
     private string? ShowToStringFunc(Show? show) => show?.Name ?? "No show";
 
     private bool IsShowToday(Show show, bool falseIfSelected)
     {
-        if (falseIfSelected && show == _selectedShow) return false;
+        if (falseIfSelected && show.Id == _selectedShow?.Id) return false;
         DateTime today = DateTime.Today;
         return show.Start.Date == today || show.End.Date == today;
+    }
+
+    private async Task SelectedShowChanged(Show? newShow)
+    {
+        _selectedShow = newShow;
+        if (Auth.SessionKey is { } key)
+        {
+            if (newShow != null)
+            {
+                var  r                         = await ShowService.SendEditModeAction(key, EditModeMethod.Update, newShow);
+                Show newShowRecievedFromServer = r.Value;
+                _selectedShow = newShowRecievedFromServer;
+            }
+        }
+    }
+
+
+    private async Task OnStartShow()
+    {
+        if (HasControlPermissions && Auth.SessionKey is { } key)
+        {
+            if (_selectedShow == null)
+            {
+                _ = Dialogs.ShowError("Error starting show", "Please select a show to start.");
+                return;
+            }
+
+            (await ShowService.SelectShowAsync(key, _selectedShow.Id)).IfError(e => Dialogs.ShowError("Error starting show", e));
+            (await ShowService.StartShowAsync(key)).IfError(e => Dialogs.ShowError("Error starting show",                    e));
+        }
     }
 }

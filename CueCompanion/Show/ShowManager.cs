@@ -205,10 +205,10 @@ public static class ShowManager
         return Result.Success();
     }
 
-    public static Result EditAction(EditModeMethod  method, object newObject, Type objectType,
-                                    EditParameters? parameters)
+    public static Result<object> EditAction(EditModeMethod  method, object newObject, Type objectType,
+                                            EditParameters? parameters)
     {
-        if (!newObject.GetType().Equals(objectType))
+        if (!(newObject.GetType() == objectType))
         {
             return "Type mismatch. Argument " + newObject + " is not of type" + objectType;
         }
@@ -218,12 +218,12 @@ public static class ShowManager
             case EditModeMethod.Create:
             {
                 _db.Insert(newObject);
-                return Result.Success();
+                return newObject;
             }
             case EditModeMethod.Update:
             {
                 _db.Update(newObject);
-                return Result.Success();
+                return newObject;
             }
             case EditModeMethod.Delete:
             {
@@ -264,5 +264,12 @@ public static class ShowManager
             }
             default: return "Not implemented " + method + " " + objectType;
         }
+    }
+
+    public static Result SelectShow(int? showID)
+    {
+        CurrentShowID      = showID;
+        CurrentCuePosition = null;
+        return Result.Success();
     }
 }

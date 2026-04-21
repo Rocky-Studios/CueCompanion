@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
@@ -128,13 +129,36 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         return await hub.InvokeAsync<Result>("PreviousCue", sessionKey);
     }
 
-    public async Task<Result> SendEditModeAction<T>(string          sessionKey, EditModeMethod method, T newObject,
-                                                    EditParameters? parameters = null)
+    public async Task<Result<T>> SendEditModeAction<T>(string          sessionKey, EditModeMethod method, T newObject,
+                                                       EditParameters? parameters = null) where T : class
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        return await hub.InvokeAsync<Result>("EditModeAction", sessionKey, method, newObject,
-                                             typeof(T).AssemblyQualifiedName, parameters);
+        var r = await hub.InvokeAsync<Result<object>>("EditModeAction", sessionKey, method, newObject,
+                                                      typeof(T).AssemblyQualifiedName, parameters);
+        T?  cast;
+        var jeN = (JsonElement?)r.Value;
+        if (jeN == null)
+        {
+            cast = null;
+        }
+        else
+        {
+            Type objectType = typeof(T);
+            object obj = jeN.Value.Deserialize(objectType, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            });
+            cast = obj as T;
+        }
+
+        var result = new Result<T>
+        {
+            Error     = r.Error,
+            Value     = cast,
+            IsSuccess = r.IsSuccess,
+        };
+        return result;
     }
 
     private bool TryGetConnectedHub([NotNullWhen(true)] out HubConnection? hub, out string? error)
@@ -148,6 +172,13 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
 
         error = null;
         return true;
+    }
+
+    public async Task<Result> SelectShowAsync(string sessionKey, int? showID)
+    {
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
+
+        return await hub.InvokeAsync<Result>("SelectShow", sessionKey, showID);
     }
 }
 

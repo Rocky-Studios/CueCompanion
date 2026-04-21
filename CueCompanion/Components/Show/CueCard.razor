@@ -61,7 +61,7 @@
         {
             Task.Run(async () =>
             {
-                Result res = await ShowService.SendEditModeAction(key, EditModeMethod.Update, Cue);
+                var res = await ShowService.SendEditModeAction(key, EditModeMethod.Update, Cue);
                 res.IfError(e => Dialogs.ShowError("Error changing cue name", e));
             });
         }
@@ -73,7 +73,7 @@
         {
             Task.Run(async () =>
             {
-                Result res = await ShowService.SendEditModeAction(key, EditModeMethod.Delete, Cue);
+                var res = await ShowService.SendEditModeAction(key, EditModeMethod.Delete, Cue);
                 res.IfError(e => Dialogs.ShowError("Error deleting cue", e));
             });
         }
@@ -85,7 +85,7 @@
         {
             Task.Run(async () =>
             {
-                Result res = await ShowService.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
+                var res = await ShowService.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
                 {
                     Direction = -1
                 });
@@ -100,7 +100,7 @@
         {
             Task.Run(async () =>
             {
-                Result res = await ShowService.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
+                var res = await ShowService.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
                 {
                     Direction = 1
                 });
