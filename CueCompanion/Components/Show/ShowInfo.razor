@@ -33,6 +33,19 @@
         </MudSelect>
         @if (HasEditPermissions)
         {
+            if (ShowService?.CurrentlyViewingShow?.Id is { } showID)
+            {
+                <MudTooltip Text="Delete">
+                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"
+                                   OnClick="() => {DeleteShowButtonPressed(showID);}"/>
+                </MudTooltip>
+            }
+            else
+            {
+                <MudTooltip Text="Delete">
+                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"/>
+                </MudTooltip>
+            }
             <MudTooltip Text="Create new">
                 <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
             </MudTooltip>
@@ -252,6 +265,25 @@
             if (r.Value is not { } returnedShow) return;
             if (ShowService.Shows.Any(s => s.Id == returnedShow.Id)) return; // Show already exists in list, no need to add
             ShowService.Shows = ShowService.Shows.Append(returnedShow).ToArray();
+        }
+    }
+
+    private async Task DeleteShowButtonPressed(int showId)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            Show show = ShowService.Shows.FirstOrDefault(s => s.Id == showId) ?? new Show { Id = showId };
+            if (ShowService.LiveModeShowID == showId)
+            {
+                _ = Dialogs.ShowError("Cannot delete show", "You cannot delete a show that is currently live.");
+                return;
+            }
+
+            var r = await ShowService.SendEditModeAction(key, EditModeMethod.Delete, show);
+            r.IfError(e => Dialogs.ShowError("Failed to delete show", e));
+            ShowService.Shows                = ShowService.Shows.ToList().Where(s => s.Id != showId).ToArray();
+            ShowService.CurrentlyViewingShow = null;
+            ShowService.UpdateState();
         }
     }
 

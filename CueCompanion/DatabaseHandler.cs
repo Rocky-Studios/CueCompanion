@@ -28,19 +28,6 @@ public static class DatabaseHandler
         ShowManager.CreateDefaultRoles();
         PermissionManager.CreateDefaultPermissions();
 
-        // Clear old show state, useful for development
-        if (false)
-        {
-            Connection.DeleteAll<Show>();
-            Connection.DeleteAll<Cue>();
-            Connection.DeleteAll<CueTask>();
-            Connection.DeleteAll<ShowRoleAssignment>();
-            Connection.DeleteAll<Note>();
-        }
-
-        // Create a default show
-        if (false) ShowManager.CreateDefaultShow();
-
 
         bool hasAdmin = Connection.Table<User>().ToList().Any(c => c.UserName == "admin");
         if (!hasAdmin)

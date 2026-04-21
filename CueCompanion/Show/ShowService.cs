@@ -74,6 +74,10 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
                                        Cues                = update.Cues;
                                        Tasks               = update.Tasks;
                                        Shows               = update.Shows;
+
+                                       // If show has been deleted or otherwise remove, switch to another
+                                       if (Shows.All(s => s.Id != CurrentlyViewingShow?.Id))
+                                           CurrentlyViewingShow = Shows.FirstOrDefault(s => s.Id == CurrentlyViewingShow?.Id);
                                        UpdateState();
                                    });
 
