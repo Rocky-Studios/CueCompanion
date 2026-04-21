@@ -125,6 +125,13 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         return await hub.InvokeAsync<Result>("StartShow", sessionKey);
     }
 
+    public async Task<Result> StopShowAsync(string sessionKey)
+    {
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
+
+        return await hub.InvokeAsync<Result>("StopShow", sessionKey);
+    }
+
     public async Task<Result> NextCueAsync(string sessionKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;

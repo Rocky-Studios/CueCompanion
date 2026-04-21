@@ -67,6 +67,21 @@ public class ShowHub : Hub
         return "Access denied.";
     }
 
+    public async Task<Result> StopShow(string sessionKey)
+    {
+        var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+        if (!r.IsSuccess) return r.Error!;
+        bool hasPermission = r.Value;
+        if (hasPermission)
+        {
+            Result r2 = ShowManager.StopShow();
+            _ = BroadcastShowUpdate();
+            return r2;
+        }
+
+        return "Access denied.";
+    }
+
     public async Task BroadcastShowUpdate()
     {
         await Clients.All.SendAsync("ShowUpdated", new ShowUpdate

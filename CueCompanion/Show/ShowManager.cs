@@ -210,6 +210,16 @@ public static class ShowManager
         return Result.Success();
     }
 
+
+    public static Result StopShow()
+    {
+        if (CurrentShow == null) return "Cannot stop show. No show loaded.";
+        CurrentShowID      = null;
+        IsShowActive       = false;
+        CurrentCuePosition = null;
+        return Result.Success();
+    }
+
     public static Result<object> EditAction(EditModeMethod  method, object newObject, Type objectType,
                                             EditParameters? parameters)
     {

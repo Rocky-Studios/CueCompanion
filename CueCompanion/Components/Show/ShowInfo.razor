@@ -7,7 +7,14 @@
     <div style="display:flex; align-items:center; gap:8px;">
         @if (HasControlPermissions)
         {
-            <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStartShow">Start</MudButton>
+            if (IsLiveMode)
+            {
+                <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStopShow">Stop</MudButton>
+            }
+            else
+            {
+                <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStartShow">Start</MudButton>
+            }
         }
         <MudSelect T="Show?" Style="flex:1;" ToStringFunc="ShowToStringFunc" @bind-Value="@SelectedShowBound">
             <MudSelectItem Value="@null" T="Show?"/>
@@ -111,6 +118,7 @@
 
 @code
 {
+    private bool IsLiveMode => ShowService.CurrentCuePosition != null;
     public bool HasControlPermissions
     {
         get
@@ -297,6 +305,21 @@
 
             (await ShowService.SelectShowAsync(key, _selectedShow.Id)).IfError(e => Dialogs.ShowError("Error starting show", e));
             (await ShowService.StartShowAsync(key)).IfError(e => Dialogs.ShowError("Error starting show",                    e));
+        }
+    }
+
+    private async Task OnStopShow()
+    {
+        if (HasControlPermissions && Auth.SessionKey is { } key)
+        {
+            if (_selectedShow == null)
+            {
+                _ = Dialogs.ShowError("Error stopping show", "Please select a show to stop.");
+                return;
+            }
+
+            (await ShowService.StopShowAsync(key)).IfError(e => Dialogs.ShowError("Error stopping show",         e));
+            (await ShowService.SelectShowAsync(key, null)).IfError(e => Dialogs.ShowError("Error stopping show", e));
         }
     }
 }
