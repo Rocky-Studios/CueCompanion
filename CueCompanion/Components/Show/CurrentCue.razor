@@ -25,6 +25,8 @@
             @if (!IsEditMode)
             {
                 <div class="d-flex flex-grow-1 flex-wrap justify-center align-center px-8 pb-8 pt-2">
+                    <MudCheckBox Color="Color.Primary" Label="All" Dense="true" T="bool?"
+                                 Value="@AllRolesSelected" ValueChanged="OnAllRolesChanged"></MudCheckBox>
                     @foreach (Role role in roles)
                     {
                         <MudCheckBox Color="Color.Primary" Label="@role.Name" T="bool" Dense="true"
@@ -117,6 +119,15 @@
 
     private readonly NewTaskModel model = new();
 
+    private bool? AllRolesSelected => All();
+
+    private bool? All()
+    {
+        if (_roleFilters.Count > 0 && _roleFilters.Values.All(isChecked => isChecked)) return true;
+        if (_roleFilters.Count > 0 && _roleFilters.Values.All(isChecked => !isChecked)) return false;
+        return null;
+    }
+
     private class NewTaskModel
     {
         [Required]
@@ -149,12 +160,27 @@
 
     protected override void OnParametersSet()
     {
-        if (ShowService?.Roles is { } roles && !_roleFilters.Any())
+        if (ShowService?.Roles is { } roles)
         {
-            _roleFilters = roles.ToDictionary(r => r.Id, _ => false);
+            _roleFilters = roles.ToDictionary(
+                role => role.Id,
+                role => _roleFilters.TryGetValue(role.Id, out bool isChecked) && isChecked);
         }
 
         InvokeAsync(StateHasChanged);
+    }
+
+    private Task OnAllRolesChanged(bool? value)
+    {
+        if (ShowService?.Roles is { } roles)
+        {
+            foreach (Role role in roles)
+            {
+                _roleFilters[role.Id] = value ?? true;
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     private void CueTaskChanged(string newTask, CueTask cueTask)
