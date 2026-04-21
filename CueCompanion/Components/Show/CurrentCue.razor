@@ -1,5 +1,6 @@
-@using System.ComponentModel.DataAnnotations
 @inject AuthService Auth
+@using System.ComponentModel.DataAnnotations
+@implements IDisposable
 <GridChild ColumnStart="2" ColumnEnd="2" RowStart="1" RowEnd="3">
     @if (ShowService is
         {
@@ -116,6 +117,7 @@
 
     private Cue? _currentCue;
     private List<CueTask>? _currentTasks;
+    private Action?        _showServiceStateChangedHandler;
 
     private readonly NewTaskModel model = new();
 
@@ -153,9 +155,10 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        ShowService?.OnStateChanged += () => InvokeAsync(StateHasChanged);
+        _showServiceStateChangedHandler =  OnShowServiceStateChanged;
+        ShowService?.OnStateChanged     += _showServiceStateChangedHandler;
     }
 
     protected override void OnParametersSet()
@@ -166,8 +169,19 @@
                 role => role.Id,
                 role => _roleFilters.TryGetValue(role.Id, out bool isChecked) && isChecked);
         }
+    }
 
-        InvokeAsync(StateHasChanged);
+    private void OnShowServiceStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (_showServiceStateChangedHandler is not null)
+        {
+            ShowService?.OnStateChanged -= _showServiceStateChangedHandler;
+        }
     }
 
     private Task OnAllRolesChanged(bool? value)

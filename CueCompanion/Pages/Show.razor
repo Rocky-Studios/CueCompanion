@@ -86,22 +86,25 @@
     public required UserProvider UserProvider { get; set; }
 
     private bool  isEditMode;
+    private Action? userProviderStateChangedHandler;
     private Color editButtonColor => isEditMode ? Color.Primary : Color.Default;
 
     protected override async Task OnInitializedAsync()
     {
+        userProviderStateChangedHandler = HandleUserProviderStateChanged;
+
         ShowService.OnStateChanged  += InvokeAsyncStateChanged;
         Auth.OnStateChanged         += InvokeAsyncStateChanged;
-        UserProvider.OnStateChanged += UserProviderOnStateChanged();
+        UserProvider.OnStateChanged += userProviderStateChangedHandler;
 
         await ShowService.StartAsync(Navigation.BaseUri);
         await FetchShowInfo();
         ShowService.UpdateState();
     }
 
-    private Action UserProviderOnStateChanged()
+    private void HandleUserProviderStateChanged()
     {
-        return () => InvokeAsync(FetchShowInfo);
+        _ = InvokeAsync(FetchShowInfo);
     }
 
     private void InvokeAsyncStateChanged()
@@ -132,7 +135,10 @@
     {
         ShowService.OnStateChanged  -= InvokeAsyncStateChanged;
         Auth.OnStateChanged         -= InvokeAsyncStateChanged;
-        UserProvider.OnStateChanged -= UserProviderOnStateChanged();
+        if (userProviderStateChangedHandler is not null)
+        {
+            UserProvider.OnStateChanged -= userProviderStateChangedHandler;
+        }
         await ShowService.DisposeAsync();
     }
 }
