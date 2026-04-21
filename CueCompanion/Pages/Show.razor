@@ -73,7 +73,14 @@
         }
     }
 
-    private bool HasViewPermissions;
+    private bool HasViewPermissions
+    {
+        get
+        {
+            if (!Auth.PermissionsCache.TryGetValue("ViewShow", out int _)) return false;
+            return UserProvider.CurrentUser?.HasPermission(Auth.PermissionsCache["ViewShow"]) ?? false;
+        }
+    }
 
     [CascadingParameter]
     public required UserProvider UserProvider { get; set; }
@@ -115,7 +122,6 @@
 
             if (result is { IsSuccess: true, Value: { } show })
             {
-                HasViewPermissions = true;
                 (await ShowService.GetCuesForShowAsync(key, show.Id)).IfError(e => Dialogs.ShowError("Failed to load cues", e));
             }
             StateHasChanged();

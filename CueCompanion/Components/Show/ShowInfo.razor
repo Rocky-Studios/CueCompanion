@@ -3,6 +3,26 @@
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
     <MudText Typo="Typo.h1">Show Info</MudText>
+    <div style="display:flex; align-items:center; gap:8px;">
+        <MudSelect @bind-Value="@_selectedShow" T="Show?" Style="flex:1;" ToStringFunc="ShowToStringFunc">
+            <MudSelectItem Value="@null" T="Show?"/>
+            @foreach (Show showSelectOption in _availableShows)
+            {
+                <MudSelectItem Value="@showSelectOption">
+                    @ShowToStringFunc(showSelectOption)
+                    @if (IsShowToday(showSelectOption, true))
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled"
+                                 Style="margin-left:4px;">Today
+                        </MudChip>
+                    }
+                </MudSelectItem>
+            }
+        </MudSelect>
+        <MudTooltip Text="Create new">
+            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
+        </MudTooltip>
+    </div>
     @if (ShowService?.CurrentShow is { } show)
     {
         <EditableText Label="Show Name:" @bind-Value="show.Name" IsEditMode="IsEditMode"
@@ -65,10 +85,6 @@
             </tr>
         </table>
     }
-    else
-    {
-        <MudText>No show loaded</MudText>
-    }
 </GridChild>
 
 <style>
@@ -106,7 +122,9 @@
     private DateTime? _selectedDate;
     private TimeSpan? _selectedStart;
     private TimeSpan? _selectedEnd;
-    private bool _updateLock;
+    private bool      _updateLock;
+    private Show[]    _availableShows = [];
+    private Show?     _selectedShow;
 
     private void ShowInfoChanged()
     {
@@ -175,5 +193,26 @@
         }
 
         await Task.CompletedTask;
+    }
+
+    private void NewShowButtonPressed()
+    {
+        Show newShow = new()
+        {
+            Name  = "New Show",
+            Start = DateTime.Now,
+            End   = DateTime.Now.AddHours(1),
+        };
+        _selectedShow   = newShow;
+        _availableShows = _availableShows.Append(newShow).ToArray();
+    }
+
+    private string? ShowToStringFunc(Show? show) => show?.Name ?? "No show";
+
+    private bool IsShowToday(Show show, bool falseIfSelected)
+    {
+        if (falseIfSelected && show == _selectedShow) return false;
+        DateTime today = DateTime.Today;
+        return show.Start.Date == today || show.End.Date == today;
     }
 }
