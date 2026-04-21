@@ -38,8 +38,10 @@
                 {
                     @if (cueTask.RoleId is null)
                     {
-                        <MudText Typo="Typo.h3">Unassigned Role</MudText>
-                        <p>@cueTask.Tasks</p>
+                        <MudText Typo="Typo.h3">Unassigned</MudText>
+                        <EditableText Value="@cueTask.Tasks" IsEditMode="@IsEditMode" OnValueChanged="s => {
+                                          CueTaskChanged(s,cueTask);
+                                      }"/>
                     }
                     else if (_roleFilters[cueTask.RoleId.Value] || IsEditMode)
                     {
