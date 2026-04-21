@@ -74,19 +74,29 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         await _showHub.StartAsync();
     }
 
-    public async Task<Result<Show?>> GetCurrentShowAsync(string sessionKey)
+    public async Task<Result<int?>> GetCurrentShowIDAsync(string sessionKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        Result<(Show?, int?, Role[])> r =
-            await hub.InvokeAsync<Result<(Show?, int?, Role[])>>("GetCurrentShow", sessionKey);
+        var r = await hub.InvokeAsync<Result<int?>>("GetCurrentShowID", sessionKey);
         if (!r.IsSuccess) return r.Error!;
-        (Show? show, int? currentCuePosition, Role[] roles) = r.Value;
+
+        return r.Value;
+    }
+
+    public async Task<Result<Show?>> GetShowAsync(string sessionKey, int showID)
+    {
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
+
+        var r = await hub.InvokeAsync<Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)>>("GetShow", sessionKey, showID);
+
+        Show? show               = r.Value.Show;
+        int?  currentCuePosition = r.Value.CurrentCuePosition;
+        var   roles              = r.Value.Roles;
 
         CurrentShow         = show;
         LiveModeCuePosition = currentCuePosition;
         Roles               = roles;
-
         UpdateState();
         return show;
     }

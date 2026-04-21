@@ -31,7 +31,7 @@
             </MudTooltip>
         }
     </div>
-    @if (ShowService?.CurrentShow is { } show)
+    @if (_selectedShow is { } show)
     {
         <EditableText Label="Show Name:" @bind-Value="show.Name" IsEditMode="IsEditMode"
                       OnValueChanged="ShowNameChanged"/>
@@ -227,7 +227,7 @@
 
     private async Task ShowNameChanged(string newName)
     {
-        if (ShowService?.CurrentShow is { } show && Auth.SessionKey is { } key)
+        if (_selectedShow is { } show && Auth.SessionKey is { } key)
         {
             show.Name = newName;
             await ShowService.SendEditModeAction(key, EditModeMethod.Update, show);

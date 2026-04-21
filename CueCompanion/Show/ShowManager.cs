@@ -12,6 +12,11 @@ public static class ShowManager
     private static int? CurrentShowID;
     public static  int? CurrentCuePosition;
 
+    public static Show? GetShowById(int showID)
+    {
+        return _db.Table<Show>().FirstOrDefault(s => s.Id == showID);
+    }
+
     public static Role[] GetRoles() => _db.Table<Role>().ToArray();
 
     public static void CreateDefaultRoles()

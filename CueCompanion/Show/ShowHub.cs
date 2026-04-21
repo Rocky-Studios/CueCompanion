@@ -12,14 +12,30 @@ public class ShowHub : Hub
         PropertyNameCaseInsensitive = true
     };
 
-    public async Task<Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)>> GetCurrentShow(string sessionKey)
+    public async Task<Result<int?>> GetCurrentShowID(string sessionKey)
+    {
+        var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+        if (!r.IsSuccess) return r.Error!;
+        bool hasPermission = r.Value;
+        if (!hasPermission) return "Access denied.";
+
+        return ShowManager.CurrentShow?.Id;
+    }
+
+    public async Task<Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)>> GetShow(string sessionKey, int showID)
     {
         Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
         if (!r.IsSuccess) return r.Error!;
         bool hasPermission = r.Value;
         if (!hasPermission) return "Access denied.";
-        Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)> res = (ShowManager.CurrentShow,
-                                                                           ShowManager.CurrentCuePosition, ShowManager.GetRoles());
+        Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)> res;
+        int?                                                        liveShowID = ShowManager.CurrentShow?.Id;
+        if (showID == liveShowID)
+            res = (ShowManager.CurrentShow,
+                   ShowManager.CurrentCuePosition, ShowManager.GetRoles());
+        else
+            res = (ShowManager.GetShowById(showID), null, ShowManager.GetRoles());
+
         return res;
     }
 

@@ -113,14 +113,18 @@
     {
         if (Auth.SessionKey is { } key)
         {
-            Result<CueCompanion.Show?> result = await ShowService.GetCurrentShowAsync(key);
-            if (result is { IsSuccess: false, Error: { } e } && e != "Access denied.")
+            var result1 = await ShowService.GetCurrentShowIDAsync(key);
+            result1.IfError(e => { Dialogs.ShowError("Failed to load current show ID", e); });
+            int? id = result1.Value;
+            if (id == null) return;
+            var result2 = await ShowService.GetShowAsync(key, id.Value);
+            if (result2 is { IsSuccess: false, Error: { } e } && e != "Access denied.")
             {
                 await Dialogs.ShowError("Failed to load show information", e);
                 return;
             }
 
-            if (result is { IsSuccess: true, Value: { } show })
+            if (result2 is { IsSuccess: true, Value: { } show })
             {
                 (await ShowService.GetCuesForShowAsync(key, show.Id)).IfError(e => Dialogs.ShowError("Failed to load cues", e));
             }
