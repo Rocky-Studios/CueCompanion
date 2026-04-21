@@ -250,6 +250,7 @@
             var r = await ShowService.SendEditModeAction(key, EditModeMethod.Create, newShow);
             r.IfError(e => Dialogs.ShowError("Failed to create new show", e));
             if (r.Value is not { } returnedShow) return;
+            if (ShowService.Shows.Any(s => s.Id == returnedShow.Id)) return; // Show already exists in list, no need to add
             ShowService.Shows = ShowService.Shows.Append(returnedShow).ToArray();
         }
     }
