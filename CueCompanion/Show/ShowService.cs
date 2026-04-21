@@ -6,7 +6,8 @@ namespace CueCompanion.Services;
 
 public class ShowService : StateSubscriberService, IAsyncDisposable
 {
-    public Show? CurrentShow { get; private set; }
+    public int? LiveModeShowID { get; private set; }
+    public bool IsLiveMode     => LiveModeShowID.HasValue;
 
     public int? CurrentCuePosition
     {
@@ -37,6 +38,8 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
 
     public Cue? CurrentCue => Cues.FirstOrDefault(c => c.Position == CurrentCuePosition);
 
+    public Show? LiveModeShow => Shows.FirstOrDefault(s => s.Id == LiveModeShowID);
+
     public async ValueTask DisposeAsync()
     {
         if (_showHub != null) await _showHub.DisposeAsync();
@@ -52,7 +55,9 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
 
     private int?      LiveModeCuePosition;
     public  Role[]    Roles = [];
+    public  Show[]    Shows = [];
     public  CueTask[] Tasks = [];
+    public  Show?     CurrentlyViewingShow;
 
     public async Task StartAsync(string baseUrl)
     {
@@ -63,42 +68,43 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
 
         _showHub.On("ShowUpdated", (ShowUpdate update) =>
                                    {
-                                       CurrentShow         = update.Show;
+                                       LiveModeShowID      = update.LiveShow?.Id;
                                        LiveModeCuePosition = update.CurrentCuePosition;
                                        Roles               = update.Roles;
                                        Cues                = update.Cues;
                                        Tasks               = update.Tasks;
+                                       Shows               = update.Shows;
                                        UpdateState();
                                    });
 
         await _showHub.StartAsync();
     }
 
-    public async Task<Result<int?>> GetCurrentShowIDAsync(string sessionKey)
+
+    public async Task<Result<(Show[] shows, Role[] roles)>> GetShowsAndRoles(string sessionKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        var r = await hub.InvokeAsync<Result<int?>>("GetCurrentShowID", sessionKey);
-        if (!r.IsSuccess) return r.Error!;
+        var r = await hub.InvokeAsync<Result<(Show[] shows, Role[] roles)>>("GetShowsAndRoles", sessionKey);
+        if (r.Value is { } v)
+        {
+            Shows = v.shows;
+            Roles = v.roles;
+        }
 
-        return r.Value;
+        UpdateState();
+        return r;
     }
 
-    public async Task<Result<Show?>> GetShowAsync(string sessionKey, int showID)
+    public async Task<Result<LiveInfo?>> GetLiveInfoAsync(string sessionKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        var r = await hub.InvokeAsync<Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)>>("GetShow", sessionKey, showID);
-
-        Show? show               = r.Value.Show;
-        int?  currentCuePosition = r.Value.CurrentCuePosition;
-        var   roles              = r.Value.Roles;
-
-        CurrentShow         = show;
-        LiveModeCuePosition = currentCuePosition;
-        Roles               = roles;
+        var r                                     = await hub.InvokeAsync<Result<LiveInfo?>>("GetLiveInfo", sessionKey);
+        var liveInfo                              = r.IsSuccess ? r.Value : null;
+        if (liveInfo != null) LiveModeCuePosition = liveInfo.Value.CuePosition;
         UpdateState();
-        return show;
+        return r;
     }
 
     public async Task<Result> GetCuesForShowAsync(string sessionKey, int showID)
@@ -106,10 +112,10 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
 
-        Result<(Cue[], CueTask[])> r =
+        var r =
             await hub.InvokeAsync<Result<(Cue[], CueTask[])>>("GetCuesForShow", sessionKey, showID);
         if (!r.IsSuccess) return r.Error!;
-        (Cue[] cues, CueTask[] tasks) = r.Value;
+        var (cues, tasks) = r.Value;
 
         Cues  = cues;
         Tasks = tasks;
@@ -197,11 +203,17 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
 
         return await hub.InvokeAsync<Result>("SelectShow", sessionKey, showID);
     }
+
+    public struct LiveInfo
+    {
+        public int LiveShowID;
+        public int CuePosition;
+    }
 }
 
 public enum Mode
 {
     Live,
     Edit,
-    Browse
+    Browse,
 }

@@ -1,5 +1,5 @@
 @page "/show"
-<PageTitle>Show - Cue Companion</PageTitle>
+<PageTitle>LiveShow - Cue Companion</PageTitle>
 
 @inject ShowService         ShowService
 @inject AuthService         Auth
@@ -113,21 +113,9 @@
     {
         if (Auth.SessionKey is { } key)
         {
-            var result1 = await ShowService.GetCurrentShowIDAsync(key);
-            result1.IfError(e => { Dialogs.ShowError("Failed to load current show ID", e); });
-            int? id = result1.Value;
-            if (id == null) return;
-            var result2 = await ShowService.GetShowAsync(key, id.Value);
-            if (result2 is { IsSuccess: false, Error: { } e } && e != "Access denied.")
-            {
-                await Dialogs.ShowError("Failed to load show information", e);
-                return;
-            }
+            (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
+            (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
 
-            if (result2 is { IsSuccess: true, Value: { } show })
-            {
-                (await ShowService.GetCuesForShowAsync(key, show.Id)).IfError(e => Dialogs.ShowError("Failed to load cues", e));
-            }
             StateHasChanged();
         }
     }

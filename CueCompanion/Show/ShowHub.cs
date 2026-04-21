@@ -1,4 +1,5 @@
 using System.Text.Json;
+using CueCompanion.Services;
 using Microsoft.AspNetCore.SignalR;
 
 namespace CueCompanion.Hubs;
@@ -22,21 +23,31 @@ public class ShowHub : Hub
         return ShowManager.CurrentShow?.Id;
     }
 
-    public async Task<Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)>> GetShow(string sessionKey, int showID)
+    public async Task<Result<(Show[] shows, Role[] roles)>> GetShowsAndRoles(string sessionKey)
     {
-        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+        var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
         if (!r.IsSuccess) return r.Error!;
         bool hasPermission = r.Value;
         if (!hasPermission) return "Access denied.";
-        Result<(Show? Show, int? CurrentCuePosition, Role[] Roles)> res;
-        int?                                                        liveShowID = ShowManager.CurrentShow?.Id;
-        if (showID == liveShowID)
-            res = (ShowManager.CurrentShow,
-                   ShowManager.CurrentCuePosition, ShowManager.GetRoles());
-        else
-            res = (ShowManager.GetShowById(showID), null, ShowManager.GetRoles());
 
-        return res;
+        var roles = ShowManager.GetRoles();
+        var shows = ShowManager.GetShows();
+        return (shows, roles);
+    }
+
+    public async Task<Result<ShowService.LiveInfo?>> GetLiveInfo(string sessionKey)
+    {
+        var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+        if (!r.IsSuccess) return r.Error!;
+        bool hasPermission = r.Value;
+        if (!hasPermission) return "Access denied.";
+
+        if (!ShowManager.IsShowActive) return Result<ShowService.LiveInfo?>.Success(null);
+        return new ShowService.LiveInfo
+        {
+            CuePosition = ShowManager.CurrentCuePosition.Value,
+            LiveShowID  = ShowManager.CurrentShow!.Id,
+        };
     }
 
     public async Task<Result<(Cue[] cues, CueTask[] tasks)>> GetCuesForShow(string sessionKey, int showID)
@@ -86,11 +97,12 @@ public class ShowHub : Hub
     {
         await Clients.All.SendAsync("ShowUpdated", new ShowUpdate
         {
-            Show               = ShowManager.CurrentShow,
+            LiveShow           = ShowManager.CurrentShow,
             CurrentCuePosition = ShowManager.CurrentCuePosition,
-            Cues               = ShowManager.GetCuesForShow(ShowManager.CurrentShow?.Id  ?? 0),
-            Tasks              = ShowManager.GetTasksForShow(ShowManager.CurrentShow?.Id ?? 0),
+            Cues               = ShowManager.GetCues(),
+            Tasks              = ShowManager.GetTasks(),
             Roles              = ShowManager.GetRoles(),
+            Shows              = ShowManager.GetShows(),
         });
     }
 

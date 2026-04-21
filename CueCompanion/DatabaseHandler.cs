@@ -29,7 +29,7 @@ public static class DatabaseHandler
         PermissionManager.CreateDefaultPermissions();
 
         // Clear old show state, useful for development
-        if (true)
+        if (false)
         {
             Connection.DeleteAll<Show>();
             Connection.DeleteAll<Cue>();
@@ -39,7 +39,7 @@ public static class DatabaseHandler
         }
 
         // Create a default show
-        if (true) ShowManager.CreateDefaultShow();
+        if (false) ShowManager.CreateDefaultShow();
 
 
         bool hasAdmin = Connection.Table<User>().ToList().Any(c => c.UserName == "admin");

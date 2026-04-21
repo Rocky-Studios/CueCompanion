@@ -17,7 +17,10 @@ public static class ShowManager
         return _db.Table<Show>().FirstOrDefault(s => s.Id == showID);
     }
 
-    public static Role[] GetRoles() => _db.Table<Role>().ToArray();
+    public static Role[]    GetRoles() => _db.Table<Role>().ToArray();
+    public static Show[]    GetShows() => _db.Table<Show>().ToArray();
+    public static Cue[]     GetCues()  => _db.Table<Cue>().ToArray();
+    public static CueTask[] GetTasks() => _db.Table<CueTask>().ToArray();
 
     public static void CreateDefaultRoles()
     {

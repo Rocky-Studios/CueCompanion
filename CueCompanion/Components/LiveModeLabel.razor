@@ -1,6 +1,6 @@
 @implements IAsyncDisposable
 @inject ShowService ShowService
-@if (ShowService.CurrentCuePosition != null)
+@if (ShowService.IsLiveMode)
 {
     <div
         style="background-color: var(--mud-palette-primary); padding: 4px; border-radius: 4px; width: fit-content; margin: auto;"
@@ -8,7 +8,7 @@
 
         <div>
             <MudText Typo="Typo.h2" Style="color: white">
-                LIVE MODE ACTIVE - @ShowService.CurrentShow.Name
+                LIVE MODE ACTIVE - @ShowService.LiveModeShow!.Name
             </MudText>
         </div>
     </div>
