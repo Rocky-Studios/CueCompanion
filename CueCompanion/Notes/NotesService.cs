@@ -3,10 +3,21 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
 
-public class NotesService : StateSubscriberService
+public class NotesService(ShowService showService) : StateSubscriberService
 {
     private HubConnection? _notesHub;
     public List<Note> Notes = [];
+
+    public Note[] GetCurrentlyVisibleNotes()
+    {
+        List<Note> currentlyVisibleNotes = [];
+        foreach (Note note in Notes)
+        {
+            if(note.CueId != showService.CurrentCue?.Id) continue;
+            currentlyVisibleNotes.Add(note);
+        }
+        return currentlyVisibleNotes.ToArray();
+    }
 
     public async Task StartAsync(string baseUrl)
     {
