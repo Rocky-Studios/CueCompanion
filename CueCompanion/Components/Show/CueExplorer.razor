@@ -144,6 +144,11 @@
     
     private IEnumerable<Cue> GetSortedCues()
     {
-        return ShowService.Cues.OrderBy(c => c.Position);
+        if (ShowService.CurrentlyViewingShow is { Id: { } showID })
+        {
+            return ShowService.Cues.Where(c => c.ShowId == showID).OrderBy(c => c.Position);
+        }
+
+        return [];
     }
 }
