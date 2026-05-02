@@ -1,4 +1,4 @@
-/*using CueCompanion.Notes;
+using CueCompanion.Notes;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
@@ -31,10 +31,10 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
         return currentlyVisibleNotes.ToArray();
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(string baseurl)
     {
         _notesHub = new HubConnectionBuilder()
-                   .WithUrl($"{Program.localhostURL}/api/notes")
+                   .WithUrl($"{baseurl}api/notes")
                    .WithAutomaticReconnect()
                    .Build();
 
@@ -64,7 +64,7 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
 
     public async Task<Result<Note[]>> GetAllNotes()
     {
-        Result<Note[]> notesResult =
+        var notesResult =
             await InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result<Note[]>>("GetAllNotes", key));
 
         if (notesResult.Value is { } notes)
@@ -85,5 +85,4 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
 
     public Task<Result> DeleteNote(int noteID) =>
         InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result>("DeleteNote", key, noteID));
-}*/
-
+}

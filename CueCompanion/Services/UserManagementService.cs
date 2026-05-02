@@ -1,27 +1,20 @@
-using System.Diagnostics.CodeAnalysis;
 using CueCompanion.Components;
 using CueCompanion.UserManagement;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
 
-public class UserManagementService : StateSubscriberService, IAsyncDisposable
+public class UserManagementService : StateSubscriberService
 {
-    public async ValueTask DisposeAsync()
-    {
-        if (_userManagementHub != null)
-            await _userManagementHub.DisposeAsync();
-    }
-
     private HubConnection? _userManagementHub;
     private UserProvider?  _userProvider;
 
-    public async Task StartAsync(UserProvider userProvider)
+    public async Task StartAsync(string baseUrl, UserProvider userProvider)
     {
         _userProvider = userProvider;
 
         _userManagementHub = new HubConnectionBuilder()
-                            .WithUrl($"{Program.localhostURL}/api/user-management")
+                            .WithUrl($"{baseUrl}api/user-management")
                             .WithAutomaticReconnect()
                             .Build();
 
@@ -30,8 +23,9 @@ public class UserManagementService : StateSubscriberService, IAsyncDisposable
 
     public async Task<Result<UserInfo[]>> GetUsers(string sessionKey)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
-        var result = await hub.InvokeAsync<Result<UserInfo[]>>("GetUsers", sessionKey);
+        if (_userManagementHub is null)
+            throw new InvalidOperationException("UserManagementHub connection is not established.");
+        Result<UserInfo[]> result = await _userManagementHub.InvokeAsync<Result<UserInfo[]>>("GetUsers", sessionKey);
 
         if (result.Error is "Invalid session key.") _userProvider?.RemoveSessionKey();
         if (!result.IsSuccess) return result.Error!;
@@ -41,73 +35,63 @@ public class UserManagementService : StateSubscriberService, IAsyncDisposable
 
     public async Task<Result> CreateNewUser(string sessionKey, string userName, string password)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
-        return await hub.InvokeAsync<Result>("CreateNewUser", sessionKey, userName, password);
+        if (_userManagementHub is null)
+            throw new InvalidOperationException("UserManagementHub connection is not established.");
+        return await _userManagementHub.InvokeAsync<Result>("CreateNewUser", sessionKey, userName,
+                                                            password);
     }
 
     public async Task<Result> RenameUser(string sessionKey, int userID, string newUserName)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
-        return await hub.InvokeAsync<Result>("RenameUser", sessionKey, userID, newUserName);
+        if (_userManagementHub is null)
+            throw new InvalidOperationException("UserManagementHub connection is not established.");
+        return await _userManagementHub.InvokeAsync<Result>("RenameUser", sessionKey, userID, newUserName);
     }
 
     public async Task DeleteUser(string sessionKey, int userId)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out _)) return;
-        await hub.InvokeAsync("DeleteUser", sessionKey, userId);
+        if (_userManagementHub is null)
+            throw new InvalidOperationException("UserManagementHub connection is not established.");
+        await _userManagementHub.InvokeAsync("DeleteUser", sessionKey, userId);
     }
 
     public async Task AddPermissionToUser(string sessionKey, int userID, int permissionID)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out _)) return;
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
 
-        await hub.InvokeAsync("AddPermissionToUser", sessionKey, userID, permissionID);
+        await _userManagementHub.InvokeAsync("AddPermissionToUser", sessionKey, userID, permissionID);
     }
 
     public async Task RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out _)) return;
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
 
-        await hub.InvokeAsync("RemovePermissionFromUser", sessionKey, userID, permissionID);
+        await _userManagementHub.InvokeAsync("RemovePermissionFromUser", sessionKey, userID, permissionID);
     }
 
     public async Task<Result> EnableLoggingIn(string sessionKey, int userID)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
 
-        return await hub.InvokeAsync<Result>("EnableLoggingInForUser", sessionKey, userID);
+        return await _userManagementHub.InvokeAsync<Result>("EnableLoggingInForUser", sessionKey, userID);
     }
 
     public async Task<Result> DisableLoggingIn(string sessionKey, int userID)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
 
-        return await hub.InvokeAsync<Result>("DisableLoggingInForUser", sessionKey, userID);
+        return await _userManagementHub.InvokeAsync<Result>("DisableLoggingInForUser", sessionKey, userID);
     }
 
     public async Task<Result> ChangePassword(string sessionKey, string currentPassword, string newPassword)
     {
-        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
 
-        return await hub.InvokeAsync<Result>("ChangePassword", sessionKey, currentPassword, newPassword);
-    }
-
-    private bool TryGetConnectedHub([NotNullWhen(true)] out HubConnection? hub, out string? error)
-    {
-        hub = _userManagementHub;
-        if (hub is null)
-        {
-            error = "UserManagementHub connection is not established.";
-            return false;
-        }
-
-        if (hub.State != HubConnectionState.Connected)
-        {
-            error = "UserManagementHub connection is not active.";
-            return false;
-        }
-
-        error = null;
-        return true;
+        return await _userManagementHub.InvokeAsync<Result>("ChangePassword", sessionKey, currentPassword, newPassword);
     }
 }

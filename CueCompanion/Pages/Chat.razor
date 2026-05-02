@@ -48,7 +48,7 @@
         if (AuthService != null) AuthService.OnStateChanged += authStateChangedHandler;
         if (ChatService != null) ChatService.OnStateChanged += chatStateChangedHandler;
 
-        if (ChatService != null) await ChatService.StartAsync();
+        if (ChatService != null) await ChatService.StartAsync(Navigation.BaseUri);
         shouldScrollToBottom = true;
     }
 

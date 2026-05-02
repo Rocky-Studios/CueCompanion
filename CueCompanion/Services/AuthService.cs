@@ -17,10 +17,10 @@ public class AuthService : StateSubscriberService
         UpdateState();
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(string baseUrl)
     {
         _authHub = new HubConnectionBuilder()
-                  .WithUrl($"{Program.localhostURL}/api/auth")
+                  .WithUrl($"{baseUrl}api/auth")
                   .WithAutomaticReconnect()
                   .Build();
 

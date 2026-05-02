@@ -6,10 +6,10 @@ public class ConfigService : StateSubscriberService
 {
     private HubConnection? _configHub;
 
-    public async Task StartAsync()
+    public async Task StartAsync(string baseUrl)
     {
         _configHub = new HubConnectionBuilder()
-                    .WithUrl($"{Program.localhostURL}/api/config")
+                    .WithUrl($"{baseUrl}api/config")
                     .WithAutomaticReconnect()
                     .Build();
 

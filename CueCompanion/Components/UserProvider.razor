@@ -18,7 +18,7 @@
     
     protected override async Task OnInitializedAsync()
     {
-        await Auth.StartAsync();
+        await Auth.StartAsync(Navigation.BaseUri);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -327,7 +327,7 @@
         };
         Auth.OnStateChanged += _stateChangeHandler;
 
-        _ = UserManagement.StartAsync(UserProvider);
+        _ = UserManagement.StartAsync(Navigation.BaseUri, UserProvider);
 
     }
 

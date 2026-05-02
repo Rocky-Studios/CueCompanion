@@ -9,18 +9,17 @@ namespace CueCompanion
 {
     public class Program
     {
-        public static string localhostURL = "http://127.0.0.1";
-
         public static void Main(string[] args)
         {
             DatabaseHandler.Init();
 
             ShowManager.Init();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            string?               main    = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
-            builder.WebHost.UseUrls(main ?? "https://localhost:7082", localhostURL);
+            string?               url     = GetArgValue(args, "-url");
+            if (!string.IsNullOrWhiteSpace(url)) builder.WebHost.UseUrls(url);
+
             Console.WriteLine("Starting Cue Companion...");
-            Console.WriteLine("Listening on: " + main);
+            Console.WriteLine("Listening on: " + (url ?? "localhost"));
 
             //builder.WebHost.UseUrls("http://0.0.0.0:5277");  // SIGNIFICANTLY SLOWS DOWN THE APP SO ONLY USE IF ABSOLUTELY NECESSARY
             // Add services to the container.

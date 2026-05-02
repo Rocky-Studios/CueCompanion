@@ -152,7 +152,7 @@
         Auth.OnStateChanged      += _authStateChangedHandler;
         NotesService.OnStateChanged += NotesOnStateChanged;
 
-        await NotesService.StartAsync();
+        await NotesService.StartAsync(Navigation.BaseUri);
         await LoadNotesAsync();
     }
 

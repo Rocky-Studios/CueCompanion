@@ -14,10 +14,10 @@ public class ChatService : StateSubscriberService, IAsyncDisposable
     private         HubConnection?          _chatHub;
     public          Dictionary<int, string> UserIdToNameCache = new();
 
-    public async Task StartAsync()
+    public async Task StartAsync(string baseUrl)
     {
         _chatHub = new HubConnectionBuilder()
-                  .WithUrl($"{Program.localhostURL}/api/chat")
+                  .WithUrl($"{baseUrl}api/chat")
                   .WithAutomaticReconnect()
                   .Build();
 
