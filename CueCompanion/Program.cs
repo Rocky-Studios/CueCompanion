@@ -18,7 +18,7 @@ namespace CueCompanion
             ShowManager.Init();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             string?               main    = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
-            builder.WebHost.UseUrls(main ?? "https://localhost:7082", localhostURL);
+            builder.WebHost.UseUrls(localhostURL);
             Console.WriteLine("Starting Cue Companion...");
             Console.WriteLine("Listening on: " + main);
 
