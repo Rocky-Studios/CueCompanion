@@ -6,20 +6,20 @@ namespace CueCompanion.Services;
 public class NotesService : StateSubscriberService
 {
     private HubConnection? _notesHub;
-    public List<Note> Notes = [];
+    public  List<Note>     Notes = [];
 
-    public async Task StartAsync(string baseUrl)
+    public async Task StartAsync()
     {
         _notesHub = new HubConnectionBuilder()
-            .WithUrl($"{baseUrl}api/notes")
-            .WithAutomaticReconnect()
-            .Build();
+                   .WithUrl($"{Program.localhostURL}/api/notes")
+                   .WithAutomaticReconnect()
+                   .Build();
 
         _notesHub.On("NoteAdded", (Note newNote) =>
-        {
-            Notes.Add(newNote);
-            UpdateState();
-        });
+                                  {
+                                      Notes.Add(newNote);
+                                      UpdateState();
+                                  });
 
         await _notesHub.StartAsync();
         UpdateState();

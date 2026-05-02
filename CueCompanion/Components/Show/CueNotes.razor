@@ -37,7 +37,7 @@
             _ = InvokeAsync(StateHasChanged);
         };
 
-        await NotesService.StartAsync(Navigation.BaseUri);
+        await NotesService.StartAsync();
     }
 
     private async Task CreateNote(string noteText, int? roleID, int? showID, int? cueID)

@@ -9,22 +9,24 @@ namespace CueCompanion
 {
     public class Program
     {
+        public static string localhostURL = "http://127.0.0.1";
+
         public static void Main(string[] args)
         {
             DatabaseHandler.Init();
 
             ShowManager.Init();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            string? url = GetArgValue(args, "-url");
-            if (!string.IsNullOrWhiteSpace(url)) builder.WebHost.UseUrls(url);
-
+            string?               main    = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+            builder.WebHost.UseUrls(main ?? "https://localhost:7082", localhostURL);
             Console.WriteLine("Starting Cue Companion...");
-            Console.WriteLine("Listening on: " + (url ?? "localhost"));
+            Console.WriteLine("Listening on: " + main);
+
             //builder.WebHost.UseUrls("http://0.0.0.0:5277");  // SIGNIFICANTLY SLOWS DOWN THE APP SO ONLY USE IF ABSOLUTELY NECESSARY
             // Add services to the container.
             StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
             builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
+                   .AddInteractiveServerComponents();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddSingleton<AuthHub>();
 
@@ -50,16 +52,18 @@ namespace CueCompanion
             builder.Services.AddMudServices();
 
             builder.Services.AddResponseCompression(opts =>
-            {
-                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    ["application/octet-stream"]);
-            });
+                                                    {
+                                                        opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                                                            ["application/octet-stream"]);
+                                                    });
 
             WebApplication app = builder.Build();
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
+
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
@@ -77,7 +81,7 @@ namespace CueCompanion
             app.UseStaticFiles();
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
-                .AddInteractiveServerRenderMode();
+               .AddInteractiveServerRenderMode();
 
             app.Run();
         }
