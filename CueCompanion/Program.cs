@@ -9,7 +9,7 @@ namespace CueCompanion
 {
     public class Program
     {
-        public static string localhostURL = "http://127.0.0.1";
+        public static string localhostURL = "http://127.0.0.1:7081";
 
         public static void Main(string[] args)
         {
