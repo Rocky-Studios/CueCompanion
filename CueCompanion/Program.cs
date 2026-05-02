@@ -17,10 +17,16 @@ namespace CueCompanion
 
             ShowManager.Init();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            string?               main    = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
-            builder.WebHost.UseUrls(localhostURL);
+
+
+            string? main = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+            if (string.IsNullOrEmpty(main))
+                main = localhostURL;
+
+            builder.WebHost.UseUrls(main);
             Console.WriteLine("Starting Cue Companion...");
             Console.WriteLine("Listening on: " + main);
+
 
             // Add services to the container.
             StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);

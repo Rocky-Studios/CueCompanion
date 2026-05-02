@@ -4,30 +4,12 @@ namespace CueCompanion.Services;
 
 public class AuthService : StateSubscriberService
 {
-    public AuthService(IHttpClientFactory factory)
-    {
-        _diag = factory.CreateClient("DiagClient");
-    }
-
     public          User?                   User       { get; private set; }
     public          string?                 SessionKey { get; set; }
     public          bool                    isLoading  { get; set; } = false;
     public readonly Dictionary<string, int> PermissionsCache = new();
     private         HubConnection?          _authHub;
 
-
-    private readonly HttpClient _diag;
-
-    public async Task Test()
-    {
-        try
-        {
-            await _diag.GetAsync("http://localhost:7081"); // harmless test
-        }
-        catch
-        {
-        }
-    }
 
     public void SetUser(User user)
     {
