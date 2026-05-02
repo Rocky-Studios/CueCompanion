@@ -9,7 +9,7 @@ namespace CueCompanion
 {
     public class Program
     {
-        public static string localhostURL = "http://127.0.0.1:7081";
+        public const string localhostURL = "http://127.0.0.1:7081";
 
         public static void Main(string[] args)
         {
@@ -18,12 +18,10 @@ namespace CueCompanion
             ShowManager.Init();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             string?               main    = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
-            if (string.IsNullOrEmpty(main)) throw new Exception("ASPNETCORE_URLS environment variable is not set.");
-            builder.WebHost.UseUrls(main, localhostURL);
+            builder.WebHost.UseUrls(main ?? "https://localhost:7082", localhostURL);
             Console.WriteLine("Starting Cue Companion...");
             Console.WriteLine("Listening on: " + main);
 
-            //builder.WebHost.UseUrls("http://0.0.0.0:5277");  // SIGNIFICANTLY SLOWS DOWN THE APP SO ONLY USE IF ABSOLUTELY NECESSARY
             // Add services to the container.
             StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
             builder.Services.AddRazorComponents()
@@ -48,6 +46,20 @@ namespace CueCompanion
 
             builder.Services.AddScoped<SimpleDialogService>();
 
+            builder.Services.AddHttpClient("DiagClient")
+                   .ConfigurePrimaryHttpMessageHandler(() =>
+                                                       {
+                                                           return new HttpClientHandler
+                                                           {
+                                                               ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) =>
+                                                               {
+                                                                   Console.WriteLine("CERT ERROR calling: " + msg.RequestUri);
+                                                                   return false; // do NOT allow it, we want to see the URL
+                                                               },
+                                                           };
+                                                       });
+
+
             builder.Services.AddSignalR();
             builder.Services.AddBlazorCookiesServerSideServices();
             builder.Services.AddMudServices();
@@ -66,11 +78,12 @@ namespace CueCompanion
                 app.UseExceptionHandler("/Error");
 
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                //app.UseHsts();
             }
 
             app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-            app.UseHttpsRedirection();
+
+            //app.UseHttpsRedirection();
             app.UseAntiforgery();
             app.MapHub<AuthHub>("/api/auth");
             app.MapHub<UserManagementHub>("/api/user-management");
@@ -81,6 +94,12 @@ namespace CueCompanion
 
             app.UseStaticFiles();
             app.MapStaticAssets();
+            app.Use((context, next) =>
+                    {
+                        context.Request.Scheme = "http";
+                        return next();
+                    });
+
             app.MapRazorComponents<App>()
                .AddInteractiveServerRenderMode();
 
