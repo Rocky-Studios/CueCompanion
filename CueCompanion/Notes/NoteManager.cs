@@ -15,6 +15,15 @@ public static class NoteManager
         return Result.Success();
     }
 
+    public static Result UpdateNote(string sessionKey, Note newNote)
+    {
+        SessionKey session = _db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);
+        if (session == null) return "Invalid session key.";
+
+        _db.Update(newNote);
+        return Result.Success();
+    }
+
     public static Result DeleteNote(string sessionKey, int noteID)
     {
         SessionKey session = _db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);

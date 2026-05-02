@@ -143,9 +143,15 @@
     {
         _authStateChangedHandler =  () => _ = LoadNotesAsync();
         Auth.OnStateChanged      += _authStateChangedHandler;
+        NotesService.OnStateChanged += NotesOnStateChanged;
 
         await NotesService.StartAsync();
         await LoadNotesAsync();
+    }
+
+    private void NotesOnStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadNotesAsync()
@@ -163,6 +169,7 @@
     {
         if (_authStateChangedHandler is not null)
             Auth.OnStateChanged -= _authStateChangedHandler;
+        NotesService.OnStateChanged -= NotesOnStateChanged;
     }
 
     private async Task CreateNote(string noteText, int? roleID, int? showID, int? cueID)

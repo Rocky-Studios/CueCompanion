@@ -1,10 +1,12 @@
 @using CueCompanion.Notes
+@implements IDisposable
 @inject SimpleDialogService Dialogs
 <MudCard>
     <div style="display: flex; flex-direction: row; gap: 16px; align-items: center; padding: 8px;">
         <MudIcon Icon="@Icons.Material.Filled.StickyNote2"/>
         <div>
-            <MudText Typo="Typo.body1">@ThisNote.NoteText</MudText>
+            <MudTextField Typo="Typo.body1" @bind-Value="NoteText" Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Edit"></MudTextField>
             <MudText Typo="Typo.body2">@ThisNote.RoleId</MudText>
         </div>
         <MudSpacer/>
@@ -20,10 +22,41 @@
     [Parameter]
     public required Note ThisNote { get; set; }
 
+    protected override void OnParametersSet()
+    {
+        NotesService.OnStateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string NoteText
+    {
+        get => ThisNote.NoteText;
+        set => _ = NoteTextChanged(value);
+    }
+
+    private async Task NoteTextChanged(string newText)
+    {
+        ThisNote.NoteText = newText;
+        Result r = await NotesService.UpdateNote(ThisNote);
+        if (!r.IfError(e => Dialogs.ShowError("Failed to rename note", e)))
+        {
+            _ = InvokeAsync(StateHasChanged);
+        }
+    }
+
     private async Task NoteDeleted()
     {
         Result r = await NotesService.DeleteNote(ThisNote.Id);
         if (!r.IfError(e => Dialogs.ShowError("Failed to delete note", e)))
             _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NotesService.OnStateChanged -= OnStateChanged;
     }
 }

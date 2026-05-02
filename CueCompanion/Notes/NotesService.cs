@@ -34,6 +34,14 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
                                       UpdateState();
                                   });
 
+        _notesHub.On("NoteUpdated", (Note newNote) =>
+                                    {
+                                        int id = newNote.Id;
+                                        Notes.Remove(Notes.FirstOrDefault(n => n.Id == id));
+                                        Notes.Add(newNote);
+                                        UpdateState();
+                                    });
+
         _notesHub.On("NoteDelete", (int deletedNoteID) =>
                                    {
                                        Notes.RemoveAll(n => n.Id == deletedNoteID);
@@ -61,6 +69,9 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
 
     public Task<Result> CreateNote(Note note) =>
         InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result>("CreateNote", key, note));
+
+    public Task<Result> UpdateNote(Note note) =>
+        InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result>("UpdateNote", key, note));
 
     public Task<Result> DeleteNote(int noteID) =>
         InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result>("DeleteNote", key, noteID));
