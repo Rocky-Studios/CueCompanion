@@ -25,10 +25,11 @@
                     <div>
                         @if(_assignment == NoteAssignment.SingleCue)
                         {
-                            <MudSelect @bind-Value="singleCueAssignment" Dense="true">
+                            <MudSelect T="int?" Label="Cue" @bind-Value="singleCueAssignment"
+                                       Placeholder="Select a cue..." Dense="true">
                                 @foreach (Cue cue in ShowService.Cues)
                                 {
-                                    <MudSelectItem Value="@cue.Id">@cue.Name (@cue.Position)</MudSelectItem>
+                                    <MudSelectItem T="int?" Value="@cue.Id">@cue.Name (@cue.Position)</MudSelectItem>
                                 }
                             </MudSelect>
                         }
@@ -92,10 +93,10 @@
 {
     [CascadingParameter]
     public required ShowService ShowService { get; set; }
-    private string         _newNoteText        = "";
-    private bool           _specificToThisCue  = false;
-    private int            singleCueAssignment;
-    private string         cueListAssignmentString   = "";
+    private string _newNoteText       = "";
+    private bool   _specificToThisCue = false;
+    private int?   singleCueAssignment;
+    private string cueListAssignmentString   = "";
 
     private int[] GetCueListAssignment()
     {
