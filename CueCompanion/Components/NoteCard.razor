@@ -1,3 +1,4 @@
+@using System.Text
 @using CueCompanion.Notes
 @implements IDisposable
 @inject SimpleDialogService Dialogs
@@ -7,7 +8,7 @@
         <div>
             <MudTextField Typo="Typo.body1" @bind-Value="NoteText" Adornment="Adornment.End"
                           AdornmentIcon="@Icons.Material.Filled.Edit"></MudTextField>
-            <MudText Typo="Typo.body2">@ThisNote.RoleId</MudText>
+            <MudText Typo="Typo.body2">@NoteSmallText</MudText>
         </div>
         <MudSpacer/>
         <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Primary" OnClick="NoteDeleted"></MudIconButton>
@@ -21,6 +22,38 @@
 
     [Parameter]
     public required Note ThisNote { get; set; }
+
+    private string NoteSmallText
+    {
+        get
+        {
+            StringBuilder sb = new();
+            if (ThisNote.RoleId is not null)
+            {
+                sb.Append($"Role: {ThisNote.RoleId}");
+            }
+
+            switch (ThisNote.Assignment)
+            {
+                case NoteAssignment.AllShows:
+                    sb.Append("All Shows");
+                    break;
+                case NoteAssignment.AllCues:
+                    sb.Append("All Cues");
+                    break;
+                case NoteAssignment.SingleCue:
+                case NoteAssignment.CueList:
+                    foreach (int i in ThisNote.CueList)
+                    {
+                        sb.Append($"Cue: {i} ");
+                    }
+
+                    break;
+            }
+
+            return sb.ToString();
+        }
+    }
 
     protected override void OnParametersSet()
     {

@@ -13,7 +13,17 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
         List<Note> currentlyVisibleNotes = [];
         foreach (Note note in Notes)
         {
-            // TODO add checking
+            if (note.Assignment != NoteAssignment.AllShows)
+                if (note.Assignment != NoteAssignment.AllCues)
+                    if (showService.CurrentCue is { } currentCue)
+                        if (note.Assignment is NoteAssignment.SingleCue or NoteAssignment.CueList)
+
+                            // Skip note if the cues list does not include the current cue
+                            if (!note.CueList.Contains(currentCue.Id))
+                                continue;
+
+            // TODO add show-specific cues
+            // Remove any duplicates
             if (currentlyVisibleNotes.Any(n => n.Id == note.Id)) continue;
             currentlyVisibleNotes.Add(note);
         }

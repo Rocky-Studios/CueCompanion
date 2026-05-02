@@ -85,7 +85,7 @@
                             <MudSelectItem Value="NoteVisibility.Everyone">Everyone</MudSelectItem>
                         </MudSelect>
 
-                        <MudButton OnClick="@(() => CreateNote(_newNoteText, null, null, null))"
+                        <MudButton OnClick="@(() => CreateNote(_newNoteText, null))"
                                    Variant="Variant.Filled"
                                    Color="Color.Primary">
                             Add Note
@@ -110,6 +110,13 @@
 
     private int[] GetCueListAssignment()
     {
+        if (_assignment is NoteAssignment.SingleCue)
+        {
+            return [singleCueAssignment.Value];
+        }
+
+        // The client will display regardless of the cue assignment, so no need to assign 
+        if (_assignment is NoteAssignment.AllCues or NoteAssignment.AllShows) return [];
         string    cleanText = cueListAssignmentString.Trim().Replace(" ", "");
         List<int> cueIds    = new();
         foreach (string fragment in cleanText.Split(',', StringSplitOptions.RemoveEmptyEntries))
@@ -172,7 +179,7 @@
         NotesService.OnStateChanged -= NotesOnStateChanged;
     }
 
-    private async Task CreateNote(string noteText, int? roleID, int? showID, int? cueID)
+    private async Task CreateNote(string noteText, int? roleID)
     {
         int[]  cues     = GetCueListAssignment();
         byte[] noteCues = new byte[cues.Length * sizeof(int)];

@@ -16,6 +16,17 @@ public class Note
     [Column("cue_list")]
     public byte[] CueListAsBytes { get; set; }
 
+    public int[] CueList
+    {
+        get
+        {
+            int[] cueList                                       = new int[CueListAsBytes.Length / 4];
+            for (int i = 0; i < cueList.Length; i++) cueList[i] = BitConverter.ToInt32(CueListAsBytes, i * 4);
+
+            return cueList;
+        }
+    }
+
     [Column("visibility")]
     public NoteVisibility Visibility { get; set; }
 
