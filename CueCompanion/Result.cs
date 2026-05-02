@@ -192,10 +192,15 @@ public sealed class Result
         return Failure(error);
     }
 
-    public void IfError(Action<string>? action = null)
+    public bool IfError(Action<string>? action = null)
     {
         if (!IsSuccess)
+        {
             if (action != null)
                 action(Error ?? "Unknown error");
+            return false;
+        }
+
+        return true;
     }
 }

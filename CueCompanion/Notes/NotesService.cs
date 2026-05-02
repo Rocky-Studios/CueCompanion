@@ -3,19 +3,21 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
 
-public class NotesService(ShowService showService) : StateSubscriberService
+public class NotesService(ShowService showService, AuthService auth) : AuthDependantService(auth)
 {
     private HubConnection? _notesHub;
     public  List<Note>     Notes = [];
-    
+
     public Note[] GetCurrentlyVisibleNotes()
     {
         List<Note> currentlyVisibleNotes = [];
         foreach (Note note in Notes)
         {
-            if(note.CueId != showService.CurrentCue?.Id) continue;
+            // TODO add checking
+            if (currentlyVisibleNotes.Any(n => n.Id == note.Id)) continue;
             currentlyVisibleNotes.Add(note);
         }
+
         return currentlyVisibleNotes.ToArray();
     }
 
@@ -32,25 +34,34 @@ public class NotesService(ShowService showService) : StateSubscriberService
                                       UpdateState();
                                   });
 
+        _notesHub.On("NoteDelete", (int deletedNoteID) =>
+                                   {
+                                       Notes.RemoveAll(n => n.Id == deletedNoteID);
+                                       UpdateState();
+                                   });
+
         await _notesHub.StartAsync();
         UpdateState();
     }
 
-    public async Task<Result<Note[]>> GetAllNotes(string sessionKey)
+    public async Task<Result<Note[]>> GetAllNotes()
     {
-        Result<Note[]> notesResult = await _notesHub.InvokeAsync<Result<Note[]>>("GetAllNotes", sessionKey);
+        Result<Note[]> notesResult =
+            await InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result<Note[]>>("GetAllNotes", key));
+
         if (notesResult.Value is { } notes)
         {
             Notes.Clear();
-            Notes.AddRange(notes);
+            Notes = notes.ToList();
         }
 
         UpdateState();
         return notesResult;
     }
 
-    public async Task<Result> CreateNote(string sessionKey, Note note)
-    {
-        return await _notesHub.InvokeAsync<Result>("CreateNote", sessionKey, note);
-    }
+    public Task<Result> CreateNote(Note note) =>
+        InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result>("CreateNote", key, note));
+
+    public Task<Result> DeleteNote(int noteID) =>
+        InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result>("DeleteNote", key, noteID));
 }

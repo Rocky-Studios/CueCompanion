@@ -1,24 +1,29 @@
+@using CueCompanion.Notes
+@inject SimpleDialogService Dialogs
 <MudCard>
     <div style="display: flex; flex-direction: row; gap: 16px; align-items: center; padding: 8px;">
         <MudIcon Icon="@Icons.Material.Filled.StickyNote2"/>
         <div>
-            <MudText Typo="Typo.body1">@Text</MudText>
-            <MudText Typo="Typo.body2">@Role @Show @Cue</MudText>
+            <MudText Typo="Typo.body1">@ThisNote.NoteText</MudText>
+            <MudText Typo="Typo.body2">@ThisNote.RoleId</MudText>
         </div>
+        <MudSpacer/>
+        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Primary" OnClick="NoteDeleted"></MudIconButton>
     </div>
 </MudCard>
 
 @code
 {
     [Parameter]
-    public required string Text { get; set; }
+    public required NotesService NotesService { get; set; }
 
     [Parameter]
-    public string? Role { get; set; }
+    public required Note ThisNote { get; set; }
 
-    [Parameter]
-    public string? Show { get; set; }
-
-    [Parameter]
-    public string? Cue { get; set; }
+    private async Task NoteDeleted()
+    {
+        Result r = await NotesService.DeleteNote(ThisNote.Id);
+        if (!r.IfError(e => Dialogs.ShowError("Failed to delete note", e)))
+            _ = InvokeAsync(StateHasChanged);
+    }
 }

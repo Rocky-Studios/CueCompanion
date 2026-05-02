@@ -1,8 +1,8 @@
-@using CueCompanion.Notes
 @inject AuthService         Auth
 @inject NotesService        NotesService
 @inject SimpleDialogService Dialogs
-@inject IDialogService      DialogService
+@using CueCompanion.Notes
+@implements IDisposable
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="1" RowEnd="2">
     <MudText Typo="Typo.h1">Notes
@@ -18,13 +18,13 @@
     {
         @if (NotesService.GetCurrentlyVisibleNotes() is
              {
-                 Length: > 1,
+                 Length: > 0,
              } notes)
         {
             <div class="d-flex flex-column gap-2">
                 @foreach (Note note in notes)
                 {
-                    <NoteCard Text="@note.NoteText" Role="All" Show="" Cue=""/>
+                    <NoteCard NotesService="NotesService" ThisNote="note"/>
                 }
             </div>
         }
@@ -103,10 +103,10 @@
     public required ShowService ShowService { get; set; }
 
     private string _newNoteText       = "";
-    private bool   _specificToThisCue = false;
     private bool   _isNewNoteFormExpanded;
     private int?   singleCueAssignment;
     private string cueListAssignmentString = "";
+    private Action? _authStateChangedHandler;
 
     private int[] GetCueListAssignment()
     {
@@ -139,43 +139,51 @@
     private NoteVisibility _visibility = NoteVisibility.Me;
     private NoteAssignment _assignment = NoteAssignment.SingleCue;
 
-    protected async override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        AuthOnOnStateChanged();
-        Auth.OnStateChanged += AuthOnOnStateChanged();
+        _authStateChangedHandler =  () => _ = LoadNotesAsync();
+        Auth.OnStateChanged      += _authStateChangedHandler;
 
         await NotesService.StartAsync();
+        await LoadNotesAsync();
     }
 
-    private Action? AuthOnOnStateChanged()
+    private async Task LoadNotesAsync()
     {
-        return async () =>
-               {
-                   if (Auth.SessionKey is { } key)
-                   {
-                       Result<Note[]> notesResult = await NotesService.GetAllNotes(key);
-                       notesResult.GetValue(s => Dialogs.ShowError("Failed to load notes", s));
-                   }
+        if (Auth.SessionKey is null)
+            return;
 
-                   _ = InvokeAsync(StateHasChanged);
-               };
+        Result<Note[]> notesResult = await NotesService.GetAllNotes();
+        notesResult.GetValue(s => Dialogs.ShowError("Failed to load notes", s));
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (_authStateChangedHandler is not null)
+            Auth.OnStateChanged -= _authStateChangedHandler;
     }
 
     private async Task CreateNote(string noteText, int? roleID, int? showID, int? cueID)
     {
-        if (Auth.SessionKey is { } key)
+        int[]  cues     = GetCueListAssignment();
+        byte[] noteCues = new byte[cues.Length * sizeof(int)];
+        for (int i = 0; i < cues.Length; i++)
         {
-            Note note = new()
-            {
-                NoteText   = noteText,
-                RoleId     = roleID,
-                ShowId     = showID,
-                CueId      = cueID,
-                Visibility = _visibility
-            };
-            Result noteResult = await NotesService.CreateNote(key, note);
-            noteResult.IfError(e => Dialogs.ShowError("Failed to create note", e));
-            _ = InvokeAsync(StateHasChanged);
+            BitConverter.GetBytes(cues[i]).CopyTo(noteCues, i * sizeof(int));
         }
+
+        Note note = new()
+        {
+            NoteText       = noteText,
+            RoleId         = roleID,
+            Visibility     = _visibility,
+            Assignment     = _assignment,
+            CueListAsBytes = noteCues,
+        };
+        Result noteResult = await NotesService.CreateNote(note);
+        noteResult.IfError(e => Dialogs.ShowError("Failed to create note", e));
+        _ = InvokeAsync(StateHasChanged);
     }
 }

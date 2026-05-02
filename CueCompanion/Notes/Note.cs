@@ -13,15 +13,12 @@ public class Note
     [Column("role_id")]
     public int? RoleId { get; set; }
 
-    [Column("show_id")]
-    public int? ShowId { get; set; }
+    [Column("cue_list")]
+    public byte[] CueListAsBytes { get; set; }
 
-    [Column("cue_id")]
-    public int? CueId { get; set; }
-    
     [Column("visibility")]
-    public NoteVisibility  Visibility { get; set; }
-    
+    public NoteVisibility Visibility { get; set; }
+
     [Column("assignment")]
     public NoteAssignment Assignment { get; set; }
 
@@ -31,14 +28,15 @@ public class Note
 
 public enum NoteVisibility
 {
-    Me = 0,
+    Me               = 0,
     EveryoneWithRole = 1,
-    Everyone = 2,
+    Everyone         = 2,
 }
 
 public enum NoteAssignment
 {
     SingleCue = 0,
-    CueList = 1,
-    AllCues = 2,
+    CueList   = 1,
+    AllCues   = 2,
+    AllShows  = 3,
 }

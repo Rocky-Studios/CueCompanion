@@ -16,4 +16,11 @@ public class NotesHub : Hub
     {
         return NoteManager.GetNotes(sessionKey);
     }
+
+    public async Task<Result> DeleteNote(string sessionKey, int noteID)
+    {
+        Result r = NoteManager.DeleteNote(sessionKey, noteID);
+        if (r.IsSuccess) await Clients.All.SendAsync("NoteDeleted", noteID);
+        return r;
+    }
 }
