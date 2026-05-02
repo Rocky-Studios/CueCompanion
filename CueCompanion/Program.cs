@@ -100,6 +100,7 @@ namespace CueCompanion
                         return next();
                     });
 
+            app.MapBlazorHub();
             app.MapRazorComponents<App>()
                .AddInteractiveServerRenderMode();
 
