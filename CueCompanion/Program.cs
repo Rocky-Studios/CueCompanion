@@ -21,7 +21,7 @@ namespace CueCompanion
             Console.WriteLine("Starting Cue Companion...");
             Console.WriteLine("Listening on: " + (url ?? "localhost"));
 
-            //builder.WebHost.UseUrls("http://0.0.0.0:5277");  // SIGNIFICANTLY SLOWS DOWN THE APP SO ONLY USE IF ABSOLUTELY NECESSARY
+
             // Add services to the container.
             StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
             builder.Services.AddRazorComponents()
