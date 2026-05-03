@@ -11,9 +11,16 @@
             <MudText Inline="true">@Cue.Position</MudText>
             @if (IsEditMode)
             {
-                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Color="MudBlazor.Color.Primary" OnClick="@CueMovedUp" />
+                <MudTooltip Text="Move cue up">
+                    <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Color="MudBlazor.Color.Primary"
+                                   OnClick="@CueMovedUp"/>
+                </MudTooltip>
+                <MudTooltip Text="Delete cue">
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="MudBlazor.Color.Primary" OnClick="@CueDeleted" />
+                </MudTooltip>
+                <MudTooltip Text="Move cue down">
                 <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Color="MudBlazor.Color.Primary" OnClick="@CueMovedDown" />
+                </MudTooltip>
             }
         </div>
     </div>

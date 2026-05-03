@@ -4,14 +4,16 @@
 @inject SimpleDialogService Dialogs
 <MudCard>
     <div style="display: flex; flex-direction: row; gap: 16px; align-items: center; padding: 8px;">
-        <MudIcon Icon="@Icons.Material.Filled.StickyNote2"/>
+        <MudIcon Icon="@Icons.Material.Filled.StickyNote2" Color="Color.Primary"/>
         <div>
             <MudTextField Typo="Typo.body1" @bind-Value="NoteText" Adornment="Adornment.End"
                           AdornmentIcon="@Icons.Material.Filled.Edit"></MudTextField>
             <MudText Typo="Typo.body2">@NoteSmallText</MudText>
         </div>
         <MudSpacer/>
-        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Primary" OnClick="NoteDeleted"></MudIconButton>
+        <MudTooltip Text="Delete">
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Primary" OnClick="@NoteDeleted"/>
+        </MudTooltip>
     </div>
 </MudCard>
 

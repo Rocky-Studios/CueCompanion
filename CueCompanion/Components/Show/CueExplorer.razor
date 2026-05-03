@@ -20,9 +20,10 @@
                     <MudText Typo="Typo.subtitle1">CUES</MudText>
                     @if (IsEditMode)
                     {
+                        <MudTooltip Text="Add new cue">
                         <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="@CreateNewCue"
-                                       Size="Size.Small">Add new
-                        </MudIconButton>
+                                       Size="Size.Small"/>
+                        </MudTooltip>
                     }
                     <MudText Typo="Typo.subtitle1">@ShowService.GetCuesInShow().Count() ITEMS</MudText>
                 </div>

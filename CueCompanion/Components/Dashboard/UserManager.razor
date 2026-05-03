@@ -32,17 +32,21 @@
                                 @if (perm == "") continue;
                                 <MudCard Class="d-inline" Style="padding: 0.1rem">
                                     @perm
-                                    <MudIconButton Class="d-inline p-0" Icon="@Icons.Material.Filled.Close"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => { RemovePermissionFromUser(context.UserID, perm); })"/>
+                                    <MudTooltip Text="Remove permission">
+                                        <MudIconButton Class="d-inline p-0" Icon="@Icons.Material.Filled.Close"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => { RemovePermissionFromUser(context.UserID, perm); })"/>
+                                    </MudTooltip>
                                 </MudCard>
                             }
                             @if (PermissionsNotAdded(context.Permissions).Length != 0)
                             {
                                 <MudMenu Dense="true" Style="padding: 0;">
                                     <ActivatorContent Context="activator_context">
-                                        <MudIconButton Size="Size.Small" OnClick="@activator_context.ToggleAsync"
-                                                       Icon="@Icons.Material.Filled.Add"/>
+                                        <MudTooltip Text="Add permission...">
+                                            <MudIconButton Size="Size.Small" OnClick="@activator_context.ToggleAsync"
+                                                           Icon="@Icons.Material.Filled.Add"/>
+                                        </MudTooltip>
                                     </ActivatorContent>
                                     <ChildContent>
                                         @foreach (string perm in PermissionsNotAdded(context.Permissions))

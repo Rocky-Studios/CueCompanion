@@ -10,14 +10,21 @@
     <div style="display:flex; align-items:center; gap:8px;">
         @if (HasControlPermissions)
         {
-            if (IsLiveMode)
-            {
-                <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStopShow">Stop</MudButton>
-            }
-            else
-            {
-                <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStartShow">Start</MudButton>
-            }
+            string? text = IsEditMode ? "Live mode cannot be changed while in edit mode." : IsLiveMode ? "Stop live mode" : "Start live mode";
+            <MudTooltip Text="@text">
+                @if (IsLiveMode)
+                {
+                    <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStopShow"
+                               Disabled="@IsEditMode">Stop
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStartShow"
+                               Disabled="@IsEditMode">Start
+                    </MudButton>
+                }
+            </MudTooltip>
         }
         <MudSelect T="Show?" Style="flex:1;" ToStringFunc="ShowToStringFunc" @bind-Value="@SelectedShowBound">
             <MudSelectItem Value="@null" T="Show?"/>
@@ -156,7 +163,7 @@
         PropertyNameCaseInsensitive = true,
     };
 
-    private bool IsLiveMode => ShowService.CurrentCuePosition != null;
+    private bool IsLiveMode => ShowService?.LiveModeCuePosition != null;
     public bool HasControlPermissions
     {
         get

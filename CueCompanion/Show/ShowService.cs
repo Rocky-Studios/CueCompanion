@@ -53,11 +53,11 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
     public  Mode CurrentMode = Mode.Live;
     private int? EditModeCuePosition;
 
-    private int?      LiveModeCuePosition;
-    public  Role[]    Roles = [];
-    public  Show[]    Shows = [];
-    public  CueTask[] Tasks = [];
-    public  Show?     CurrentlyViewingShow;
+    public int?      LiveModeCuePosition;
+    public Role[]    Roles = [];
+    public Show[]    Shows = [];
+    public CueTask[] Tasks = [];
+    public Show?     CurrentlyViewingShow;
 
     public async Task StartAsync(string baseUrl)
     {
