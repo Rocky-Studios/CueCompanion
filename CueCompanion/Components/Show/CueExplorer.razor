@@ -24,7 +24,7 @@
                                        Size="Size.Small">Add new
                         </MudIconButton>
                     }
-                    <MudText Typo="Typo.subtitle1">@ShowService.Cues.Length ITEMS</MudText>
+                    <MudText Typo="Typo.subtitle1">@ShowService.GetCuesInShow().Count() ITEMS</MudText>
                 </div>
                 <div Class="d-flex flex-column gap-1">
                     @foreach (Cue cue in GetSortedCues())
@@ -131,7 +131,7 @@
     {
         if (ShowService.CurrentlyViewingShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
         {
-            var cues            = GetSortedCues().ToArray();
+            var cues            = ShowService.GetCuesInShow().ToArray();
             int lastCuePosition = cues.Length > 0 ? cues.Max(c => c.Position) : 0;
             Cue newCue = new()
             {
@@ -145,11 +145,6 @@
     
     private IEnumerable<Cue> GetSortedCues()
     {
-        if (ShowService.CurrentlyViewingShow is { Id: { } showID })
-        {
-            return ShowService.Cues.Where(c => c.ShowId == showID).OrderBy(c => c.Position);
-        }
-
-        return [];
+        return ShowService.GetCuesInShow().OrderBy(c => c.Position);
     }
 }

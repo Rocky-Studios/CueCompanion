@@ -208,6 +208,11 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         return await hub.InvokeAsync<Result>("SelectShow", sessionKey, showID);
     }
 
+    public IEnumerable<Cue> GetCuesInShow()
+    {
+        return CurrentlyViewingShow is { Id: { } showID } ? Cues.Where(c => c.ShowId == showID) : [];
+    }
+
     public struct LiveInfo
     {
         public int LiveShowID;
