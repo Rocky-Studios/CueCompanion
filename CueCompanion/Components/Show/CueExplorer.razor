@@ -131,7 +131,8 @@
     {
         if (ShowService.CurrentlyViewingShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
         {
-            int lastCuePosition = ShowService.Cues.Length > 0 ? ShowService.Cues.Max(c => c.Position) : 0;
+            var cues            = GetSortedCues().ToArray();
+            int lastCuePosition = cues.Length > 0 ? cues.Max(c => c.Position) : 0;
             Cue newCue = new()
             {
                 Name = "New Cue",
