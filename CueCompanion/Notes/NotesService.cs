@@ -48,8 +48,9 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
 
         _notesHub.On("NoteUpdated", (Note newNote) =>
                                     {
-                                        int id = newNote.Id;
-                                        Notes.Remove(Notes.FirstOrDefault(n => n.Id == id));
+                                        int   id = newNote.Id;
+                                        Note? n  = Notes.FirstOrDefault(n => n.Id == id);
+                                        if (n is not null) Notes.Remove(n);
                                         Notes.Add(newNote);
                                         UpdateState();
                                     });

@@ -10,5 +10,6 @@ public class Permission
     [AutoIncrement]
     public int Id { get; set; }
 
-    [Column("name")] public string Name { get; set; }
+    [Column("name")]
+    public string Name { get; set; } = "Permission name";
 }

@@ -28,7 +28,7 @@ public static class PermissionManager
     public static Permission? GetPermissionByName(string name)
     {
         SQLiteConnection db = DatabaseHandler.Connection;
-        return db.Table<Permission>().FirstOrDefault(p => p.Name == name, null);
+        return db.Table<Permission>().FirstOrDefault(p => p?.Name == name, null);
     }
 
     public static Permission GetPermissionById(int id)
@@ -47,7 +47,7 @@ public static class PermissionManager
     {
         SQLiteConnection db = DatabaseHandler.Connection;
         UserPermission? userPermission = db.Table<UserPermission>()
-                                           .FirstOrDefault(up => up.UserId == user.Id && up.PermissionId == permission.Id, null);
+                                           .FirstOrDefault(up => up?.UserId == user.Id && up.PermissionId == permission.Id, null);
         return userPermission is { Value: true };
     }
 
@@ -55,7 +55,7 @@ public static class PermissionManager
     {
         SQLiteConnection db = DatabaseHandler.Connection;
         UserPermission? userPermission = db.Table<UserPermission>()
-                                           .FirstOrDefault(up => up.UserId == user.Id && up.PermissionId == permission.Id, null);
+                                           .FirstOrDefault(up => up?.UserId == user.Id && up.PermissionId == permission.Id, null);
         if (userPermission == null)
         {
             userPermission = new UserPermission

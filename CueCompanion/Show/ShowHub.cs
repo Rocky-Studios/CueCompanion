@@ -45,7 +45,7 @@ public class ShowHub : Hub
         if (!ShowManager.IsShowActive) return Result<ShowService.LiveInfo?>.Success(null);
         return new ShowService.LiveInfo
         {
-            CuePosition = ShowManager.CurrentCuePosition.Value,
+            CuePosition = ShowManager.CurrentCuePosition,
             LiveShowID  = ShowManager.CurrentShow!.Id,
         };
     }
@@ -164,7 +164,7 @@ public class ShowHub : Hub
             Type    objectType = Type.GetType(objectTypeAsString)!;
             object? obj        = newObject.Deserialize(objectType, _options);
 
-            var res = ShowManager.EditAction(method, obj, objectType, parameters);
+            var res = ShowManager.EditAction(method, obj!, objectType, parameters);
             _ = BroadcastShowUpdate();
             return res;
         }

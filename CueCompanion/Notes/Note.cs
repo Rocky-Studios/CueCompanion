@@ -17,7 +17,7 @@ public class Note
     public int? ShowId { get; set; }
 
     [Column("cue_list")]
-    public byte[] CueListAsBytes { get; set; }
+    public byte[] CueListAsBytes { get; set; } = [];
 
     public int[] CueList
     {
@@ -37,7 +37,7 @@ public class Note
     public NoteAssignment Assignment { get; set; }
 
     [Column("note_text")]
-    public string NoteText { get; set; }
+    public string NoteText { get; set; } = "New Note";
 }
 
 public enum NoteVisibility

@@ -142,7 +142,7 @@
             if (HasPermissions && Auth.SessionKey is {} key)
             {
                 Result<UserInfo[]> r = await UserManagement.GetUsers(key);
-                if (r.IsSuccess) _users = r.Value;
+                _users = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s)) ?? _users;
             }
             await InvokeAsync(StateHasChanged);
         };
@@ -213,7 +213,7 @@
         }
     }
 
-    private async Task DisableLoggingIn(int userID)
+    private async void DisableLoggingIn(int userID)
     {
         if (Auth.SessionKey is { } key)
         {
@@ -223,7 +223,7 @@
         }
     }
 
-    private async Task EnableLoggingIn(int userID)
+    private async void EnableLoggingIn(int userID)
     {
         if (Auth.SessionKey is { } key)
         {
@@ -233,7 +233,7 @@
         }
     }
 
-    private async Task DeleteUser(int userID)
+    private async void DeleteUser(int userID)
     {
         if (Auth.SessionKey is { } key)
         {
@@ -288,26 +288,26 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task AddPermissionToUser(int userID, string permission)
+    private async void AddPermissionToUser(int userID, string permission)
     {
         if (Auth.SessionKey is { } key)
         {
             int permissionID = Auth.PermissionsCache[permission];
             await UserManagement.AddPermissionToUser(Auth.SessionKey, userID, permissionID);
             Result<UserInfo[]> r = await UserManagement.GetUsers(key);
-            if (r.IsSuccess) _users = r.Value;
+            _users = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s)) ?? _users;
             await InvokeAsync(StateHasChanged);
         }
     }
-    
-    private async Task RemovePermissionFromUser(int userID, string permission)
+
+    private async void RemovePermissionFromUser(int userID, string permission)
     {
         if (Auth.SessionKey is { } key)
         {
             int permissionID = Auth.PermissionsCache[permission];
             await UserManagement.RemovePermissionFromUser(Auth.SessionKey, userID, permissionID);
-            Result<UserInfo[]> r = await UserManagement.GetUsers(key);
-            if (r.IsSuccess) _users = r.Value;
+            Result<UserInfo[]> r    = await UserManagement.GetUsers(key);
+            if (r.IsSuccess) _users = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -331,7 +331,7 @@
         };
         Auth.OnStateChanged += _stateChangeHandler;
 
-        _ = UserManagement.StartAsync(Navigation.BaseUri, UserProvider);
+        _ = UserManagement.StartAsync(Navigation.BaseUri, UserProvider!);
 
     }
 

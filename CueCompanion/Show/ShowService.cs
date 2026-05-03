@@ -175,7 +175,7 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
             object obj = jeN.Value.Deserialize(objectType, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-            });
+            })!;
             cast = obj as T;
         }
 
@@ -229,8 +229,8 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
 
     public struct LiveInfo
     {
-        public int LiveShowID;
-        public int CuePosition;
+        public int? LiveShowID;
+        public int? CuePosition;
     }
 }
 

@@ -5,24 +5,24 @@ namespace CueCompanion;
 [Table("users")]
 public class User
 {
-    private Permission[]? _permissions;
-
     [Column("id")]
     [PrimaryKey]
     [AutoIncrement]
     public int Id { get; set; }
 
     [Column("name")]
-    public string UserName { get; set; }
+    public string UserName { get; set; } = "Username";
 
     [Ignore]
-    public string Password { get; set; }
+    public string Password { get; set; } = "";
 
     [Column("passwordHash")]
-    public string PasswordHash { get; set; }
+    public string PasswordHash { get; set; } = "";
 
     [Column("canLogIn")]
     public bool CanLogin { get; set; } = true;
+
+    private Permission[]? _permissions;
 
     public void SetPermissions(Permission[] permissions)
     {

@@ -28,7 +28,7 @@
         }
         <MudSelect T="Show?" Style="flex:1;" ToStringFunc="ShowToStringFunc" @bind-Value="@SelectedShowBound">
             <MudSelectItem Value="@null" T="Show?"/>
-            @foreach (Show showSelectOption in ShowService.Shows)
+            @foreach (Show showSelectOption in ShowService!.Shows)
             {
                 <MudSelectItem @key="showSelectOption.Id" Value="@showSelectOption">
                     @ShowToStringFunc(showSelectOption)
@@ -47,7 +47,7 @@
             {
                 <MudTooltip Text="Delete">
                     <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"
-                                   OnClick="() => {DeleteShowButtonPressed(showID);}"/>
+                                   OnClick="@(() => { DeleteShowButtonPressed(showID); })"/>
                 </MudTooltip>
             }
             else
@@ -67,7 +67,7 @@
             </MudTooltip>
         }
     </div>
-    @if (ShowService.CurrentlyViewingShow is { } show)
+    @if (ShowService!.CurrentlyViewingShow is { } show)
     {
         <MudStack Row="true" Justify="Justify.SpaceBetween">
             <div>
@@ -193,11 +193,11 @@
 
     public Show? SelectedShowBound
     {
-        get => ShowService.CurrentlyViewingShow;
+        get => ShowService!.CurrentlyViewingShow;
         set
         {
-            ShowService.CurrentlyViewingShow = value;
-            SelectedShowChanged(value);
+            ShowService!.CurrentlyViewingShow = value;
+            _                                 = SelectedShowChanged(value);
         }
     }
 
@@ -218,7 +218,7 @@
 
     private void ShowInfoChanged()
     {
-        Show? show = ShowService.CurrentlyViewingShow;
+        Show? show = ShowService!.CurrentlyViewingShow;
         _updateLock                      = true;
         ShowService.CurrentlyViewingShow = show;
         _selectedDate                    = show?.Start.Date;
@@ -251,7 +251,7 @@
     private async Task ShowDateOrTimeChanged()
     {
         if (_updateLock) return;
-        if (ShowService.CurrentlyViewingShow is { } show && Auth.SessionKey is { } key)
+        if (ShowService!.CurrentlyViewingShow is { } show && Auth.SessionKey is { } key)
         {
             _updateLock = true;
             DateTime newStart = _selectedDate?.Add(_selectedStart ?? TimeSpan.Zero) ?? show.Start;
@@ -265,7 +265,7 @@
 
     private async Task ShowNameChanged(string newName)
     {
-        if (ShowService.CurrentlyViewingShow is { } show && Auth.SessionKey is { } key)
+        if (ShowService!.CurrentlyViewingShow is { } show && Auth.SessionKey is { } key)
         {
             show.Name = newName;
             await ShowService.SendEditModeAction(key, EditModeMethod.Update, show);
@@ -274,10 +274,7 @@
 
     ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (ShowService != null)
-        {
-            ShowService.OnStateChanged -= ShowInfoChanged;
-        }
+        ShowService!.OnStateChanged -= ShowInfoChanged;
 
         return ValueTask.CompletedTask;
     }
@@ -292,7 +289,7 @@
         };
         if (Auth.SessionKey is { } key)
         {
-            var r = await ShowService.SendEditModeAction(key, EditModeMethod.Create, newShow);
+            var r = await ShowService!.SendEditModeAction(key, EditModeMethod.Create, newShow);
             r.IfError(e => Dialogs.ShowError("Failed to create new show", e));
             if (r.Value is not { } returnedShow) return;
             if (ShowService.Shows.Any(s => s.Id == returnedShow.Id)) return; // Show already exists in list, no need to add
@@ -300,11 +297,11 @@
         }
     }
 
-    private async Task DeleteShowButtonPressed(int showId)
+    private async void DeleteShowButtonPressed(int showId)
     {
         if (Auth.SessionKey is { } key)
         {
-            Show show = ShowService.Shows.FirstOrDefault(s => s.Id == showId) ?? new Show { Id = showId };
+            Show show = ShowService!.Shows.FirstOrDefault(s => s.Id == showId) ?? new Show { Id = showId };
             if (ShowService.LiveModeShowID == showId)
             {
                 _ = Dialogs.ShowError("Cannot delete show", "You cannot delete a show that is currently live.");
@@ -323,14 +320,14 @@
 
     private bool IsShowToday(Show show, bool falseIfSelected)
     {
-        if (falseIfSelected && show.Id == ShowService.CurrentlyViewingShow?.Id) return false;
+        if (falseIfSelected && show.Id == ShowService!.CurrentlyViewingShow?.Id) return false;
         DateTime today = DateTime.Today;
         return show.Start.Date == today || show.End.Date == today;
     }
 
     private async Task SelectedShowChanged(Show? newShow)
     {
-        ShowService.CurrentlyViewingShow = newShow;
+        ShowService!.CurrentlyViewingShow = newShow;
         if (Auth.SessionKey is { } key)
         {
             (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
@@ -344,7 +341,7 @@
     {
         if (HasControlPermissions && Auth.SessionKey is { } key)
         {
-            if (ShowService.CurrentlyViewingShow == null)
+            if (ShowService!.CurrentlyViewingShow == null)
             {
                 _ = Dialogs.ShowError("Error starting show", "Please select a show to start.");
                 return;
@@ -359,7 +356,7 @@
     {
         if (HasControlPermissions && Auth.SessionKey is { } key)
         {
-            if (ShowService.CurrentlyViewingShow == null)
+            if (ShowService!.CurrentlyViewingShow == null)
             {
                 _ = Dialogs.ShowError("Error stopping show", "Please select a show to stop.");
                 return;
@@ -377,7 +374,7 @@
 
     private async Task OnExportShow()
     {
-        if (ShowService.CurrentlyViewingShow is not { } show)
+        if (ShowService!.CurrentlyViewingShow is not { } show)
         {
             _ = Dialogs.ShowError("Failed to export show", "Please select a show to export.");
             return;
@@ -439,7 +436,7 @@
 
             ShowBundle importedBundle = bundle.Value;
 
-            Result importResult = await ShowService.AddShowFromBundle(key, importedBundle);
+            Result importResult = await ShowService!.AddShowFromBundle(key, importedBundle);
             if (!importResult.IsSuccess)
             {
                 _ = Dialogs.ShowError("Failed to import show", importResult.Error ?? "Unknown error");

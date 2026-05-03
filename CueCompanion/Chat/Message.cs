@@ -17,5 +17,5 @@ public class Message
     public int Sender { get; set; }
 
     [Column("content")]
-    public string Content { get; set; }
+    public string Content { get; set; } = "Empty message";
 }

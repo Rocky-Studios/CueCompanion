@@ -7,7 +7,7 @@ namespace CueCompanion;
 
 public static class DatabaseHandler
 {
-    public static SQLiteConnection Connection { get; private set; }
+    public static SQLiteConnection Connection { get; private set; } = null!;
 
     public static void Init()
     {
@@ -58,7 +58,7 @@ public static class DatabaseHandler
                      });
     }
 
-    private static PeriodicTimer _purgeTimer;
+    private static PeriodicTimer _purgeTimer = null!;
 
     private static void PurgeUnreferencedItems()
     {

@@ -11,7 +11,7 @@ public class Cue
     public int Id { get; set; }
 
     [Column("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = "New Cue";
 
     [Column("show_id")]
     public int ShowId { get; set; }

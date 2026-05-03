@@ -148,12 +148,12 @@
         {
             CueTask newTask = new()
             {
-                CueId = _currentCue.Id,
+                CueId  = _currentCue!.Id,
                 RoleId = model.RoleId,
                 Tasks = model.Tasks
             };
             _currentTasks?.Add(newTask);
-            await ShowService?.SendEditModeAction(key, EditModeMethod.Create, newTask);
+            await ShowService!.SendEditModeAction(key, EditModeMethod.Create, newTask);
             model.Tasks = string.Empty;
             model.RoleId = null;
         }

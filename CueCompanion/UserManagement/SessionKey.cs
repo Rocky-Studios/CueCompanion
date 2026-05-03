@@ -11,7 +11,7 @@ public class SessionKey
     public int Id { get; set; }
 
     [Column("key")]
-    public string Key { get; set; }
+    public string Key { get; set; } = "";
 
     [Column("user_id")]
     public int UserID { get; set; }

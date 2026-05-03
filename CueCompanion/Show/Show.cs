@@ -11,7 +11,7 @@ public class Show
     public int Id { get; set; }
 
     [Column("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = "New show";
 
     [Column("start")]
     public DateTime Start { get; set; }

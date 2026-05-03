@@ -10,7 +10,6 @@
   <ItemGroup>
     <PackageReference Include="BitzArt.Blazor.Cookies.Server" Version="1.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="10.0.3" />
     <PackageReference Include="MudBlazor" Version="9.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.10.196-beta" />
   </ItemGroup>

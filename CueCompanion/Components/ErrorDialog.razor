@@ -15,10 +15,15 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; }
 
-    [Parameter] public string Title { get; set; }
-    [Parameter] public string Text { get; set; }
+    [CascadingParameter]
+    public required IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public required string Title { get; set; }
+
+    [Parameter]
+    public required string Text { get; set; }
 
     private void Submit()
     {
