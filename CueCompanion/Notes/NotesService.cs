@@ -1,4 +1,4 @@
-/*using CueCompanion.Notes;
+using CueCompanion.Notes;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CueCompanion.Services;
@@ -19,10 +19,11 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
                         if (note.Assignment is NoteAssignment.SingleCue or NoteAssignment.CueList)
 
                             // Skip note if the cues list does not include the current cue
-                            if (!note.CueList.Contains(currentCue.Id))
+                            if (!note.CueList.Contains(currentCue.Position))
                                 continue;
 
-            // TODO add show-specific cues
+            if (note.ShowId != null && note.ShowId != showService.CurrentlyViewingShow?.Id) continue;
+
             // Remove any duplicates
             if (currentlyVisibleNotes.Any(n => n.Id == note.Id)) continue;
             currentlyVisibleNotes.Add(note);
@@ -31,15 +32,16 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
         return currentlyVisibleNotes.ToArray();
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(string baseurl)
     {
         _notesHub = new HubConnectionBuilder()
-                   .WithUrl($"{Program.localhostURL}/api/notes")
+                   .WithUrl($"{baseurl}api/notes")
                    .WithAutomaticReconnect()
                    .Build();
 
         _notesHub.On("NoteAdded", (Note newNote) =>
                                   {
+                                      if (Notes.Any(n => n.Id == newNote.Id)) return;
                                       Notes.Add(newNote);
                                       UpdateState();
                                   });
@@ -52,11 +54,11 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
                                         UpdateState();
                                     });
 
-        _notesHub.On("NoteDelete", (int deletedNoteID) =>
-                                   {
-                                       Notes.RemoveAll(n => n.Id == deletedNoteID);
-                                       UpdateState();
-                                   });
+        _notesHub.On("NoteDeleted", (int deletedNoteID) =>
+                                    {
+                                        Notes.RemoveAll(n => n.Id == deletedNoteID);
+                                        UpdateState();
+                                    });
 
         await _notesHub.StartAsync();
         UpdateState();
@@ -64,7 +66,7 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
 
     public async Task<Result<Note[]>> GetAllNotes()
     {
-        Result<Note[]> notesResult =
+        var notesResult =
             await InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result<Note[]>>("GetAllNotes", key));
 
         if (notesResult.Value is { } notes)
@@ -85,5 +87,4 @@ public class NotesService(ShowService showService, AuthService auth) : AuthDepen
 
     public Task<Result> DeleteNote(int noteID) =>
         InvokeWithSessionAsync(key => _notesHub!.InvokeAsync<Result>("DeleteNote", key, noteID));
-}*/
-
+}

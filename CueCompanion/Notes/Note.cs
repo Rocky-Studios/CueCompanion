@@ -13,6 +13,9 @@ public class Note
     [Column("role_id")]
     public int? RoleId { get; set; }
 
+    [Column("show_id")]
+    public int? ShowId { get; set; }
+
     [Column("cue_list")]
     public byte[] CueListAsBytes { get; set; }
 

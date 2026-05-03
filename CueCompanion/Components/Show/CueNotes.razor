@@ -44,6 +44,7 @@
                             <MudSelectItem Value="NoteAssignment.SingleCue">Single cue</MudSelectItem>
                             <MudSelectItem Value="NoteAssignment.CueList">Multiple cues</MudSelectItem>
                             <MudSelectItem Value="NoteAssignment.AllCues">All cues</MudSelectItem>
+                            <MudSelectItem Value="NoteAssignment.AllShows">All shows</MudSelectItem>
                         </MudSelect>
                         <div>
                             @if (_assignment == NoteAssignment.SingleCue)
@@ -52,7 +53,7 @@
                                            Placeholder="Select a cue..." Dense="true">
                                     @foreach (Cue cue in ShowService.Cues)
                                     {
-                                        <MudSelectItem T="int?" Value="@cue.Id">@cue.Name (@cue.Position)
+                                        <MudSelectItem T="int?" Value="@cue.Position">@cue.Name (@cue.Position)
                                         </MudSelectItem>
                                     }
                                 </MudSelect>
@@ -196,6 +197,10 @@
             Assignment     = _assignment,
             CueListAsBytes = noteCues,
         };
+        if (_assignment is not NoteAssignment.AllShows)
+        {
+            note.ShowId = ShowService.CurrentlyViewingShow?.Id;
+        }
         Result noteResult = await NotesService.CreateNote(note);
         noteResult.IfError(e => Dialogs.ShowError("Failed to create note", e));
         _ = InvokeAsync(StateHasChanged);
