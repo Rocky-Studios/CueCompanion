@@ -36,7 +36,7 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
 
     public CueTask[] TasksForCurrentCue => Tasks.Where(t => t.CueId == CurrentCue?.Id).ToArray();
 
-    public Cue? CurrentCue => Cues.FirstOrDefault(c => c.Position == CurrentCuePosition);
+    public Cue? CurrentCue => Cues.FirstOrDefault(c => c.Position == CurrentCuePosition && c.ShowId == CurrentlyViewingShow?.Id);
 
     public Show? LiveModeShow => Shows.FirstOrDefault(s => s.Id == LiveModeShowID);
 
