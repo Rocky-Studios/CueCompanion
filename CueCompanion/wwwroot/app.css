@@ -159,6 +159,9 @@ span.nav-label
     z-index: 2400;
     width: fit-content;
     height: fit-content;
+    background-color: var(--mud-palette-background);
+    padding: 4px;
+    border-radius: 4px;
 }
 
 @media (max-width: 959.98px) {
