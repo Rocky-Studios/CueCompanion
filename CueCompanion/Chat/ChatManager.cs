@@ -26,8 +26,8 @@ public static class ChatManager
         Message message = new()
         {
             Timestamp = DateTime.Now,
-            Sender = user.Id,
-            Content = content
+            Sender    = user.Id,
+            Content   = content,
         };
 
         Db.Insert(message);

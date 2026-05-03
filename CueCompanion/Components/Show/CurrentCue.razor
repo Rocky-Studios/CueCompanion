@@ -5,19 +5,11 @@
     @if (ShowService is
         {
             TasksForCurrentCue: { } tasks,
-            Roles: { } roles
+            Roles             : { } roles,
         })
     {
-        
-        _currentCue = ShowService.CurrentCue;
-        if (IsEditMode)
-        {
-            _currentTasks = ShowService.Tasks.Where(t => t.CueId == _currentCue?.Id).ToList();
-        }
-        else
-        {
-            _currentTasks = tasks.ToList();
-        }
+        _currentCue   = ShowService.CurrentCue;
+        _currentTasks = IsEditMode ? ShowService.Tasks.Where(t => t.CueId == _currentCue?.Id).ToList() : tasks.ToList();
 
         if (_currentCue is not null)
         {
@@ -73,12 +65,12 @@
                 {
                     <MudCard Elevation="4" Outlined="true">
                         <MudText Typo="Typo.h3">New task</MudText>
-                        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                        <EditForm Model="@_model" OnValidSubmit="OnValidSubmit">
                             <DataAnnotationsValidator/>
-                            <MudTextField Label="Task" Class="mt-3" @bind-Value="model.Tasks"
-                                          For="@(() => model.Tasks)" InputType="InputType.Text"/>
-                            <MudSelect T="int?" Label="Role" Class="mt-3" @bind-Value="model.RoleId"
-                                       For="@(() => model.RoleId)" PopoverClass="role-select-popover">
+                            <MudTextField Label="Task" Class="mt-3" @bind-Value="_model.Tasks"
+                                          For="@(() => _model.Tasks)" InputType="InputType.Text"/>
+                            <MudSelect T="int?" Label="Role" Class="mt-3" @bind-Value="_model.RoleId"
+                                       For="@(() => _model.RoleId)" PopoverClass="role-select-popover">
                                 <MudSelectItem T="int?" Value="null">Unassigned</MudSelectItem>
                                 @foreach (Role role in roles)
                                 {
@@ -123,7 +115,7 @@
     private List<CueTask>? _currentTasks;
     private Action?        _showServiceStateChangedHandler;
 
-    private readonly NewTaskModel model = new();
+    private readonly NewTaskModel _model = new();
 
     private bool? AllRolesSelected => All();
 
@@ -149,13 +141,13 @@
             CueTask newTask = new()
             {
                 CueId  = _currentCue!.Id,
-                RoleId = model.RoleId,
-                Tasks = model.Tasks
+                RoleId = _model.RoleId,
+                Tasks  = _model.Tasks,
             };
             _currentTasks?.Add(newTask);
             await ShowService!.SendEditModeAction(key, EditModeMethod.Create, newTask);
-            model.Tasks = string.Empty;
-            model.RoleId = null;
+            _model.Tasks  = string.Empty;
+            _model.RoleId = null;
         }
     }
 

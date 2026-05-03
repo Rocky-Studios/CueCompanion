@@ -10,87 +10,129 @@ public class ShowHub : Hub
 
     private readonly JsonSerializerOptions _options = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
     };
 
-    public async Task<Result<int?>> GetCurrentShowID(string sessionKey)
+    public Task<Result<int?>> GetCurrentShowID(string sessionKey)
     {
-        var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
-        if (!r.IsSuccess) return r.Error!;
-        bool hasPermission = r.Value;
-        if (!hasPermission) return "Access denied.";
-
-        return ShowManager.CurrentShow?.Id;
-    }
-
-    public async Task<Result<(Show[] shows, Role[] roles)>> GetShowsAndRoles(string sessionKey)
-    {
-        var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
-        if (!r.IsSuccess) return r.Error!;
-        bool hasPermission = r.Value;
-        if (!hasPermission) return "Access denied.";
-
-        var roles = ShowManager.GetRoles();
-        var shows = ShowManager.GetShows();
-        return (shows, roles);
-    }
-
-    public async Task<Result<ShowService.LiveInfo?>> GetLiveInfo(string sessionKey)
-    {
-        var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
-        if (!r.IsSuccess) return r.Error!;
-        bool hasPermission = r.Value;
-        if (!hasPermission) return "Access denied.";
-
-        if (!ShowManager.IsShowActive) return Result<ShowService.LiveInfo?>.Success(null);
-        return new ShowService.LiveInfo
+        try
         {
-            CuePosition = ShowManager.CurrentCuePosition,
-            LiveShowID  = ShowManager.CurrentShow!.Id,
-        };
-    }
+            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            if (!r.IsSuccess) return Task.FromResult<Result<int?>>(r.Error!);
+            bool hasPermission = r.Value;
+            if (!hasPermission) return Task.FromResult<Result<int?>>("Access denied.");
 
-    public async Task<Result<(Cue[] cues, CueTask[] tasks)>> GetCuesForShow(string sessionKey, int showID)
-    {
-        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
-        if (!r.IsSuccess) return r.Error!;
-        bool hasPermission = r.Value;
-        if (!hasPermission) return "Access denied.";
-
-        var       cues  = ShowManager.GetCuesForShow(showID);
-        CueTask[] tasks = ShowManager.GetTasksForShow(showID);
-
-        return (cues, tasks);
-    }
-
-    public async Task<Result> StartShow(string sessionKey)
-    {
-        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
-        if (!r.IsSuccess) return r.Error!;
-        bool hasPermission = r.Value;
-        if (hasPermission)
-        {
-            Result r2 = ShowManager.StartShow();
-            _ = BroadcastShowUpdate();
-            return r2;
+            return Task.FromResult<Result<int?>>(ShowManager.CurrentShow?.Id);
         }
-
-        return "Access denied.";
+        catch (Exception exception)
+        {
+            return Task.FromException<Result<int?>>(exception);
+        }
     }
 
-    public async Task<Result> StopShow(string sessionKey)
+    public Task<Result<(Show[] shows, Role[] roles)>> GetShowsAndRoles(string sessionKey)
     {
-        var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
-        if (!r.IsSuccess) return r.Error!;
-        bool hasPermission = r.Value;
-        if (hasPermission)
+        try
         {
-            Result r2 = ShowManager.StopShow();
-            _ = BroadcastShowUpdate();
-            return r2;
-        }
+            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            if (!r.IsSuccess) return Task.FromResult<Result<(Show[] shows, Role[] roles)>>(r.Error!);
+            bool hasPermission = r.Value;
+            if (!hasPermission) return Task.FromResult<Result<(Show[] shows, Role[] roles)>>("Access denied.");
 
-        return "Access denied.";
+            var roles = ShowManager.GetRoles();
+            var shows = ShowManager.GetShows();
+            return Task.FromResult<Result<(Show[] shows, Role[] roles)>>((shows, roles));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result<(Show[] shows, Role[] roles)>>(exception);
+        }
+    }
+
+    public Task<Result<ShowService.LiveInfo?>> GetLiveInfo(string sessionKey)
+    {
+        try
+        {
+            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            if (!r.IsSuccess) return Task.FromResult<Result<ShowService.LiveInfo?>>(r.Error!);
+            bool hasPermission = r.Value;
+            if (!hasPermission) return Task.FromResult<Result<ShowService.LiveInfo?>>("Access denied.");
+
+            if (!ShowManager.IsShowActive) return Task.FromResult(Result<ShowService.LiveInfo?>.Success(null));
+            return Task.FromResult<Result<ShowService.LiveInfo?>>(new ShowService.LiveInfo
+            {
+                CuePosition = ShowManager.CurrentCuePosition,
+                LiveShowID  = ShowManager.CurrentShow!.Id,
+            });
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result<ShowService.LiveInfo?>>(exception);
+        }
+    }
+
+    public Task<Result<(Cue[] cues, CueTask[] tasks)>> GetCuesForShow(string sessionKey, int showID)
+    {
+        try
+        {
+            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            if (!r.IsSuccess) return Task.FromResult<Result<(Cue[] cues, CueTask[] tasks)>>(r.Error!);
+            bool hasPermission = r.Value;
+            if (!hasPermission) return Task.FromResult<Result<(Cue[] cues, CueTask[] tasks)>>("Access denied.");
+
+            var cues  = ShowManager.GetCuesForShow(showID);
+            var tasks = ShowManager.GetTasksForShow(showID);
+
+            return Task.FromResult<Result<(Cue[] cues, CueTask[] tasks)>>((cues, tasks));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result<(Cue[] cues, CueTask[] tasks)>>(exception);
+        }
+    }
+
+    public Task<Result> StartShow(string sessionKey)
+    {
+        try
+        {
+            var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+            if (!r.IsSuccess) return Task.FromResult<Result>(r.Error!);
+            bool hasPermission = r.Value;
+            if (hasPermission)
+            {
+                Result r2 = ShowManager.StartShow();
+                _ = BroadcastShowUpdate();
+                return Task.FromResult(r2);
+            }
+
+            return Task.FromResult<Result>("Access denied.");
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
+    }
+
+    public Task<Result> StopShow(string sessionKey)
+    {
+        try
+        {
+            var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+            if (!r.IsSuccess) return Task.FromResult<Result>(r.Error!);
+            bool hasPermission = r.Value;
+            if (hasPermission)
+            {
+                Result r2 = ShowManager.StopShow();
+                _ = BroadcastShowUpdate();
+                return Task.FromResult(r2);
+            }
+
+            return Task.FromResult<Result>("Access denied.");
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 
     public async Task BroadcastShowUpdate()
@@ -151,58 +193,86 @@ public class ShowHub : Hub
     }
 
 
-    public async Task<Result<object>> EditModeAction(string sessionKey,         EditModeMethod  method, JsonElement newObject,
-                                                     string objectTypeAsString, EditParameters? parameters)
+    public Task<Result<object>> EditModeAction(string sessionKey,         EditModeMethod  method, JsonElement newObject,
+                                               string objectTypeAsString, EditParameters? parameters)
     {
         try
         {
-            Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "EditShow");
-            if (!r.IsSuccess) return r.Error!;
-            bool hasPermission = r.Value;
-            if (!hasPermission) return "Access denied.";
+            try
+            {
+                var r = PermissionManager.UserHasPermission(sessionKey, "EditShow");
+                if (!r.IsSuccess) return Task.FromResult<Result<object>>(r.Error!);
+                bool hasPermission = r.Value;
+                if (!hasPermission) return Task.FromResult<Result<object>>("Access denied.");
 
-            Type    objectType = Type.GetType(objectTypeAsString)!;
-            object? obj        = newObject.Deserialize(objectType, _options);
+                Type    objectType = Type.GetType(objectTypeAsString)!;
+                object? obj        = newObject.Deserialize(objectType, _options);
 
-            var res = ShowManager.EditAction(method, obj!, objectType, parameters);
-            _ = BroadcastShowUpdate();
-            return res;
+                var res = ShowManager.EditAction(method, obj!, objectType, parameters);
+                _ = BroadcastShowUpdate();
+                return Task.FromResult(res);
+            }
+            catch (Exception e)
+            {
+                return Task.FromResult<Result<object>>(e.ToString());
+            }
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            return e.ToString();
+            return Task.FromException<Result<object>>(exception);
         }
     }
 
-    public async Task<Result> SelectShow(string sessionKey, int? showID)
+    public Task<Result> SelectShow(string sessionKey, int? showID)
     {
-        var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
-        if (!r.IsSuccess) return r.Error!;
-        bool hasPermission = r.Value;
-        if (!hasPermission) return "Access denied.";
+        try
+        {
+            var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+            if (!r.IsSuccess) return Task.FromResult<Result>(r.Error!);
+            bool hasPermission = r.Value;
+            if (!hasPermission) return Task.FromResult<Result>("Access denied.");
 
-        Result res = ShowManager.SelectShow(showID);
-        _ = BroadcastShowUpdate();
-        return res;
+            Result res = ShowManager.SelectShow(showID);
+            _ = BroadcastShowUpdate();
+            return Task.FromResult(res);
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 
-    public async Task<Result<ShowBundle>> GetShowBundle(string sessionKey, int showID)
+    public Task<Result<ShowBundle>> GetShowBundle(string sessionKey, int showID)
     {
-        var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
-        if (!r.IsSuccess) return Result<ShowBundle>.Failure(r.Error!);
-        bool hasPermission = r.Value;
-        if (!hasPermission) return Result<ShowBundle>.Failure("Access denied.");
+        try
+        {
+            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            if (!r.IsSuccess) return Task.FromResult(Result<ShowBundle>.Failure(r.Error!));
+            bool hasPermission = r.Value;
+            if (!hasPermission) return Task.FromResult(Result<ShowBundle>.Failure("Access denied."));
 
-        return ShowManager.BundleShow(showID);
+            return Task.FromResult(ShowManager.BundleShow(showID));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result<ShowBundle>>(exception);
+        }
     }
 
-    public async Task<Result> AddShowFromBundle(string sessionKey, ShowBundle showBundle)
+    public Task<Result> AddShowFromBundle(string sessionKey, ShowBundle showBundle)
     {
-        var r = PermissionManager.UserHasPermission(sessionKey, "EditShow");
-        if (!r.IsSuccess) return Result.Failure(r.Error!);
-        bool hasPermission = r.Value;
-        if (!hasPermission) return Result.Failure("Access denied.");
+        try
+        {
+            var r = PermissionManager.UserHasPermission(sessionKey, "EditShow");
+            if (!r.IsSuccess) return Task.FromResult(Result.Failure(r.Error!));
+            bool hasPermission = r.Value;
+            if (!hasPermission) return Task.FromResult(Result.Failure("Access denied."));
 
-        return ShowManager.AddShowFromBundle(showBundle);
+            return Task.FromResult(ShowManager.AddShowFromBundle(showBundle));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 }

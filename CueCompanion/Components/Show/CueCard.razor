@@ -58,7 +58,7 @@
             CueCardColor.Green => "cue-card-green",
             CueCardColor.Red => "cue-card-red",
             CueCardColor.DarkRed => "cue-card-dark-red",
-            _ => "cue-card-gray"
+            _                    => "cue-card-gray",
         };
     }
 
@@ -94,7 +94,7 @@
             {
                 var res = await ShowService.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
                 {
-                    Direction = -1
+                    Direction = -1,
                 });
                 res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
             });
@@ -109,7 +109,7 @@
             {
                 var res = await ShowService.SendEditModeAction(key, EditModeMethod.Move, Cue, new EditParameters
                 {
-                    Direction = 1
+                    Direction = 1,
                 });
                 res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
             });

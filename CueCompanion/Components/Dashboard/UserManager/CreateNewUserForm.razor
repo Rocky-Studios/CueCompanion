@@ -1,0 +1,69 @@
+@using System.ComponentModel.DataAnnotations
+@inject AuthService           Auth
+@inject UserManagementService UserManagement
+@inject SimpleDialogService   Dialogs
+
+<MudCard Elevation="10">
+    <EditForm Model="@_model" OnValidSubmit="OnValidSubmit">
+        <MudText Typo="Typo.h3" Style="margin-bottom: -16px">Create new user</MudText>
+        <MudTextField Label="Username" Class="mt-3" @bind-Value="_model.UserName"
+                      For="@(() => _model.UserName)" InputType="InputType.Text"/>
+        <MudTextField Label="Password" Class="mt-3" @bind-Value="_model.Password" For="@(() => _model.Password)"
+                      InputType="InputType.Password"/>
+
+        <DataAnnotationsValidator/>
+        <div>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                       Class="ml-auto mt-2">
+                Create User
+            </MudButton>
+        </div>
+    </EditForm>
+</MudCard>
+
+@code
+{
+
+    readonly CreateUserModel _model = new();
+
+    private class CreateUserModel
+    {
+        [Required]
+        public string UserName { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        string username = _model.UserName;
+        string password = _model.Password;
+
+        if (Auth.SessionKey is { } key)
+        {
+            Result r = await UserManagement.CreateNewUser(key, username, password);
+            if (r.Error is { } errorMessage)
+            {
+                await Dialogs.ShowError("Create new user failed", errorMessage);
+                return;
+            }
+
+            _model.UserName = "";
+            _model.Password = "";
+            var r2 = await UserManagement.GetUsers(key);
+            if (r2.Error is { } errorMessage2)
+            {
+                await Dialogs.ShowError("Failed to retrieve users", errorMessage2);
+                return;
+            }
+
+            if (r2 is { IsSuccess: true, Value: { } users })
+            {
+                UserManagement.UserInfos = users;
+            }
+
+            UserManagement.UpdateState();
+        }
+    }
+}

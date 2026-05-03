@@ -1,15 +1,16 @@
-@inject AuthService           Auth
-@inject UserManagementService UserManagement
-@using System.ComponentModel.DataAnnotations
 @using CueCompanion.UserManagement
 @implements IAsyncDisposable
+
+@inject AuthService           Auth
+@inject UserManagementService UserManagement
 @inject SimpleDialogService   Dialogs
+
 @if (UserProvider?.CurrentUser != null && HasPermissions)
 {
-<Panel>
-    <MudText Typo="Typo.h2">User Manager</MudText>
+    <Panel>
+        <MudText Typo="Typo.h2">User Manager</MudText>
         <MudCard Elevation="10" Style="max-height: 40vh; overflow-y: auto;">
-            <MudTable Items="_users" Dense="true" Elevation="0">
+            <MudTable Items="UserManagement.UserInfos" Dense="true" Elevation="0">
                 <ColGroup>
                     <col style="width: 12.5%;"/>
                     <col style="width: 15%;"/>
@@ -42,9 +43,9 @@
                             @if (PermissionsNotAdded(context.Permissions).Length != 0)
                             {
                                 <MudMenu Dense="true" Style="padding: 0;">
-                                    <ActivatorContent Context="activator_context">
+                                    <ActivatorContent Context="activatorContext">
                                         <MudTooltip Text="Add permission...">
-                                            <MudIconButton Size="Size.Small" OnClick="@activator_context.ToggleAsync"
+                                            <MudIconButton Size="Size.Small" OnClick="@activatorContext.ToggleAsync"
                                                            Icon="@Icons.Material.Filled.Add"/>
                                         </MudTooltip>
                                     </ActivatorContent>
@@ -95,123 +96,101 @@
                 </RowTemplate>
             </MudTable>
         </MudCard>
-    <MudDialog @bind-Visible="_isEditUsernameDialogOpen" Options="new DialogOptions { CloseOnEscapeKey = true }">
-        <TitleContent>
-            Edit username
-        </TitleContent>
-        <DialogContent>
-            <MudTextField Label="New username" @bind-Value="_editingUserName" Immediate="true" AutoFocus="true"/>
-        </DialogContent>
-        <DialogActions>
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
-                       OnClick="UsernameChangeDialogCancelButtonPressed">Cancel
-            </MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                       OnClick="UsernameChangeDialogConfirmButtonPressed">Confirm
-            </MudButton>
-        </DialogActions>
-    </MudDialog>
+        <MudDialog @bind-Visible="_isEditUsernameDialogOpen" Options="new DialogOptions { CloseOnEscapeKey = true }">
+            <TitleContent>
+                Edit username
+            </TitleContent>
+            <DialogContent>
+                <MudTextField Label="New username" @bind-Value="_editingUserName" Immediate="true" AutoFocus="true"/>
+            </DialogContent>
+            <DialogActions>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                           OnClick="@UsernameChangeDialogCancelButtonPressed">Cancel
+                </MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           OnClick="@UsernameChangeDialogConfirmButtonPressed">Confirm
+                </MudButton>
+            </DialogActions>
+        </MudDialog>
         <br/>
-        <MudCard Elevation="10">
-            <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
-                <MudText Typo="Typo.h3" Style="margin-bottom: -16px">Create new user</MudText>
-                <MudTextField Label="Username" Class="mt-3" @bind-Value="model.UserName"
-                              For="@(() => model.UserName)" InputType="InputType.Text"/>
-                <MudTextField Label="Password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)"
-                              InputType="InputType.Password"/>
-
-                <DataAnnotationsValidator/>
-                <div>
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                               Class="ml-auto mt-2">
-                        Create User
-                    </MudButton>
-                </div>
-            </EditForm>
-        </MudCard>
-</Panel>
+        <CreateNewUserForm/>
+    </Panel>
 }
+
 @code
 {
-    [CascadingParameter] public UserProvider? UserProvider { get; set; }
+    [CascadingParameter]
+    public UserProvider? UserProvider { get; set; }
+
+    private int?   _editingUserId;
+    private string _editingUserName         = string.Empty;
+    private string _editingOriginalUserName = string.Empty;
+    private bool   _isEditUsernameDialogOpen;
+
+    private Action? _stateChangeHandler;
 
     protected override Task OnInitializedAsync()
     {
         UserManagement.OnStateChanged += async () =>
-        {
-            if (HasPermissions && Auth.SessionKey is {} key)
-            {
-                Result<UserInfo[]> r = await UserManagement.GetUsers(key);
-                _users = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s)) ?? _users;
-            }
-            await InvokeAsync(StateHasChanged);
-        };
+                                         {
+                                             if (HasPermissions && Auth.SessionKey is { } key)
+                                             {
+                                                 var r = await UserManagement.GetUsers(key);
+                                                 UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
+                                             }
+
+                                             await InvokeAsync(StateHasChanged);
+                                         };
         return Task.CompletedTask;
     }
 
     private string GetPermissionsString(UserInfo user)
     {
-        return user.Permissions.Length>0 ? user.Permissions.Select(p => p.Name).Aggregate((a, b) => a + ", " + b) : "";
+        return user.Permissions.Length > 0 ? user.Permissions.Select(p => p.Name).Aggregate((a, b) => a + ", " + b) : "";
     }
-    
-    private Action? _stateChangeHandler;
+
+    private async void AddPermissionToUser(int userID, string permission)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            int permissionID = Auth.PermissionsCache[permission];
+            await UserManagement.AddPermissionToUser(Auth.SessionKey, userID, permissionID);
+            var r = await UserManagement.GetUsers(key);
+            UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async void RemovePermissionFromUser(int userID, string permission)
+    {
+        if (Auth.SessionKey is { } key)
+        {
+            int permissionID = Auth.PermissionsCache[permission];
+            await UserManagement.RemovePermissionFromUser(Auth.SessionKey, userID, permissionID);
+            var r                      = await UserManagement.GetUsers(key);
+            if (r.IsSuccess) UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string[] PermissionsNotAdded(Permission[] permissionsAdded)
+    {
+        var      perms         = Auth.PermissionsCache.Keys.ToList();
+        string[] existingPerms = permissionsAdded.Select(p => p.Name).ToArray();
+        return perms.Except(existingPerms).ToArray();
+    }
+
 
     public bool HasPermissions
     {
-        get 
+        get
         {
-            if(Auth.PermissionsCache.TryGetValue("ManageUsers", out int _) == false)
+            if (!Auth.PermissionsCache.TryGetValue("ManageUsers", out int _))
                 return false;
             return UserProvider?.CurrentUser?.HasPermission(Auth.PermissionsCache["ManageUsers"]) ?? false;
         }
     }
-    private UserInfo[] _users = [];
-    private bool       _isEditUsernameDialogOpen;
-    private int?       _editingUserId;
-    private string     _editingUserName         = string.Empty;
-    private string     _editingOriginalUserName = string.Empty;
-    
-    readonly CreateUserModel model = new();
-    
-    private class CreateUserModel
-    {
-        [Required] public string UserName { get; set; } = string.Empty;
 
-        [Required] public string Password { get; set; } = string.Empty;
-    }
-
-    private async Task OnValidSubmit(EditContext context)
-    {
-        string username = model.UserName;
-        string password = model.Password;
-
-        if (Auth.SessionKey is { } key)
-        {
-            Result r = await UserManagement.CreateNewUser(key, username, password);
-            if (r.Error is { } errorMessage)
-            {
-                await Dialogs.ShowError("Create new user failed", errorMessage);
-                return;
-            }
-
-            model.UserName = "";
-            model.Password = "";
-            Result<UserInfo[]> r2 = await UserManagement.GetUsers(key);
-            if (r2.Error is { } errorMessage2)
-            {
-                await Dialogs.ShowError("Failed to retrieve users", errorMessage2);
-                return;
-            }
-
-            if (r2.IsSuccess && r2.Value is { } users)
-            {
-                _users = users;
-            }
-
-            await InvokeAsync(StateHasChanged);
-            
-        }
-    }
 
     private async void DisableLoggingIn(int userID)
     {
@@ -238,26 +217,11 @@
         if (Auth.SessionKey is { } key)
         {
             await UserManagement.DeleteUser(key, userID);
-            
+
             UserManagement.UpdateState();
         }
     }
 
-    private void OpenUsernameChangeDialog(UserInfo user)
-    {
-        _editingUserId            = user.UserID;
-        _editingUserName          = user.UserName;
-        _editingOriginalUserName  = user.UserName;
-        _isEditUsernameDialogOpen = true;
-    }
-
-    private void UsernameChangeDialogCancelButtonPressed()
-    {
-        _isEditUsernameDialogOpen = false;
-        _editingUserId            = null;
-        _editingUserName          = string.Empty;
-        _editingOriginalUserName  = string.Empty;
-    }
 
     private async Task UsernameChangeDialogConfirmButtonPressed()
     {
@@ -277,10 +241,10 @@
             r.IfError(async void (errorMessage) => { await Dialogs.ShowError("Failed to change username", errorMessage); });
             if (r.IsSuccess)
             {
-                UserInfo u   = _users.FirstOrDefault(u => u.UserID == _editingUserId.Value);
-                int      idx = _users.IndexOf(u);
-                u.UserName  = newUserName;
-                _users[idx] = u;
+                UserInfo u   = UserManagement.UserInfos.FirstOrDefault(u => u.UserID == _editingUserId.Value);
+                int      idx = UserManagement.UserInfos.IndexOf(u);
+                u.UserName                    = newUserName;
+                UserManagement.UserInfos[idx] = u;
             }
         }
 
@@ -288,56 +252,49 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async void AddPermissionToUser(int userID, string permission)
+    private void OpenUsernameChangeDialog(UserInfo user)
     {
-        if (Auth.SessionKey is { } key)
-        {
-            int permissionID = Auth.PermissionsCache[permission];
-            await UserManagement.AddPermissionToUser(Auth.SessionKey, userID, permissionID);
-            Result<UserInfo[]> r = await UserManagement.GetUsers(key);
-            _users = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s)) ?? _users;
-            await InvokeAsync(StateHasChanged);
-        }
+        _editingUserId            = user.UserID;
+        _editingUserName          = user.UserName;
+        _editingOriginalUserName  = user.UserName;
+        _isEditUsernameDialogOpen = true;
     }
 
-    private async void RemovePermissionFromUser(int userID, string permission)
+    private void UsernameChangeDialogCancelButtonPressed()
     {
-        if (Auth.SessionKey is { } key)
-        {
-            int permissionID = Auth.PermissionsCache[permission];
-            await UserManagement.RemovePermissionFromUser(Auth.SessionKey, userID, permissionID);
-            Result<UserInfo[]> r    = await UserManagement.GetUsers(key);
-            if (r.IsSuccess) _users = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
-            await InvokeAsync(StateHasChanged);
-        }
+        _isEditUsernameDialogOpen = false;
+        _editingUserId            = null;
+        _editingUserName          = string.Empty;
+        _editingOriginalUserName  = string.Empty;
     }
 
-    private string[] PermissionsNotAdded(Permission[] permissionsAdded)
-    {
-        var perms = Auth.PermissionsCache.Keys.ToList();
-        var existingPerms = permissionsAdded.Select(p => p.Name).ToArray();
-        return perms.Except(existingPerms).ToArray();
-    }
 
     protected override void OnInitialized()
     {
         _stateChangeHandler = () =>
-        {
-            if (HasPermissions && Auth.SessionKey is {} key)
-            {
-                UserManagement.UpdateState();
-            }
-            else InvokeAsync(StateHasChanged);
-        };
+                              {
+                                  if (HasPermissions && Auth.SessionKey is { } key)
+                                  {
+                                      UserManagement.UpdateState();
+                                  }
+                                  else InvokeAsync(StateHasChanged);
+                              };
         Auth.OnStateChanged += _stateChangeHandler;
 
         _ = UserManagement.StartAsync(Navigation.BaseUri, UserProvider!);
-
     }
 
-    async ValueTask IAsyncDisposable.DisposeAsync()
+    ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (_stateChangeHandler != null)
-            Auth.OnStateChanged -= _stateChangeHandler;
+        try
+        {
+            if (_stateChangeHandler != null)
+                Auth.OnStateChanged -= _stateChangeHandler;
+            return ValueTask.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return ValueTask.FromException(exception);
+        }
     }
 }

@@ -17,14 +17,30 @@
 @code
 {
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        ShowService.OnStateChanged += ShowStateChanged;
+        try
+        {
+            ShowService.OnStateChanged += ShowStateChanged;
+            return Task.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException(exception);
+        }
     }
 
-    async ValueTask IAsyncDisposable.DisposeAsync()
+    ValueTask IAsyncDisposable.DisposeAsync()
     {
-        ShowService.OnStateChanged -= ShowStateChanged;
+        try
+        {
+            ShowService.OnStateChanged -= ShowStateChanged;
+            return ValueTask.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return ValueTask.FromException(exception);
+        }
     }
 
     private void ShowStateChanged()

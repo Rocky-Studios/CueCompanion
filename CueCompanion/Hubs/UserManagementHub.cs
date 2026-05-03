@@ -6,41 +6,100 @@ namespace CueCompanion.Hubs;
 
 public class UserManagementHub : Hub
 {
-    public async Task<Result<UserInfo[]>> GetUsers(string sessionKey)
+    public Task<Result<UserInfo[]>> GetUsers(string sessionKey)
     {
-        return UserManager.GetUsers(sessionKey);
+        try
+        {
+            return Task.FromResult(UserManager.GetUsers(sessionKey));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result<UserInfo[]>>(exception);
+        }
     }
 
-    public async Task<Result> CreateNewUser(string sessionKey, string userName, string password)
+    public Task<Result> CreateNewUser(string sessionKey, string userName, string password)
     {
-        return UserManager.CreateNewUser(sessionKey, userName, password);
+        try
+        {
+            return Task.FromResult(UserManager.CreateNewUser(sessionKey, userName, password));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 
-    public async Task<Result> DeleteUser(string sessionKey, int userId)
+    public Task<Result> DeleteUser(string sessionKey, int userId)
     {
-        return UserManager.DeleteUser(sessionKey, userId);
+        try
+        {
+            return Task.FromResult(UserManager.DeleteUser(sessionKey, userId));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 
-    public async Task<Result> RenameUser(string sessionKey, int userID, string newUserName) => UserManager.RenameUser(sessionKey, userID, newUserName);
-
-    public async Task<Result> AddPermissionToUser(string sessionKey, int userID, int permissionID)
+    public Task<Result> RenameUser(string sessionKey, int userID, string newUserName)
     {
-        return UserManager.AddPermissionToUser(sessionKey, userID, permissionID);
+        try
+        {
+            return Task.FromResult(UserManager.RenameUser(sessionKey, userID, newUserName));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 
-    public async Task<Result> RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
+    public Task<Result> AddPermissionToUser(string sessionKey, int userID, int permissionID)
     {
-        return UserManager.RemovePermissionFromUser(sessionKey, userID, permissionID);
+        try
+        {
+            return Task.FromResult(UserManager.AddPermissionToUser(sessionKey, userID, permissionID));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 
-    public async Task<Result> EnableLoggingInForUser(string sessionKey, int userID)
+    public Task<Result> RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
     {
-        return UserManager.EnableLoggingInForUser(sessionKey, userID);
+        try
+        {
+            return Task.FromResult(UserManager.RemovePermissionFromUser(sessionKey, userID, permissionID));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 
-    public async Task<Result> DisableLoggingInForUser(string sessionKey, int userID)
+    public Task<Result> EnableLoggingInForUser(string sessionKey, int userID)
     {
-        return UserManager.DisableLoggingInForUser(sessionKey, userID);
+        try
+        {
+            return Task.FromResult(UserManager.EnableLoggingInForUser(sessionKey, userID));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
+    }
+
+    public Task<Result> DisableLoggingInForUser(string sessionKey, int userID)
+    {
+        try
+        {
+            return Task.FromResult(UserManager.DisableLoggingInForUser(sessionKey, userID));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result>(exception);
+        }
     }
 
     public async Task<Result> ChangePassword(string sessionKey, string currentPassword, string newPassword)

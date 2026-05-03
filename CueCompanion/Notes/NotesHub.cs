@@ -12,9 +12,16 @@ public class NotesHub : Hub
         return r;
     }
 
-    public async Task<Result<Note[]>> GetAllNotes(string sessionKey)
+    public Task<Result<Note[]>> GetAllNotes(string sessionKey)
     {
-        return NoteManager.GetNotes(sessionKey);
+        try
+        {
+            return Task.FromResult(NoteManager.GetNotes(sessionKey));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Result<Note[]>>(exception);
+        }
     }
 
     public async Task<Result> UpdateNote(string sessionKey, Note newNote)

@@ -8,6 +8,7 @@ public class UserManagementService : StateSubscriberService
 {
     private HubConnection? _userManagementHub;
     private UserProvider?  _userProvider;
+    public  UserInfo[]     UserInfos = [];
 
     public async Task StartAsync(string baseUrl, UserProvider userProvider)
     {

@@ -5,5 +5,5 @@ public enum CueCardColor
     Gray,
     Red,
     DarkRed,
-    Green
+    Green,
 }

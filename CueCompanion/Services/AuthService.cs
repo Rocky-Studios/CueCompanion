@@ -6,7 +6,7 @@ public class AuthService : StateSubscriberService
 {
     public          User?                   User       { get; private set; }
     public          string?                 SessionKey { get; set; }
-    public          bool                    isLoading  { get; set; } = false;
+    public          bool                    IsLoading  { get; set; } = false;
     public readonly Dictionary<string, int> PermissionsCache = new();
     private         HubConnection?          _authHub;
 
@@ -29,10 +29,18 @@ public class AuthService : StateSubscriberService
         await GetPermissionsAsync();
     }
 
-    public async Task ClearConnectionAsync()
+    public Task ClearConnectionAsync()
     {
-        User = null;
-        UpdateState();
+        try
+        {
+            User = null;
+            UpdateState();
+            return Task.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException(exception);
+        }
     }
 
     public async Task<Result<(User user, string sessionKey)>> ConnectAsync(string username, string password)
@@ -78,7 +86,7 @@ public class AuthService : StateSubscriberService
 
         Result<Permission[]> result = await _authHub.InvokeAsync<Result<Permission[]>>("GetPermissions");
 
-        if (result.IsSuccess && result.Value is { } perms)
+        if (result is { IsSuccess: true, Value: { } perms })
             foreach (Permission permission in perms)
                 PermissionsCache[permission.Name] = permission.Id;
 

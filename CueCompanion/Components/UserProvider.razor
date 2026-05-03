@@ -23,7 +23,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Auth.isLoading = true;
+        Auth.IsLoading = true;
 
         string? key = await GetSessionKey();
 
@@ -33,15 +33,22 @@
             res.GetValue(s => Dialogs.ShowError("Failed to connect with session key", s));
         }
 
-        Auth.isLoading = false;
+        Auth.IsLoading = false;
         Auth.UpdateState();
         OnStateChanged?.Invoke();
     }
 
-    public async Task Logout()
+    public void Logout()
     {
-        _ = RemoveSessionKey();
-        _ = Auth.ClearConnectionAsync();
+        try
+        {
+            _ = RemoveSessionKey();
+            _ = Auth.ClearConnectionAsync();
+        }
+        catch (Exception exception)
+        {
+            Task.FromException(exception);
+        }
     }
 
     public async Task<Result<(User user, string sessionKey)>> Connect(string sessionKey)

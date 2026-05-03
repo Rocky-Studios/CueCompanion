@@ -1,27 +1,27 @@
-@inject SimpleDialogService Dialogs
-@inject AuthService Auth
-@inject UserManagementService UserManagement
-@inject IDialogService DialogService
 @using System.ComponentModel.DataAnnotations
 @implements IAsyncDisposable
+
+@inject SimpleDialogService   Dialogs
+@inject AuthService           Auth
+@inject UserManagementService UserManagement
 
 <Panel>
     <MudText Typo="Typo.h2">Account</MudText>
     @if (Auth.User is not { } user)
     {
         <MudText Typo="Typo.h2">Login</MudText>
-        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+        <EditForm Model="@_model" OnValidSubmit="OnValidSubmit">
             <DataAnnotationsValidator/>
-            <MudTextField Label="Username" Class="mt-3" @bind-Value="model.UserName"
-                          For="@(() => model.UserName)" InputType="InputType.Text"/>
-            <MudTextField Label="Password" Class="mt-3" @bind-Value="model.Password" For="@(() => model.Password)"
+            <MudTextField Label="Username" Class="mt-3" @bind-Value="_model.UserName"
+                          For="@(() => _model.UserName)" InputType="InputType.Text"/>
+            <MudTextField Label="Password" Class="mt-3" @bind-Value="_model.Password" For="@(() => _model.Password)"
                           InputType="InputType.Password"/>
 
             <div>
                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                           Class="ml-auto mt-2" Disabled="isLoading">
+                           Class="ml-auto mt-2" Disabled="_isLoading">
                     Login
-                    @if (isLoading)
+                    @if (_isLoading)
                     {
                         <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
                     }
@@ -38,25 +38,25 @@
             Log out
         </MudButton>
 
-        <MudButton OnClick="@(() => isPasswordChangeOpen = true)" Variant="Variant.Outlined" Color="Color.Primary"
+        <MudButton OnClick="@(() => _isPasswordChangeOpen = true)" Variant="Variant.Outlined" Color="Color.Primary"
                    Class="ml-2 mt-2">
             Change password
         </MudButton>
-        <MudPopover Open="@isPasswordChangeOpen" Fixed="true" Class="px-4 pt-4" Style="min-width: 20vw">
+        <MudPopover Open="@_isPasswordChangeOpen" Fixed="true" Class="px-4 pt-4" Style="min-width: 20vw">
             <MudText Typo="Typo.h6">Change password</MudText>
             <MudTextField Label="Current password" Class="mt-3" InputType="InputType.Password"
-                          @bind-Value="currentPasswordField"/>
+                          @bind-Value="_currentPasswordField"/>
             <MudTextField Label="New password" Class="mt-3" InputType="InputType.Password"
-                          @bind-Value="newPasswordField"/>
+                          @bind-Value="_newPasswordField"/>
             <MudTextField Label="Confirm new password" Class="mt-3" InputType="InputType.Password"
-                          @bind-Value="confirmNewPasswordField"/>
+                          @bind-Value="_confirmNewPasswordField"/>
             <div>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto mt-2"
                            OnClick="@PasswordChanged">
                     Change password
                 </MudButton>
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="ml-auto mt-2"
-                           OnClick="@(() => isPasswordChangeOpen = false)">
+                           OnClick="@(() => _isPasswordChangeOpen = false)">
                     Close
                 </MudButton>
             </div>
@@ -70,13 +70,11 @@
     [CascadingParameter]
     public required UserProvider UserProvider { get; set; }
 
-    readonly LoginForm model = new();
-    bool isLoading;
-    bool isPasswordChangeOpen;
+    readonly LoginForm _model = new();
+    bool               _isLoading;
+    bool               _isPasswordChangeOpen;
 
-    string? currentPasswordField;
-    string? newPasswordField;
-    string? confirmNewPasswordField;
+    string? _currentPasswordField, _newPasswordField, _confirmNewPasswordField;
 
     public class LoginForm
     {
@@ -91,21 +89,37 @@
 
     protected override void OnInitialized()
     {
-        _stateChangeHandler = () => InvokeAsync(StateHasChanged);
+        _stateChangeHandler =  () => InvokeAsync(StateHasChanged);
         Auth.OnStateChanged += _stateChangeHandler;
-        isLoading = false;
+        _isLoading          =  false;
     }
 
-    async ValueTask IAsyncDisposable.DisposeAsync()
+    ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (_stateChangeHandler != null)
-            Auth.OnStateChanged -= _stateChangeHandler;
+        try
+        {
+            if (_stateChangeHandler != null)
+                Auth.OnStateChanged -= _stateChangeHandler;
+            return ValueTask.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return ValueTask.FromException(exception);
+        }
     }
 
 
-    private async Task OnLogout()
+    private Task OnLogout()
     {
-        await UserProvider.Logout();
+        try
+        {
+            UserProvider.Logout();
+            return Task.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException(exception);
+        }
     }
 
     private async Task OnValidSubmit(EditContext context)
@@ -116,50 +130,47 @@
             return;
         }
 
-        isLoading = true;
-        Result<(User user, string sessionKey)> result = await UserProvider.Connect(model.UserName, model.Password);
+        _isLoading = true;
+        var result = await UserProvider.Connect(_model.UserName, _model.Password);
         if (result.Error is { } error)
         {
             await Dialogs.ShowError("Login failed", error);
-            isLoading = false;
+            _isLoading = false;
             return;
         }
 
-        model.UserName = string.Empty;
-        model.Password = string.Empty;
+        _model.UserName = string.Empty;
+        _model.Password = string.Empty;
         string key = result.Value.sessionKey;
 
         await UserProvider.SetSessionKey(key);
 
         UserManagement.UpdateState();
 
-        isLoading = false;
+        _isLoading = false;
     }
 
-    private void PasswordChanged()
+    private async void PasswordChanged()
     {
-        Task.Run(async () =>
+        if (_newPasswordField != _confirmNewPasswordField)
         {
-            if (newPasswordField != confirmNewPasswordField)
-            {
-                await Dialogs.ShowError("Error", "New password and confirmation do not match");
-                return;
-            }
+            await Dialogs.ShowError("Error", "New password and confirmation do not match");
+            return;
+        }
 
-            if (currentPasswordField == null || newPasswordField == null)
-            {
-                await Dialogs.ShowError("Error", "Current and new password must be filled out");
-                return;
-            }
+        if (_currentPasswordField == null || _newPasswordField == null)
+        {
+            await Dialogs.ShowError("Error", "Current and new password must be filled out");
+            return;
+        }
 
 
-            Result r = await UserManagement.ChangePassword(Auth.SessionKey!, currentPasswordField, newPasswordField);
-            r.IfError(error => { Dialogs.ShowError("Error changing password", error); });
-            currentPasswordField = null;
-            newPasswordField = null;
-            confirmNewPasswordField = null;
-            isPasswordChangeOpen = false;
-        });
+        Result r = await UserManagement.ChangePassword(Auth.SessionKey!, _currentPasswordField, _newPasswordField);
+        r.IfError(error => { Dialogs.ShowError("Error changing password", error); });
+        _currentPasswordField    = null;
+        _newPasswordField        = null;
+        _confirmNewPasswordField = null;
+        _isPasswordChangeOpen    = false;
     }
 
 }

@@ -9,7 +9,7 @@
     </MudText>
     <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large"></MudIcon>
 }
-@if (Auth.isLoading)
+@if (Auth.IsLoading)
 {
     <MudProgressCircular Class="ms-1" Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
 }
@@ -24,10 +24,18 @@
         Auth.OnStateChanged += _stateChangeHandler;
     }
 
-    async ValueTask IAsyncDisposable.DisposeAsync()
+    ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (_stateChangeHandler != null)
-            Auth.OnStateChanged -= _stateChangeHandler;
+        try
+        {
+            if (_stateChangeHandler != null)
+                Auth.OnStateChanged -= _stateChangeHandler;
+            return ValueTask.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return ValueTask.FromException(exception);
+        }
     }
 
 }

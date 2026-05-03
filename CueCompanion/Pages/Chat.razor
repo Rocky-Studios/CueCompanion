@@ -2,7 +2,7 @@
 @inject AuthService         AuthService
 @inject ChatService         ChatService
 @inject SimpleDialogService Dialogs
-@inject IJSRuntime          JS
+@inject IJSRuntime          Js
 @implements IAsyncDisposable
 
 <PageTitle>Chat - Cue Companion</PageTitle>
@@ -21,7 +21,7 @@
         }
         else
         {
-            <div @ref="messagesContainer" style="max-height: 60vh; overflow-y: auto;">
+            <div @ref="_messagesContainer" style="max-height: 60vh; overflow-y: auto;">
                 <MudPaper Class="p-4">
                     @foreach (Message message in ChatService.Messages)
                     {
@@ -34,7 +34,7 @@
             </div>
             @if (_hasTypePermission)
             {
-                <MudTextField @bind-Value="@messageContent"></MudTextField>
+                <MudTextField @bind-Value="@_messageContent"></MudTextField>
                 <MudButton EndIcon="@Icons.Material.Filled.Send" OnClick="@OnSendButtonClicked">Send</MudButton>
             }
         }
@@ -44,11 +44,11 @@
 
 @code
 {
-    private string? messageContent;
-    private ElementReference messagesContainer;
-    private bool             shouldScrollToBottom;
-    private Action?          authStateChangedHandler;
-    private Action?          chatStateChangedHandler;
+    private string?          _messageContent;
+    private ElementReference _messagesContainer;
+    private bool             _shouldScrollToBottom;
+    private Action?          _authStateChangedHandler;
+    private Action?          _chatStateChangedHandler;
 
 
     private bool _hasViewPermission, _hasTypePermission;
@@ -56,14 +56,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        authStateChangedHandler = AuthServiceOnOnStateChanged();
-        chatStateChangedHandler = ChatServiceOnOnStateChanged();
+        _authStateChangedHandler = AuthServiceOnOnStateChanged();
+        _chatStateChangedHandler = ChatServiceOnOnStateChanged();
 
-        if (AuthService != null) AuthService.OnStateChanged += authStateChangedHandler;
-        if (ChatService != null) ChatService.OnStateChanged += chatStateChangedHandler;
+        if (AuthService != null) AuthService.OnStateChanged += _authStateChangedHandler;
+        if (ChatService != null) ChatService.OnStateChanged += _chatStateChangedHandler;
 
         if (ChatService != null) await ChatService.StartAsync(Navigation.BaseUri);
-        shouldScrollToBottom = true;
+        _shouldScrollToBottom = true;
 
 
         AuthService!.OnStateChanged += () =>
@@ -85,10 +85,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!shouldScrollToBottom) return;
+        if (!_shouldScrollToBottom) return;
 
-        shouldScrollToBottom = false;
-        await JS.InvokeVoidAsync("cueCompanionChat.scrollToBottom", messagesContainer);
+        _shouldScrollToBottom = false;
+        await Js.InvokeVoidAsync("cueCompanionChat.scrollToBottom", _messagesContainer);
     }
 
     private Action AuthServiceOnOnStateChanged()
@@ -97,7 +97,7 @@
                {
                    InvokeAsync(StateHasChanged);
                    if (AuthService.SessionKey is { } key) ChatService?.GetAllMessages(key);
-                   shouldScrollToBottom = true;
+                   _shouldScrollToBottom = true;
                };
     }
 
@@ -121,7 +121,7 @@
             }
         }
 
-        shouldScrollToBottom = true;
+        _shouldScrollToBottom = true;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -133,19 +133,19 @@
             return;
         }
 
-        if (!string.IsNullOrEmpty(messageContent) && AuthService.SessionKey is { } key)
+        if (!string.IsNullOrEmpty(_messageContent) && AuthService.SessionKey is { } key)
         {
-            if (ChatService != null) await ChatService.SendMessage(key, messageContent);
-            messageContent = string.Empty;
-            shouldScrollToBottom = true;
+            if (ChatService != null) await ChatService.SendMessage(key, _messageContent);
+            _messageContent       = string.Empty;
+            _shouldScrollToBottom = true;
         }
     }
 
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (AuthService != null && authStateChangedHandler != null) AuthService.OnStateChanged -= authStateChangedHandler;
-        if (ChatService != null && chatStateChangedHandler != null) ChatService.OnStateChanged -= chatStateChangedHandler;
+        if (AuthService != null && _authStateChangedHandler != null) AuthService.OnStateChanged -= _authStateChangedHandler;
+        if (ChatService != null && _chatStateChangedHandler != null) ChatService.OnStateChanged -= _chatStateChangedHandler;
         if (ChatService != null) await ChatService.DisposeAsync();
     }
 }

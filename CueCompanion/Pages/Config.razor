@@ -1,8 +1,6 @@
 @page "/config"
 @using CueCompanion.Components.Dashboard
 @inject AuthService AuthService
-@inject ShowService ShowService
-@inject ConfigService ConfigService
 
 <PageTitle>Config - Cue Companion</PageTitle>
 
@@ -32,20 +30,21 @@
 {
     private bool _hasPermission;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        AuthService.OnStateChanged += () =>
+        try
         {
-            if (AuthService.User != null)
-            {
-                _hasPermission = AuthService.HasPermission("Admin");
-            }
-            else
-            {
-                _hasPermission = false;
-            }
+            AuthService.OnStateChanged += () =>
+                                          {
+                                              _hasPermission = AuthService.User != null && AuthService.HasPermission("Admin");
 
-            InvokeAsync(StateHasChanged);
-        };
+                                              InvokeAsync(StateHasChanged);
+                                          };
+            return Task.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException(exception);
+        }
     }
 }

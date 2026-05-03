@@ -39,26 +39,34 @@
 
     private bool _hasViewShowPermissions, _hasViewChatPermissions, _hasAdminPermissions;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        AuthService.OnStateChanged += () =>
-                                      {
-                                          if (AuthService.User != null)
+        try
+        {
+            AuthService.OnStateChanged += () =>
                                           {
-                                              _hasViewShowPermissions = AuthService.HasPermission("ViewShow");
-                                              _hasViewChatPermissions = AuthService.HasPermission("ViewChat");
-                                              _hasAdminPermissions    = AuthService.HasPermission("Admin");
-                                          }
-                                          else
-                                          {
-                                              // Set to true to prevent unnecessary icon movement, pages independently deny access anyway
-                                              _hasViewShowPermissions = true;
-                                              _hasViewChatPermissions = true;
-                                              _hasAdminPermissions    = true;
-                                          }
+                                              if (AuthService.User != null)
+                                              {
+                                                  _hasViewShowPermissions = AuthService.HasPermission("ViewShow");
+                                                  _hasViewChatPermissions = AuthService.HasPermission("ViewChat");
+                                                  _hasAdminPermissions    = AuthService.HasPermission("Admin");
+                                              }
+                                              else
+                                              {
+                                                  // Set to true to prevent unnecessary icon movement, pages independently deny access anyway
+                                                  _hasViewShowPermissions = true;
+                                                  _hasViewChatPermissions = true;
+                                                  _hasAdminPermissions    = true;
+                                              }
 
-                                          InvokeAsync(StateHasChanged);
-                                      };
+                                              InvokeAsync(StateHasChanged);
+                                          };
+            return Task.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException(exception);
+        }
     }
 
 }

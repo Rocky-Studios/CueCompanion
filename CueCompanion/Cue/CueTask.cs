@@ -17,5 +17,5 @@ public class CueTask
     public int? RoleId { get; set; } // Used to assign a task to a specific role, or null to assign to all roles
 
     [Column("tasks")]
-    public string? Tasks { get; set; }
+    public string Tasks { get; set; } = "New task";
 }

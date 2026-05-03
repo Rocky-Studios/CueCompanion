@@ -12,9 +12,16 @@ public class ChatHub : Hub
         await Clients.All.SendAsync("MessageSent", message);
     }
 
-    public async Task<Message[]> GetAllMessages(string sessionKey)
+    public Task<Message[]> GetAllMessages(string sessionKey)
     {
-        Message[] messages = ChatManager.GetAllMessages(sessionKey);
-        return messages;
+        try
+        {
+            var messages = ChatManager.GetAllMessages(sessionKey);
+            return Task.FromResult(messages);
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<Message[]>(exception);
+        }
     }
 }

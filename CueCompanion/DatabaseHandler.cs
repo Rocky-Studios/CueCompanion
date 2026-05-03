@@ -35,7 +35,7 @@ public static class DatabaseHandler
             User adminUser = new()
             {
                 UserName     = "admin",
-                PasswordHash = Hash.HashPassword("admin")
+                PasswordHash = Hash.HashPassword("admin"),
             };
             Connection.Insert(adminUser);
             Permission? adminPermission       = PermissionManager.GetPermissionByName("Admin");

@@ -10,7 +10,7 @@
         </MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+        <MudButton Color="Color.Primary" OnClick="@OnSubmit">OK</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -25,7 +25,7 @@
     [Parameter]
     public required string Text { get; set; }
 
-    private void Submit()
+    private void OnSubmit()
     {
         MudDialog.Close(DialogResult.Ok(true));
     }

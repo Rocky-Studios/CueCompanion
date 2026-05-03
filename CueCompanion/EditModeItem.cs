@@ -5,7 +5,7 @@ public enum EditModeMethod
     Create,
     Update,
     Delete,
-    Move
+    Move,
 }
 
 public struct EditParameters

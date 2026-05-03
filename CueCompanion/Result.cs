@@ -84,11 +84,11 @@ public sealed class ResultJsonConverter<T> : JsonConverter<Result<T>>
 
         return new JsonSerializerOptions(options)
         {
-            IncludeFields = true
+            IncludeFields = true,
         };
     }
 
-    public override Result<T>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override Result<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException("Expected start of object when deserializing Result.");

@@ -5,12 +5,12 @@ namespace CueCompanion;
 
 public static class ShowManager
 {
-    public static Show? CurrentShow => CurrentShowID.HasValue
-                                           ? _db.Table<Show>().FirstOrDefault(s => s.Id == CurrentShowID.Value)
+    public static Show? CurrentShow => _currentShowID.HasValue
+                                           ? _db.Table<Show>().FirstOrDefault(s => s.Id == _currentShowID.Value)
                                            : null;
 
     public static  bool IsShowActive { get; set; }
-    private static int? CurrentShowID;
+    private static int? _currentShowID;
     public static  int? CurrentCuePosition;
 
     public static Show? GetShowById(int showID)
@@ -25,7 +25,6 @@ public static class ShowManager
 
     public static void CreateDefaultRoles()
     {
-        SQLiteConnection _db = DatabaseHandler.Connection;
         Role[] roles =
         [
             new() { Name = "Director" },
@@ -34,7 +33,7 @@ public static class ShowManager
             new() { Name = "Graphics" },
             new() { Name = "Lights" },
             new() { Name = "Camera" },
-            new() { Name = "Aux" }
+            new() { Name = "Aux" },
         ];
 
         var existing = _db.Table<Role>().ToArray();
@@ -218,7 +217,7 @@ public static class ShowManager
     public static Result StopShow()
     {
         if (CurrentShow == null) return "Cannot stop show. No show loaded.";
-        CurrentShowID      = null;
+        _currentShowID     = null;
         IsShowActive       = false;
         CurrentCuePosition = null;
         return Result.Success();
@@ -273,14 +272,14 @@ public static class ShowManager
             {
                 if (newObject is Cue cue && parameters is
                     {
-                        Direction: var direction
+                        Direction: var direction,
                     })
                 {
                     Cue? cueBefore = _db.Table<Cue>().ToList()
                                         .FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position - 1);
                     Cue? cueAfter = _db.Table<Cue>().ToList()
                                        .FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position + 1);
-                    if (direction == -1 && cueBefore == null || direction == 1 && cueAfter == null)
+                    if ((direction == -1 && cueBefore == null) || (direction == 1 && cueAfter == null))
                     {
                         return "Cannot move cue further in that direction.";
                     }
@@ -368,7 +367,7 @@ public static class ShowManager
 
     public static Result SelectShow(int? showID)
     {
-        CurrentShowID      = showID;
+        _currentShowID     = showID;
         CurrentCuePosition = null;
         return Result.Success();
     }

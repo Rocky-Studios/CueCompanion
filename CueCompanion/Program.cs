@@ -5,98 +5,97 @@ using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
 
-namespace CueCompanion
+namespace CueCompanion;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        DatabaseHandler.Init();
+
+        ShowManager.Init();
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        Console.WriteLine("Starting Cue Companion...");
+        Console.WriteLine("If you haven't already, specific application URL with the ASPNETCORE_URLS environment variable");
+
+        // Add services to the container.
+        StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
+        builder.Services.AddRazorComponents()
+               .AddInteractiveServerComponents();
+        builder.Services.AddScoped<AuthService>();
+        builder.Services.AddSingleton<AuthHub>();
+
+        builder.Services.AddScoped<UserManagementService>();
+        builder.Services.AddSingleton<UserManagementHub>();
+
+        builder.Services.AddScoped<ShowService>();
+        builder.Services.AddSingleton<ShowHub>();
+
+        builder.Services.AddScoped<ChatService>();
+        builder.Services.AddSingleton<ChatHub>();
+
+        builder.Services.AddScoped<ConfigService>();
+        builder.Services.AddSingleton<ConfigHub>();
+
+        builder.Services.AddScoped<NotesService>();
+        builder.Services.AddSingleton<NotesHub>();
+
+        builder.Services.AddScoped<SimpleDialogService>();
+
+        builder.Services.AddSignalR();
+        builder.Services.AddBlazorCookiesServerSideServices();
+        builder.Services.AddMudServices();
+
+        builder.Services.AddResponseCompression(opts =>
+                                                {
+                                                    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                                                        ["application/octet-stream"]);
+                                                });
+
+        WebApplication app = builder.Build();
+
+        // Configure the HTTP request pipeline.
+        if (!app.Environment.IsDevelopment())
         {
-            DatabaseHandler.Init();
+            app.UseExceptionHandler("/Error");
 
-            ShowManager.Init();
-            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            Console.WriteLine("Starting Cue Companion...");
-            Console.WriteLine("If you haven't already, specific application URL with the ASPNETCORE_URLS environment variable");
-
-            // Add services to the container.
-            StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
-            builder.Services.AddRazorComponents()
-                   .AddInteractiveServerComponents();
-            builder.Services.AddScoped<AuthService>();
-            builder.Services.AddSingleton<AuthHub>();
-
-            builder.Services.AddScoped<UserManagementService>();
-            builder.Services.AddSingleton<UserManagementHub>();
-
-            builder.Services.AddScoped<ShowService>();
-            builder.Services.AddSingleton<ShowHub>();
-
-            builder.Services.AddScoped<ChatService>();
-            builder.Services.AddSingleton<ChatHub>();
-
-            builder.Services.AddScoped<ConfigService>();
-            builder.Services.AddSingleton<ConfigHub>();
-
-            builder.Services.AddScoped<NotesService>();
-            builder.Services.AddSingleton<NotesHub>();
-
-            builder.Services.AddScoped<SimpleDialogService>();
-
-            builder.Services.AddSignalR();
-            builder.Services.AddBlazorCookiesServerSideServices();
-            builder.Services.AddMudServices();
-
-            builder.Services.AddResponseCompression(opts =>
-                                                    {
-                                                        opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                                                            ["application/octet-stream"]);
-                                                    });
-
-            WebApplication app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Error");
-
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-            app.UseHttpsRedirection();
-            app.UseAntiforgery();
-            app.MapHub<AuthHub>("/api/auth");
-            app.MapHub<UserManagementHub>("/api/user-management");
-            app.MapHub<ShowHub>("/api/show");
-            app.MapHub<ChatHub>("/api/chat");
-            app.MapHub<ConfigHub>("/api/config");
-            app.MapHub<NotesHub>("/api/notes");
-
-            app.UseStaticFiles();
-            app.MapStaticAssets();
-            app.MapRazorComponents<App>()
-               .AddInteractiveServerRenderMode();
-
-            app.Run();
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
         }
 
-        private static string? GetArgValue(string[] args, string key)
-        {
-            for (int i = 0; i < args.Length; i++)
-            {
-                // Supports: -url http://... and -url=http://...
-                if (string.Equals(args[i], key, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (i + 1 < args.Length) return args[i + 1];
-                    return null;
-                }
+        app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+        app.UseHttpsRedirection();
+        app.UseAntiforgery();
+        app.MapHub<AuthHub>("/api/auth");
+        app.MapHub<UserManagementHub>("/api/user-management");
+        app.MapHub<ShowHub>("/api/show");
+        app.MapHub<ChatHub>("/api/chat");
+        app.MapHub<ConfigHub>("/api/config");
+        app.MapHub<NotesHub>("/api/notes");
 
-                if (args[i].StartsWith(key + "=", StringComparison.OrdinalIgnoreCase))
-                    return args[i].Substring(key.Length + 1);
-            }
+        app.UseStaticFiles();
+        app.MapStaticAssets();
+        app.MapRazorComponents<App>()
+           .AddInteractiveServerRenderMode();
 
-            return null;
-        }
+        app.Run();
     }
+
+    //private static string? GetArgValue(string[] args, string key)
+    //{
+    //    for (int i = 0; i < args.Length; i++)
+    //    {
+    //        // Supports: -url http://... and -url=http://...
+    //        if (string.Equals(args[i], key, StringComparison.OrdinalIgnoreCase))
+    //        {
+    //            if (i + 1 < args.Length) return args[i + 1];
+    //            return null;
+    //        }
+    //
+    //        if (args[i].StartsWith(key + "=", StringComparison.OrdinalIgnoreCase))
+    //            return args[i].Substring(key.Length + 1);
+    //    }
+    //
+    //    return null;
+    //}
 }

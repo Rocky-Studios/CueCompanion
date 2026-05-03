@@ -22,8 +22,8 @@
         @if (HasViewPermissions)
         {
             <CascadingValue Value="ShowService">
-                <CascadingValue Name="IsEditMode" Value="isEditMode">
-                    <MudOverlay @bind-Visible="isEditMode" AutoClose="false"
+                <CascadingValue Name="IsEditMode" Value="_isEditMode">
+                    <MudOverlay @bind-Visible="_isEditMode" AutoClose="false"
                                 Style="z-index: 2000 !important; pointer-events: none;">
                         <div class="edit-mode-overlay">
                             <div class="edit-mode-label">
@@ -54,7 +54,7 @@
         <MudButton OnClick="@ToggleEditMode"
                    Class="edit-mode-button"
                    Variant="Variant.Filled"
-                   Color="@editButtonColor"
+                   Color="@EditButtonColor"
                    StartIcon="@Icons.Material.Filled.Edit"
                    Size="Size.Small"
                    Style="z-index: 2500 !important;">
@@ -87,17 +87,17 @@
     [CascadingParameter]
     public required UserProvider UserProvider { get; set; }
 
-    private bool  isEditMode;
-    private Action? userProviderStateChangedHandler;
-    private Color editButtonColor => isEditMode ? Color.Primary : Color.Default;
+    private bool    _isEditMode;
+    private Action? _userProviderStateChangedHandler;
+    private Color   EditButtonColor => _isEditMode ? Color.Primary : Color.Default;
 
     protected override async Task OnInitializedAsync()
     {
-        userProviderStateChangedHandler = HandleUserProviderStateChanged;
+        _userProviderStateChangedHandler = HandleUserProviderStateChanged;
 
         ShowService.OnStateChanged  += InvokeAsyncStateChanged;
         Auth.OnStateChanged         += InvokeAsyncStateChanged;
-        UserProvider.OnStateChanged += userProviderStateChangedHandler;
+        UserProvider.OnStateChanged += _userProviderStateChangedHandler;
 
         await ShowService.StartAsync(Navigation.BaseUri);
         await FetchShowInfo();
@@ -127,8 +127,8 @@
 
     private void ToggleEditMode()
     {
-        isEditMode              = !isEditMode;
-        ShowService.CurrentMode = isEditMode ? Mode.Edit : Mode.Live;
+        _isEditMode             = !_isEditMode;
+        ShowService.CurrentMode = _isEditMode ? Mode.Edit : Mode.Live;
         StateHasChanged();
     }
 
@@ -137,9 +137,9 @@
     {
         ShowService.OnStateChanged  -= InvokeAsyncStateChanged;
         Auth.OnStateChanged         -= InvokeAsyncStateChanged;
-        if (userProviderStateChangedHandler is not null)
+        if (_userProviderStateChangedHandler is not null)
         {
-            UserProvider.OnStateChanged -= userProviderStateChangedHandler;
+            UserProvider.OnStateChanged -= _userProviderStateChangedHandler;
         }
         await ShowService.DisposeAsync();
     }

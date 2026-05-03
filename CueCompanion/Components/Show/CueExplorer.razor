@@ -138,7 +138,7 @@
             {
                 Name = "New Cue",
                 ShowId = showID,
-                Position = lastCuePosition+1
+                Position = lastCuePosition + 1,
             };
             (await ShowService.SendEditModeAction(key, EditModeMethod.Create, newCue)).IfError(e => Dialogs.ShowError("Error creating new cue", e));
         }

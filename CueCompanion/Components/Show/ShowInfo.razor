@@ -2,7 +2,7 @@
 @inject SimpleDialogService Dialogs
 @using System.Text.Json
 @implements IAsyncDisposable
-@inject IJSRuntime          JSRuntime
+@inject IJSRuntime          JsRuntime
 
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
@@ -10,7 +10,7 @@
     <div style="display:flex; align-items:center; gap:8px;">
         @if (HasControlPermissions)
         {
-            string? text = IsEditMode ? "Live mode cannot be changed while in edit mode." : IsLiveMode ? "Stop live mode" : "Start live mode";
+            string text = IsEditMode ? "Live mode cannot be changed while in edit mode." : IsLiveMode ? "Stop live mode" : "Start live mode";
             <MudTooltip Text="@text">
                 @if (IsLiveMode)
                 {
@@ -59,11 +59,11 @@
             <MudTooltip Text="Create new">
                 <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
             </MudTooltip>
-            <InputFile id="@ImportInputId" style="display:none;" accept=".json,application/json"
-                       OnChange="OnImportFileSelected"/>
+            <InputFile id="@IMPORT_INPUT_ID" style="display:none;" accept=".json,application/json"
+                       OnChange="@OnImportFileSelected"/>
             <MudTooltip Text="Import">
                 <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileUpload"
-                               OnClick="OnFileUploadPressed"/>
+                               OnClick="@OnFileUploadPressed"/>
             </MudTooltip>
         }
     </div>
@@ -77,7 +77,7 @@
             </div>
             <div>
                 <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.FileDownload"
-                           Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="OnExportShow">
+                           Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportShow">
                     Export
                 </MudButton>
             </div>
@@ -156,7 +156,7 @@
 
 @code
 {
-    private const string ImportInputId = "show-info-import-input";
+    private const string IMPORT_INPUT_ID = "show-info-import-input";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -316,7 +316,7 @@
         }
     }
 
-    private string? ShowToStringFunc(Show? show) => show?.Name ?? "No show";
+    private string ShowToStringFunc(Show? show) => show?.Name ?? "No show";
 
     private bool IsShowToday(Show show, bool falseIfSelected)
     {
@@ -369,7 +369,7 @@
 
     private async Task OnFileUploadPressed()
     {
-        await JSRuntime.InvokeVoidAsync("cueCompanionShowInfo.openImportPicker", ImportInputId);
+        await JsRuntime.InvokeVoidAsync("cueCompanionShowInfo.openImportPicker", IMPORT_INPUT_ID);
     }
 
     private async Task OnExportShow()
@@ -401,7 +401,7 @@
         });
 
         string fileName = BuildExportFileName(show);
-        await JSRuntime.InvokeVoidAsync("cueCompanionShowInfo.downloadJsonFile", fileName, json);
+        await JsRuntime.InvokeVoidAsync("cueCompanionShowInfo.downloadJsonFile", fileName, json);
     }
 
     private static string BuildExportFileName(Show show)
