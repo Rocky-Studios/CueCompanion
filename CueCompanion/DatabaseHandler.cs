@@ -47,5 +47,41 @@ public static class DatabaseHandler
         }
 
         UserManager.RemoveExpiredSessionKeys();
+        _purgeTimer = new PeriodicTimer(TimeSpan.FromMinutes(10));
+        _ = Task.Run(async () =>
+                     {
+                         while (true)
+                         {
+                             PurgeUnreferencedItems();
+                             await _purgeTimer.WaitForNextTickAsync();
+                         }
+                     });
+    }
+
+    private static PeriodicTimer _purgeTimer;
+
+    private static void PurgeUnreferencedItems()
+    {
+        DateTime now = DateTime.Now;
+        Console.WriteLine($"Removing unreferenced items from the database... ({now.ToShortTimeString()})");
+
+        //Since deleted a show or a cue doesn't delete all the things associated with it, this is done here
+        Connection.Table<Cue>().ToList().ForEach(c =>
+                                                 {
+                                                     if (Connection.Table<Show>().FirstOrDefault(s => s.Id == c.ShowId) == null)
+                                                         Connection.Delete(c);
+                                                 });
+
+        Connection.Table<CueTask>().ToList().ForEach(ct =>
+                                                     {
+                                                         if (Connection.Table<Cue>().FirstOrDefault(c => c.Id == ct.CueId) == null)
+                                                             Connection.Delete(ct);
+                                                     });
+
+        Connection.Table<Note>().ToList().ForEach(n =>
+                                                  {
+                                                      if (Connection.Table<Show>().FirstOrDefault(s => s.Id == n.ShowId) == null)
+                                                          Connection.Delete(n);
+                                                  });
     }
 }
