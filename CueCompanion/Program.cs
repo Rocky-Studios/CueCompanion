@@ -15,12 +15,8 @@ namespace CueCompanion
 
             ShowManager.Init();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            string?               url     = GetArgValue(args, "-url");
-            if (!string.IsNullOrWhiteSpace(url)) builder.WebHost.UseUrls(url);
-
             Console.WriteLine("Starting Cue Companion...");
-            Console.WriteLine("Listening on: " + (url ?? "localhost"));
-
+            Console.WriteLine("If you haven't already, specific application URL with the ASPNETCORE_URLS environment variable");
 
             // Add services to the container.
             StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
