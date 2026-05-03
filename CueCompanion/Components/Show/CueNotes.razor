@@ -113,7 +113,7 @@
     {
         if (_assignment is NoteAssignment.SingleCue)
         {
-            return [singleCueAssignment.Value];
+            return [singleCueAssignment!.Value];
         }
 
         // The client will display regardless of the cue assignment, so no need to assign 
@@ -182,7 +182,24 @@
 
     private async Task CreateNote(string noteText, int? roleID)
     {
+        if (noteText.Length == 0)
+        {
+            _ = Dialogs.ShowError("Failed to create note", "Note text cannot be empty.");
+            return;
+        }
+
+        if (singleCueAssignment is null)
+        {
+            _ = Dialogs.ShowError("Failed to create note", "Please select a cue for the note.");
+            return;
+        }
         int[]  cues     = GetCueListAssignment();
+
+        if (cues.Length == 0 && _assignment is not (NoteAssignment.AllCues or NoteAssignment.AllShows))
+        {
+            _ = Dialogs.ShowError("Failed to create note", "Please select cues for the note.");
+            return;
+        }
         byte[] noteCues = new byte[cues.Length * sizeof(int)];
         for (int i = 0; i < cues.Length; i++)
         {
