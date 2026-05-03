@@ -226,6 +226,20 @@ public static class ShowManager
     public static Result<object> EditAction(EditModeMethod  method, object newObject, Type objectType,
                                             EditParameters? parameters)
     {
+        void ReorderCues(int showID)
+        {
+            var cues       = GetCuesForShow(showID);
+            var sortedCues = cues.OrderBy(c => c.Position).ToList();
+            if (sortedCues.Count == 0) return;
+
+            // Reorder cues to have sequential positions starting at 1.
+            for (int i = 0; i < sortedCues.Count; i++)
+            {
+                sortedCues[i].Position = i + 1;
+                _db.Update(sortedCues[i]);
+            }
+        }
+
         if (!(newObject.GetType() == objectType))
         {
             return "Type mismatch. Argument " + newObject + " is not of type" + objectType;
@@ -236,16 +250,22 @@ public static class ShowManager
             case EditModeMethod.Create:
             {
                 _db.Insert(newObject);
+                if (newObject is Cue cue)
+                    ReorderCues(cue.ShowId);
                 return newObject;
             }
             case EditModeMethod.Update:
             {
                 _db.Update(newObject);
+                if (newObject is Cue cue)
+                    ReorderCues(cue.ShowId);
                 return newObject;
             }
             case EditModeMethod.Delete:
             {
                 _db.Delete(newObject);
+                if (newObject is Cue cue)
+                    ReorderCues(cue.ShowId);
                 return Result.Success();
             }
             case EditModeMethod.Move:
