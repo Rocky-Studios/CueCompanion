@@ -50,15 +50,17 @@
 </MudContainer>
 @if (HasEditPermissions)
 {
-    <MudButton OnClick="@ToggleEditMode"
-               Class="edit-mode-button"
-               Variant="Variant.Filled"
-               Color="@editButtonColor"
-               StartIcon="@Icons.Material.Filled.Edit"
-               Size="Size.Small"
-               Style="z-index: 2500 !important;">
-        Edit
-    </MudButton>
+    <div class="edit-mode-button-container">
+        <MudButton OnClick="@ToggleEditMode"
+                   Class="edit-mode-button"
+                   Variant="Variant.Filled"
+                   Color="@editButtonColor"
+                   StartIcon="@Icons.Material.Filled.Edit"
+                   Size="Size.Small"
+                   Style="z-index: 2500 !important;">
+            Edit
+        </MudButton>
+    </div>
 }
 
 @code

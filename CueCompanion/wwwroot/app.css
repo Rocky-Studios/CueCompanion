@@ -152,11 +152,19 @@ span.nav-label
     color: white;
 }
 
-.edit-mode-button.mud-button.mud-button-filled {
+.edit-mode-button-container {
     position: fixed;
     bottom: 2rem;
     right: 2rem;
-    z-index: 999;
+    z-index: 2400;
+    width: fit-content;
+    height: fit-content;
+}
+
+@media (max-width: 959.98px) {
+    .edit-mode-button-container {
+        bottom: calc(2rem + 64px + env(safe-area-inset-bottom));
+    }
 }
 
 .no-padding-input .mud-input-slot {
