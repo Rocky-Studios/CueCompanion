@@ -1,16 +1,30 @@
+@inject AuthService AuthService
+
 <MudNavMenu Class="compact-nav">
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Analytics" Class="compact-nav-link">
         <span class="nav-label">Dashboard</span>
     </MudNavLink>
-    <MudNavLink Href="/show" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Apps" Class="compact-nav-link">
-        <span class="nav-label">Show</span>
-    </MudNavLink>
-    <MudNavLink Href="/chat" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Chat" Class="compact-nav-link">
-        <span class="nav-label">Chat</span>
-    </MudNavLink>
-    <MudNavLink Href="/config" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings" Class="compact-nav-link">
-        <span class="nav-label">Config</span>
-    </MudNavLink>
+    @if (_hasViewShowPermissions)
+    {
+        <MudNavLink Href="/show" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Apps"
+                    Class="compact-nav-link">
+            <span class="nav-label">Show</span>
+        </MudNavLink>
+    }
+    @if (_hasViewChatPermissions)
+    {
+        <MudNavLink Href="/chat" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Chat"
+                    Class="compact-nav-link">
+            <span class="nav-label">Chat</span>
+        </MudNavLink>
+    }
+    @if (_hasAdminPermissions)
+    {
+        <MudNavLink Href="/config" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings"
+                    Class="compact-nav-link">
+            <span class="nav-label">Config</span>
+        </MudNavLink>
+    }
     <MudNavLink Href="/about" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Info" Class="compact-nav-link">
         <span class="nav-label">About</span>
     </MudNavLink>
@@ -18,7 +32,32 @@
 
 @code {
 
+    [CascadingParameter]
+    public required UserProvider UserProvider { get; set; }
     [Parameter]
     public bool IsBottom { get; set; }
+
+    private bool _hasViewShowPermissions, _hasViewChatPermissions, _hasAdminPermissions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthService.OnStateChanged += () =>
+                                      {
+                                          if (AuthService.User != null)
+                                          {
+                                              _hasViewShowPermissions = AuthService.HasPermission("ViewShow");
+                                              _hasViewChatPermissions = AuthService.HasPermission("ViewChat");
+                                              _hasAdminPermissions    = AuthService.HasPermission("Admin");
+                                          }
+                                          else
+                                          {
+                                              _hasViewShowPermissions = false;
+                                              _hasViewChatPermissions = false;
+                                              _hasAdminPermissions    = false;
+                                          }
+
+                                          InvokeAsync(StateHasChanged);
+                                      };
+    }
 
 }

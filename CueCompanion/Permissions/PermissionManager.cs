@@ -14,7 +14,10 @@ public static class PermissionManager
             new() { Name = "ManageUsers" },
             new() { Name = "ViewShow" },
             new() { Name = "ControlShow" },
-            new() { Name = "EditShow" }
+            new() { Name = "EditShow" },
+            new() { Name = "ViewChat" },
+            new() { Name = "TypeChat" },
+            new() { Name = "ModChat" },
         ];
         Permission[] existingPermissions = db.Table<Permission>().ToArray();
         Permission[] permissionsToAdd =
@@ -44,7 +47,7 @@ public static class PermissionManager
     {
         SQLiteConnection db = DatabaseHandler.Connection;
         UserPermission? userPermission = db.Table<UserPermission>()
-            .FirstOrDefault(up => up.UserId == user.Id && up.PermissionId == permission.Id, null);
+                                           .FirstOrDefault(up => up.UserId == user.Id && up.PermissionId == permission.Id, null);
         return userPermission is { Value: true };
     }
 
@@ -52,14 +55,14 @@ public static class PermissionManager
     {
         SQLiteConnection db = DatabaseHandler.Connection;
         UserPermission? userPermission = db.Table<UserPermission>()
-            .FirstOrDefault(up => up.UserId == user.Id && up.PermissionId == permission.Id, null);
+                                           .FirstOrDefault(up => up.UserId == user.Id && up.PermissionId == permission.Id, null);
         if (userPermission == null)
         {
             userPermission = new UserPermission
             {
-                UserId = user.Id,
+                UserId       = user.Id,
                 PermissionId = permission.Id,
-                Value = value
+                Value        = value,
             };
             db.Insert(userPermission);
             return true;
@@ -76,9 +79,9 @@ public static class PermissionManager
         {
             SQLiteConnection db = DatabaseHandler.Connection;
             IEnumerable<Permission> permissions = from p in db.Table<Permission>()
-                join up in db.Table<UserPermission>() on p.Id equals up.PermissionId
-                where up.UserId == user.Id && up.Value
-                select p;
+                                                  join up in db.Table<UserPermission>() on p.Id equals up.PermissionId
+                                                  where up.UserId == user.Id && up.Value
+                                                  select p;
             return permissions.ToArray();
         }
         catch (Exception e)

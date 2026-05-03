@@ -15,19 +15,29 @@
     }
     else
     {
-        <div @ref="messagesContainer" style="max-height: 60vh; overflow-y: auto;">
-            <MudPaper Class="p-4">
-                @foreach (Message message in ChatService.Messages)
-                {
-                    ChatService.UserIdToNameCache.TryGetValue(message.Sender, out string? sender);
-                    <MudText>
-                        <b>@sender:</b> @message.Content
-                    </MudText>
-                }
-            </MudPaper>
-        </div>
-            <MudTextField @bind-Value="@messageContent"></MudTextField>
-            <MudButton EndIcon="@Icons.Material.Filled.Send" OnClick="@OnSendButtonClicked">Send</MudButton>
+        @if (!_hasViewPermission)
+        {
+            <MudAlert Severity="Severity.Error">Access denied.</MudAlert>
+        }
+        else
+        {
+            <div @ref="messagesContainer" style="max-height: 60vh; overflow-y: auto;">
+                <MudPaper Class="p-4">
+                    @foreach (Message message in ChatService.Messages)
+                    {
+                        ChatService.UserIdToNameCache.TryGetValue(message.Sender, out string? sender);
+                        <MudText>
+                            <b>@sender:</b> @message.Content
+                        </MudText>
+                    }
+                </MudPaper>
+            </div>
+            @if (_hasTypePermission)
+            {
+                <MudTextField @bind-Value="@messageContent"></MudTextField>
+                <MudButton EndIcon="@Icons.Material.Filled.Send" OnClick="@OnSendButtonClicked">Send</MudButton>
+            }
+        }
 
     }
 </MudContainer>
@@ -40,6 +50,10 @@
     private Action?          authStateChangedHandler;
     private Action?          chatStateChangedHandler;
 
+
+    private bool _hasViewPermission, _hasTypePermission;
+
+
     protected override async Task OnInitializedAsync()
     {
         authStateChangedHandler = AuthServiceOnOnStateChanged();
@@ -50,6 +64,23 @@
 
         if (ChatService != null) await ChatService.StartAsync(Navigation.BaseUri);
         shouldScrollToBottom = true;
+
+
+        AuthService.OnStateChanged += () =>
+                                      {
+                                          if (AuthService.User != null)
+                                          {
+                                              _hasViewPermission = AuthService.HasPermission("ViewChat");
+                                              _hasTypePermission = AuthService.HasPermission("TypeChat");
+                                          }
+                                          else
+                                          {
+                                              _hasViewPermission = false;
+                                              _hasTypePermission = false;
+                                          }
+
+                                          InvokeAsync(StateHasChanged);
+                                      };
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -96,6 +127,12 @@
 
     private async Task OnSendButtonClicked()
     {
+        if (!_hasTypePermission)
+        {
+            _ = Dialogs.ShowError("Permission denied", "You do not have permission to send messages in the chat.");
+            return;
+        }
+
         if (!string.IsNullOrEmpty(messageContent) && AuthService.SessionKey is { } key)
         {
             if (ChatService != null) await ChatService.SendMessage(key, messageContent);
