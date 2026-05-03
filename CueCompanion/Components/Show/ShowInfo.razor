@@ -1,6 +1,9 @@
-@inject AuthService Auth
+@inject AuthService         Auth
 @inject SimpleDialogService Dialogs
+@using System.Text.Json
 @implements IAsyncDisposable
+@inject IJSRuntime          JSRuntime
+
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
     <MudText Typo="Typo.h1">Show Info</MudText>
@@ -49,14 +52,29 @@
             <MudTooltip Text="Create new">
                 <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
             </MudTooltip>
+            <InputFile id="@ImportInputId" style="display:none;" accept=".json,application/json"
+                       OnChange="OnImportFileSelected"/>
+            <MudTooltip Text="Import">
+                <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileUpload"
+                               OnClick="OnFileUploadPressed"/>
+            </MudTooltip>
         }
     </div>
     @if (ShowService.CurrentlyViewingShow is { } show)
     {
-        <EditableText Label="Show Name:" @bind-Value="show.Name" IsEditMode="IsEditMode"
-                      OnValueChanged="ShowNameChanged"/>
-        <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
-
+        <MudStack Row="true" Justify="Justify.SpaceBetween">
+            <div>
+                <EditableText Label="Show Name:" @bind-Value="show.Name" IsEditMode="IsEditMode"
+                              OnValueChanged="ShowNameChanged"/>
+                <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
+            </div>
+            <div>
+                <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.FileDownload"
+                           Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="OnExportShow">
+                    Export
+                </MudButton>
+            </div>
+        </MudStack>
         <MudText Typo="Typo.body1">
             <br/>
             @show.Description
@@ -131,6 +149,13 @@
 
 @code
 {
+    private const string ImportInputId = "show-info-import-input";
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     private bool IsLiveMode => ShowService.CurrentCuePosition != null;
     public bool HasControlPermissions
     {
@@ -308,7 +333,6 @@
         ShowService.UpdateState();
     }
 
-
     private async Task OnStartShow()
     {
         if (HasControlPermissions && Auth.SessionKey is { } key)
@@ -336,6 +360,91 @@
 
             (await ShowService.StopShowAsync(key)).IfError(e => Dialogs.ShowError("Error stopping show",         e));
             (await ShowService.SelectShowAsync(key, null)).IfError(e => Dialogs.ShowError("Error stopping show", e));
+        }
+    }
+
+    private async Task OnFileUploadPressed()
+    {
+        await JSRuntime.InvokeVoidAsync("cueCompanionShowInfo.openImportPicker", ImportInputId);
+    }
+
+    private async Task OnExportShow()
+    {
+        if (ShowService.CurrentlyViewingShow is not { } show)
+        {
+            _ = Dialogs.ShowError("Failed to export show", "Please select a show to export.");
+            return;
+        }
+
+        if (Auth.SessionKey is not { } key)
+        {
+            _ = Dialogs.ShowError("Failed to export show", "No active session key was found.");
+            return;
+        }
+
+        var bundleResult = await ShowService.GetShowBundle(key, show.Id);
+        if (!bundleResult.IsSuccess)
+        {
+            _ = Dialogs.ShowError("Failed to export show", bundleResult.Error ?? "Unable to load the show bundle.");
+            return;
+        }
+
+        ShowBundle bundle = bundleResult.Value;
+
+        string json = JsonSerializer.Serialize(bundle, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        });
+
+        string fileName = BuildExportFileName(show);
+        await JSRuntime.InvokeVoidAsync("cueCompanionShowInfo.downloadJsonFile", fileName, json);
+    }
+
+    private static string BuildExportFileName(Show show)
+    {
+        string baseName     = string.IsNullOrWhiteSpace(show.Name) ? $"show-{show.Id}" : show.Name;
+        char[] invalidChars = Path.GetInvalidFileNameChars();
+        char[] chars        = baseName.Select(c => invalidChars.Contains(c) ? '_' : c).ToArray();
+        return $"{new string(chars)}.json";
+    }
+
+    private async Task OnImportFileSelected(InputFileChangeEventArgs args)
+    {
+        if (Auth.SessionKey is not { } key)
+        {
+            _ = Dialogs.ShowError("Failed to import show", "No active session key was found.");
+            return;
+        }
+
+        try
+        {
+            await using Stream stream = args.File.OpenReadStream(50 * 1024 * 1024);
+            ShowBundle?        bundle;
+            try
+            {
+                bundle = await JsonSerializer.DeserializeAsync<ShowBundle>(stream, JsonOptions);
+            }
+            catch (Exception e)
+            {
+                _ = Dialogs.ShowError("Failed to import show", $"The selected file is not a valid show. \n\n {e.Message}");
+                return;
+            }
+
+            ShowBundle importedBundle = bundle.Value;
+
+            Result importResult = await ShowService.AddShowFromBundle(key, importedBundle);
+            if (!importResult.IsSuccess)
+            {
+                _ = Dialogs.ShowError("Failed to import show", importResult.Error ?? "Unknown error");
+                return;
+            }
+
+            (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Show imported, but failed to refresh list",      e));
+            (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Show imported, but failed to refresh live info", e));
+        }
+        catch (Exception e)
+        {
+            _ = Dialogs.ShowError("Failed to import show", e.Message);
         }
     }
 }

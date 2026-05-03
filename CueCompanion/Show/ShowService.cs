@@ -213,6 +213,20 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         return CurrentlyViewingShow is { Id: { } showID } ? Cues.Where(c => c.ShowId == showID) : [];
     }
 
+    public async Task<Result<ShowBundle>> GetShowBundle(string sessionKey, int showID)
+    {
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
+
+        return await hub.InvokeAsync<Result<ShowBundle>>("GetShowBundle", sessionKey, showID);
+    }
+
+    public async Task<Result> AddShowFromBundle(string sessionKey, ShowBundle showBundle)
+    {
+        if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
+
+        return await hub.InvokeAsync<Result>("AddShowFromBundle", sessionKey, showBundle);
+    }
+
     public struct LiveInfo
     {
         public int LiveShowID;

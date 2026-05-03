@@ -185,4 +185,24 @@ public class ShowHub : Hub
         _ = BroadcastShowUpdate();
         return res;
     }
+
+    public async Task<Result<ShowBundle>> GetShowBundle(string sessionKey, int showID)
+    {
+        var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+        if (!r.IsSuccess) return Result<ShowBundle>.Failure(r.Error!);
+        bool hasPermission = r.Value;
+        if (!hasPermission) return Result<ShowBundle>.Failure("Access denied.");
+
+        return ShowManager.BundleShow(showID);
+    }
+
+    public async Task<Result> AddShowFromBundle(string sessionKey, ShowBundle showBundle)
+    {
+        var r = PermissionManager.UserHasPermission(sessionKey, "EditShow");
+        if (!r.IsSuccess) return Result.Failure(r.Error!);
+        bool hasPermission = r.Value;
+        if (!hasPermission) return Result.Failure("Access denied.");
+
+        return ShowManager.AddShowFromBundle(showBundle);
+    }
 }

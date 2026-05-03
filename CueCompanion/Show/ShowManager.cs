@@ -1,3 +1,4 @@
+using CueCompanion.Notes;
 using SQLite;
 
 namespace CueCompanion;
@@ -302,6 +303,67 @@ public static class ShowManager
             }
             default: return "Not implemented " + method + " " + objectType;
         }
+    }
+
+    public static Result<ShowBundle> BundleShow(int showID)
+    {
+        Show? show = _db.Table<Show>().FirstOrDefault(s => s.Id == showID);
+        if (show == null) return Result<ShowBundle>.Failure($"Show with ID {showID} not found.");
+
+        var cues  = GetCuesForShow(showID);
+        var notes = _db.Table<Note>().Where(n => n.ShowId == showID).ToArray();
+        var tasks = GetTasksForShow(showID);
+
+        return new ShowBundle
+        {
+            Show  = show,
+            Cues  = cues,
+            Notes = notes,
+            Tasks = tasks,
+        };
+    }
+
+    public static Result AddShowFromBundle(ShowBundle bundle)
+    {
+        try
+        {
+            bundle.Show.Id = 0; // Reset IDs to let the database assign a new one
+            _db.Insert(bundle.Show);
+            int                  showID   = bundle.Show.Id;
+            Dictionary<int, int> cueIdMap = new(); // Map old cue IDs to new ones
+
+            foreach (Cue bundleCue in bundle.Cues)
+            {
+                int oldId = bundleCue.Id;
+                bundleCue.ShowId = showID;
+                bundleCue.Id     = 0;
+                _db.Insert(bundleCue);
+                cueIdMap.Add(oldId, bundleCue.Id);
+            }
+
+            foreach (Note bundleNote in bundle.Notes)
+            {
+                bundleNote.ShowId = showID;
+                bundleNote.Id     = 0;
+                _db.Insert(bundleNote);
+            }
+
+            foreach (CueTask bundleTask in bundle.Tasks)
+            {
+                bundleTask.Id = showID;
+                bundleTask.Id = 0;
+                bundleTask.CueId = cueIdMap.TryGetValue(bundleTask.CueId, out int value)
+                                       ? value
+                                       : throw new Exception($"Cue ID {bundleTask.CueId} not found. Try re-exporting the show or manually fixing the file.");
+                _db.Insert(bundleTask);
+            }
+        }
+        catch (Exception e)
+        {
+            return Result.Failure("Error adding show from bundle: \n\t" + e.Message);
+        }
+
+        return Result.Success();
     }
 
     public static Result SelectShow(int? showID)
