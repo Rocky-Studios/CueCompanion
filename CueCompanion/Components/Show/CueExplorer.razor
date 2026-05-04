@@ -121,9 +121,6 @@
         {
             if (ShowService.CurrentCuePosition == cue.Position)
                 return CueCardColor.Green;
-            List<Cue> sortedByPosition = ShowService.Cues.OrderBy(c => c.Position).ToList();
-            if (sortedByPosition.Last().Position == cue.Position)
-                return CueCardColor.DarkRed;
             return CueCardColor.Gray;
         }
     }
