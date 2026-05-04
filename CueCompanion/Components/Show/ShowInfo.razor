@@ -109,11 +109,11 @@
                 </tr>
                 <tr>
                     <td>Start</td>
-                    <td>@show.Start.ToLongTimeString()</td>
+                    <td>@show.Start.ToShortTimeString()</td>
                 </tr>
                 <tr>
                     <td>End</td>
-                    <td>@show.End.ToLongTimeString()</td>
+                    <td>@show.End.ToShortTimeString()</td>
                 </tr>
             }
             else
@@ -138,8 +138,8 @@
                 </tr>
             }
             <tr>
-                <td>Active</td>
-                <td>@(ShowService.CurrentCuePosition == null ? "False" : "True")</td>
+                <td>Live</td>
+                <td>@(ShowService.IsLiveMode)</td>
             </tr>
             <tr>
                 <td>Number of Cues</td>
