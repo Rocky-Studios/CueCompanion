@@ -27,8 +27,14 @@
             </MudTooltip>
         }
         <MudSelect T="Show?" Style="flex:1;" ToStringFunc="ShowToStringFunc" @bind-Value="@SelectedShowBound">
-            <MudSelectItem Value="@null" T="Show?"/>
-            @foreach (Show showSelectOption in ShowService!.Shows)
+            @{
+                Show[] shows = ShowService!.Shows;
+            }
+            @if(shows.Length == 0 || SelectedShowBound == null)
+            {
+                <MudSelectItem Value="@null" T="Show?"/>
+            }
+            @foreach (Show showSelectOption in shows)
             {
                 <MudSelectItem @key="showSelectOption.Id" Value="@showSelectOption">
                     @ShowToStringFunc(showSelectOption)
