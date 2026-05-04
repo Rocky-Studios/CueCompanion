@@ -1,5 +1,6 @@
 @inject AuthService         Auth
 @inject SimpleDialogService Dialogs
+@using System.Globalization
 @using System.Text.Json
 @implements IAsyncDisposable
 @inject IJSRuntime          JsRuntime
@@ -118,7 +119,7 @@
                 <tr>
                     <td>Date</td>
                     <td>
-                        <MudDatePicker Date="@_selectedDate" DateChanged="OnDateChanged"/>
+                        <MudDatePicker Date="@_selectedDate" DateChanged="OnDateChanged" Culture="@CultureInfo.GetCultureInfo("en-gb")"/>
                     </td>
                 </tr>
                 <tr>
