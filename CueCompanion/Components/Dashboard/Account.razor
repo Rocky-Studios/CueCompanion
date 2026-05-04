@@ -4,6 +4,7 @@
 @inject SimpleDialogService   Dialogs
 @inject AuthService           Auth
 @inject UserManagementService UserManagement
+@inject ISnackbar             Snackbar
 
 <Panel>
     <MudText Typo="Typo.h2">Account</MudText>
@@ -166,11 +167,16 @@
 
 
         Result r = await UserManagement.ChangePassword(Auth.SessionKey!, _currentPasswordField, _newPasswordField);
-        r.IfError(error => { Dialogs.ShowError("Error changing password", error); });
+
+        if (r.IsSuccess)
+            Snackbar.Add("Password changed successfully", Severity.Success);
+
+
         _currentPasswordField    = null;
         _newPasswordField        = null;
         _confirmNewPasswordField = null;
         _isPasswordChangeOpen    = false;
+        StateHasChanged();
     }
 
 }

@@ -4,7 +4,7 @@
 @using System.Text.Json
 @implements IAsyncDisposable
 @inject IJSRuntime          JsRuntime
-@inject ISnackbar Snackbar
+@inject ISnackbar           Snackbar
 
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
@@ -355,7 +355,9 @@
                 return;
             }
 
-            (await ShowService.SelectShowAsync(key, ShowService.CurrentlyViewingShow.Id)).IfError(e => Dialogs.ShowError("Error starting show", e));
+            Result r = await ShowService.SelectShowAsync(key, ShowService.CurrentlyViewingShow.Id);
+            r.IfError(e => Dialogs.ShowError("Error starting show", e));
+            if (r.IsSuccess) Snackbar.Add($"Show {ShowService.CurrentlyViewingShow!.Name} is now live.", Severity.Success);
             (await ShowService.StartShowAsync(key)).IfError(e => Dialogs.ShowError("Error starting show",                                       e));
         }
     }
@@ -370,7 +372,9 @@
                 return;
             }
 
-            (await ShowService.StopShowAsync(key)).IfError(e => Dialogs.ShowError("Error stopping show",         e));
+            Result r = await ShowService.StopShowAsync(key);
+            r.IfError(e => Dialogs.ShowError("Error stopping show", e));
+            if (r.IsSuccess) Snackbar.Add($"Show {ShowService.CurrentlyViewingShow!.Name} has been stopped.", Severity.Success);
             (await ShowService.SelectShowAsync(key, null)).IfError(e => Dialogs.ShowError("Error stopping show", e));
         }
     }
