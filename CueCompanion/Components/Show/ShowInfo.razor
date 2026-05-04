@@ -5,6 +5,7 @@
 @implements IAsyncDisposable
 @inject IJSRuntime          JsRuntime
 @inject ISnackbar           Snackbar
+@inject IDialogService      DialogService
 
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
@@ -307,6 +308,13 @@
 
     private async void DeleteShowButtonPressed(int showId)
     {
+        bool? result = await DialogService.ShowMessageBoxAsync(
+                           "Warning",
+                           "Deleting show can not be undone!",
+                           "Delete!", cancelText: "Cancel");
+
+        if ((result == null ? "Canceled" : "Deleted!") != "Deleted!") return;
+
         if (Auth.SessionKey is { } key)
         {
             Show show = ShowService!.Shows.FirstOrDefault(s => s.Id == showId) ?? new Show { Id = showId };
