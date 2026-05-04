@@ -101,10 +101,10 @@ public class AuthService : StateSubscriberService
         return await _authHub.InvokeAsync<Result<User>>("GetUser", SessionKey, userID);
     }
 
-    public bool HasPermission(string permissionName)
+    public bool HasPermission(string permissionName, bool valueIfUnknown = false)
     {
-        if (User == null) return false;
-        if (!PermissionsCache.TryGetValue(permissionName, out int permissionId)) return false;
+        if (User == null) return valueIfUnknown;
+        if (!PermissionsCache.TryGetValue(permissionName, out int permissionId)) return valueIfUnknown;
 
         return User.HasPermission(permissionId);
     }
