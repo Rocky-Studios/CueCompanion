@@ -4,6 +4,7 @@
 @using System.Text.Json
 @implements IAsyncDisposable
 @inject IJSRuntime          JsRuntime
+@inject ISnackbar Snackbar
 
 
 <GridChild ColumnStart="3" ColumnEnd="4" RowStart="2" RowEnd="3">
@@ -409,6 +410,7 @@
 
         string fileName = BuildExportFileName(show);
         await JsRuntime.InvokeVoidAsync("cueCompanionShowInfo.downloadJsonFile", fileName, json);
+        Snackbar.Add($"Show {show.Name} exported successfully.", Severity.Success);
     }
 
     private static string BuildExportFileName(Show show)
@@ -448,6 +450,10 @@
             {
                 _ = Dialogs.ShowError("Failed to import show", importResult.Error ?? "Unknown error");
                 return;
+            }
+            else
+            {
+                Snackbar.Add($"Show {bundle.Value.Show.Name} imported successfully.", Severity.Success);
             }
 
             (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Show imported, but failed to refresh list",      e));
