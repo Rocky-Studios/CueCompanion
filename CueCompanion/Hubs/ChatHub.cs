@@ -4,19 +4,19 @@ namespace CueCompanion.Hubs;
 
 public class ChatHub : Hub
 {
-    public async Task SendMessage(string sessionKey, string content)
+    public async Task SendMessage(string apiKey, string content)
     {
-        Message? message = ChatManager.AddMessage(sessionKey, content, out bool success);
+        Message? message = ChatManager.AddMessage(apiKey, content, out bool success);
         if (!success || message == null) return;
 
         await Clients.All.SendAsync("MessageSent", message);
     }
 
-    public Task<Message[]> GetAllMessages(string sessionKey)
+    public Task<Message[]> GetAllMessages(string apiKey)
     {
         try
         {
-            var messages = ChatManager.GetAllMessages(sessionKey);
+            var messages = ChatManager.GetAllMessages(apiKey);
             return Task.FromResult(messages);
         }
         catch (Exception exception)

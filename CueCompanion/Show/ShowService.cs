@@ -85,11 +85,11 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
     }
 
 
-    public async Task<Result<(Show[] shows, Role[] roles)>> GetShowsAndRoles(string sessionKey)
+    public async Task<Result<(Show[] shows, Role[] roles)>> GetShowsAndRoles(string apiKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        var r = await hub.InvokeAsync<Result<(Show[] shows, Role[] roles)>>("GetShowsAndRoles", sessionKey);
+        var r = await hub.InvokeAsync<Result<(Show[] shows, Role[] roles)>>("GetShowsAndRoles", apiKey);
         if (r.Value is { } v)
         {
             Shows = v.shows;
@@ -100,24 +100,24 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         return r;
     }
 
-    public async Task<Result<LiveInfo?>> GetLiveInfoAsync(string sessionKey)
+    public async Task<Result<LiveInfo?>> GetLiveInfoAsync(string apiKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        var r                                     = await hub.InvokeAsync<Result<LiveInfo?>>("GetLiveInfo", sessionKey);
+        var r                                     = await hub.InvokeAsync<Result<LiveInfo?>>("GetLiveInfo", apiKey);
         var liveInfo                              = r.IsSuccess ? r.Value : null;
         if (liveInfo != null) LiveModeCuePosition = liveInfo.Value.CuePosition;
         UpdateState();
         return r;
     }
 
-    public async Task<Result> GetCuesForShowAsync(string sessionKey, int showID)
+    public async Task<Result> GetCuesForShowAsync(string apiKey, int showID)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
 
         var r =
-            await hub.InvokeAsync<Result<(Cue[], CueTask[])>>("GetCuesForShow", sessionKey, showID);
+            await hub.InvokeAsync<Result<(Cue[], CueTask[])>>("GetCuesForShow", apiKey, showID);
         if (!r.IsSuccess) return r.Error!;
         var (cues, tasks) = r.Value;
 
@@ -128,40 +128,40 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         return Result.Success();
     }
 
-    public async Task<Result> StartShowAsync(string sessionKey)
+    public async Task<Result> StartShowAsync(string apiKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        return await hub.InvokeAsync<Result>("StartShow", sessionKey);
+        return await hub.InvokeAsync<Result>("StartShow", apiKey);
     }
 
-    public async Task<Result> StopShowAsync(string sessionKey)
+    public async Task<Result> StopShowAsync(string apiKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        return await hub.InvokeAsync<Result>("StopShow", sessionKey);
+        return await hub.InvokeAsync<Result>("StopShow", apiKey);
     }
 
-    public async Task<Result> NextCueAsync(string sessionKey)
+    public async Task<Result> NextCueAsync(string apiKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        return await hub.InvokeAsync<Result>("NextCue", sessionKey);
+        return await hub.InvokeAsync<Result>("NextCue", apiKey);
     }
 
-    public async Task<Result> PreviousCueAsync(string sessionKey)
+    public async Task<Result> PreviousCueAsync(string apiKey)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        return await hub.InvokeAsync<Result>("PreviousCue", sessionKey);
+        return await hub.InvokeAsync<Result>("PreviousCue", apiKey);
     }
 
-    public async Task<Result<T>> SendEditModeAction<T>(string          sessionKey, EditModeMethod method, T newObject,
+    public async Task<Result<T>> SendEditModeAction<T>(string          apiKey, EditModeMethod method, T newObject,
                                                        EditParameters? parameters = null) where T : class
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        var r = await hub.InvokeAsync<Result<object>>("EditModeAction", sessionKey, method, newObject,
+        var r = await hub.InvokeAsync<Result<object>>("EditModeAction", apiKey, method, newObject,
                                                       typeof(T).AssemblyQualifiedName, parameters);
         T?  cast;
         var jeN = (JsonElement?)r.Value;
@@ -201,11 +201,11 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         return true;
     }
 
-    public async Task<Result> SelectShowAsync(string sessionKey, int? showID)
+    public async Task<Result> SelectShowAsync(string apiKey, int? showID)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        return await hub.InvokeAsync<Result>("SelectShow", sessionKey, showID);
+        return await hub.InvokeAsync<Result>("SelectShow", apiKey, showID);
     }
 
     public IEnumerable<Cue> GetCuesInShow()
@@ -213,18 +213,18 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         return CurrentlyViewingShow is { Id: { } showID } ? Cues.Where(c => c.ShowId == showID) : [];
     }
 
-    public async Task<Result<ShowBundle>> GetShowBundle(string sessionKey, int showID)
+    public async Task<Result<ShowBundle>> GetShowBundle(string apiKey, int showID)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        return await hub.InvokeAsync<Result<ShowBundle>>("GetShowBundle", sessionKey, showID);
+        return await hub.InvokeAsync<Result<ShowBundle>>("GetShowBundle", apiKey, showID);
     }
 
-    public async Task<Result> AddShowFromBundle(string sessionKey, ShowBundle showBundle)
+    public async Task<Result> AddShowFromBundle(string apiKey, ShowBundle showBundle)
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        return await hub.InvokeAsync<Result>("AddShowFromBundle", sessionKey, showBundle);
+        return await hub.InvokeAsync<Result>("AddShowFromBundle", apiKey, showBundle);
     }
 
     public struct LiveInfo

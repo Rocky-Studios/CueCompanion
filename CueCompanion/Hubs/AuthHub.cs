@@ -27,12 +27,12 @@ public class AuthHub : Hub
         return PermissionManager.GetPermissions().ToArray();
     }
 
-    public Result<User> GetUser(string sessionKey, int userId)
+    public Result<User> GetUser(string apiKey, int userId)
     {
         User? user = UserManager.GetUserById(userId);
         if (user == null) return "User not found.";
         user.PasswordHash = "";
-        user.Password = ""; // Don't send the password to the client
+        user.Password     = ""; // Don't send the password to the client
         return user;
     }
 }

@@ -69,7 +69,7 @@
     protected override async Task OnParametersSetAsync()
     {
         if (_isLoadingCues) return;
-        if (Auth.SessionKey is not { } key) return;
+        if (Auth.ApiKey is not { } key) return;
         if (ShowService.CurrentlyViewingShow?.Id is not { } showId) return;
         if (_loadedShowId == showId) return;
 
@@ -95,7 +95,7 @@
 
     public async Task PreviousCue()
     {
-        if (HasControlPermissions && Auth.SessionKey is { } key)
+        if (HasControlPermissions && Auth.ApiKey is { } key)
         {
             (await ShowService.PreviousCueAsync(key)).IfError(e => Dialogs.ShowError("Error moving to previous cue", e));
         }
@@ -103,7 +103,7 @@
 
     public async Task NextCue()
     {
-        if (HasControlPermissions && Auth.SessionKey is { } key)
+        if (HasControlPermissions && Auth.ApiKey is { } key)
         {
             (await ShowService.NextCueAsync(key)).IfError(e => Dialogs.ShowError("Error moving to next cue", e));
         }
@@ -127,7 +127,7 @@
 
     private async Task CreateNewCue()
     {
-        if (ShowService.CurrentlyViewingShow is { Id: { } showID } && HasControlPermissions && Auth.SessionKey is { } key)
+        if (ShowService.CurrentlyViewingShow is { Id: { } showID } && HasControlPermissions && Auth.ApiKey is { } key)
         {
             var cues            = ShowService.GetCuesInShow().ToArray();
             int lastCuePosition = cues.Length > 0 ? cues.Max(c => c.Position) : 0;

@@ -4,9 +4,9 @@ namespace CueCompanion.Services;
 
 public class AuthService : StateSubscriberService
 {
-    public          User?                   User       { get; private set; }
-    public          string?                 SessionKey { get; set; }
-    public          bool                    IsLoading  { get; set; } = false;
+    public          User?                   User      { get; private set; }
+    public          string?                 ApiKey    { get; set; }
+    public          bool                    IsLoading { get; set; } = false;
     public readonly Dictionary<string, int> PermissionsCache = new();
     private         HubConnection?          _authHub;
 
@@ -43,12 +43,12 @@ public class AuthService : StateSubscriberService
         }
     }
 
-    public async Task<Result<(User user, string sessionKey)>> ConnectAsync(string username, string password)
+    public async Task<Result<(User user, string apiKey)>> ConnectAsync(string username, string password)
     {
         if (_authHub == null)
             return "Connection is not established. Please wait.";
 
-        Result<(User user, string sessionKey)> result =
+        Result<(User user, string apiKey)> result =
             await _authHub.InvokeAsync<Result<(User, string)>>("ConnectAsync", username, password);
         if (result.Value.user is { } user) SetUser(user);
 
@@ -56,13 +56,13 @@ public class AuthService : StateSubscriberService
     }
 
 
-    public async Task<Result<(User user, string sessionKey)>> ConnectAsync(string sessionKey)
+    public async Task<Result<(User user, string apiKey)>> ConnectAsync(string apiKey)
     {
         if (_authHub == null)
             return "Connection is not established. Please wait.";
 
-        Result<(User user, string sessionKey)> result =
-            await _authHub.InvokeAsync<Result<(User, string)>>("ConnectAsyncWithKey", sessionKey);
+        Result<(User user, string apiKey)> result =
+            await _authHub.InvokeAsync<Result<(User, string)>>("ConnectAsyncWithKey", apiKey);
         if (result.Value.user is { } user) SetUser(user);
 
         return result;
@@ -98,7 +98,7 @@ public class AuthService : StateSubscriberService
         if (_authHub == null)
             return "AuthHub connection is not established.";
 
-        return await _authHub.InvokeAsync<Result<User>>("GetUser", SessionKey, userID);
+        return await _authHub.InvokeAsync<Result<User>>("GetUser", ApiKey, userID);
     }
 
     public bool HasPermission(string permissionName, bool valueIfUnknown = false)

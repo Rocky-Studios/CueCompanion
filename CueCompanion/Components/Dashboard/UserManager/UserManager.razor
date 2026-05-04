@@ -133,7 +133,7 @@
     {
         UserManagement.OnStateChanged += async () =>
                                          {
-                                             if (HasPermissions && Auth.SessionKey is { } key)
+                                             if (HasPermissions && Auth.ApiKey is { } key)
                                              {
                                                  var r = await UserManagement.GetUsers(key);
                                                  UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
@@ -151,10 +151,10 @@
 
     private async void AddPermissionToUser(int userID, string permission)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             int permissionID = Auth.PermissionsCache[permission];
-            await UserManagement.AddPermissionToUser(Auth.SessionKey, userID, permissionID);
+            await UserManagement.AddPermissionToUser(Auth.ApiKey, userID, permissionID);
             var r = await UserManagement.GetUsers(key);
             UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
             await InvokeAsync(StateHasChanged);
@@ -163,10 +163,10 @@
 
     private async void RemovePermissionFromUser(int userID, string permission)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             int permissionID = Auth.PermissionsCache[permission];
-            await UserManagement.RemovePermissionFromUser(Auth.SessionKey, userID, permissionID);
+            await UserManagement.RemovePermissionFromUser(Auth.ApiKey, userID, permissionID);
             var r                      = await UserManagement.GetUsers(key);
             if (r.IsSuccess) UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
             await InvokeAsync(StateHasChanged);
@@ -194,7 +194,7 @@
 
     private async void DisableLoggingIn(int userID)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             await UserManagement.DisableLoggingIn(key, userID);
 
@@ -204,7 +204,7 @@
 
     private async void EnableLoggingIn(int userID)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             await UserManagement.EnableLoggingIn(key, userID);
 
@@ -214,7 +214,7 @@
 
     private async void DeleteUser(int userID)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             await UserManagement.DeleteUser(key, userID);
 
@@ -235,7 +235,7 @@
             return;
         }
 
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             Result r = await UserManagement.RenameUser(key, _editingUserId.Value, newUserName);
             r.IfError(async void (errorMessage) => { await Dialogs.ShowError("Failed to change username", errorMessage); });
@@ -273,7 +273,7 @@
     {
         _stateChangeHandler = () =>
                               {
-                                  if (HasPermissions && Auth.SessionKey is { } key)
+                                  if (HasPermissions && Auth.ApiKey is { } key)
                                   {
                                       UserManagement.UpdateState();
                                   }

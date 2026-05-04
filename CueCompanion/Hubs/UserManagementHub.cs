@@ -6,11 +6,11 @@ namespace CueCompanion.Hubs;
 
 public class UserManagementHub : Hub
 {
-    public Task<Result<UserInfo[]>> GetUsers(string sessionKey)
+    public Task<Result<UserInfo[]>> GetUsers(string apiKey)
     {
         try
         {
-            return Task.FromResult(UserManager.GetUsers(sessionKey));
+            return Task.FromResult(UserManager.GetUsers(apiKey));
         }
         catch (Exception exception)
         {
@@ -18,11 +18,11 @@ public class UserManagementHub : Hub
         }
     }
 
-    public Task<Result> CreateNewUser(string sessionKey, string userName, string password)
+    public Task<Result> CreateNewUser(string apiKey, string userName, string password)
     {
         try
         {
-            return Task.FromResult(UserManager.CreateNewUser(sessionKey, userName, password));
+            return Task.FromResult(UserManager.CreateNewUser(apiKey, userName, password));
         }
         catch (Exception exception)
         {
@@ -30,11 +30,11 @@ public class UserManagementHub : Hub
         }
     }
 
-    public Task<Result> DeleteUser(string sessionKey, int userId)
+    public Task<Result> DeleteUser(string apiKey, int userId)
     {
         try
         {
-            return Task.FromResult(UserManager.DeleteUser(sessionKey, userId));
+            return Task.FromResult(UserManager.DeleteUser(apiKey, userId));
         }
         catch (Exception exception)
         {
@@ -42,11 +42,11 @@ public class UserManagementHub : Hub
         }
     }
 
-    public Task<Result> RenameUser(string sessionKey, int userID, string newUserName)
+    public Task<Result> RenameUser(string apiKey, int userID, string newUserName)
     {
         try
         {
-            return Task.FromResult(UserManager.RenameUser(sessionKey, userID, newUserName));
+            return Task.FromResult(UserManager.RenameUser(apiKey, userID, newUserName));
         }
         catch (Exception exception)
         {
@@ -54,11 +54,11 @@ public class UserManagementHub : Hub
         }
     }
 
-    public Task<Result> AddPermissionToUser(string sessionKey, int userID, int permissionID)
+    public Task<Result> AddPermissionToUser(string apiKey, int userID, int permissionID)
     {
         try
         {
-            return Task.FromResult(UserManager.AddPermissionToUser(sessionKey, userID, permissionID));
+            return Task.FromResult(UserManager.AddPermissionToUser(apiKey, userID, permissionID));
         }
         catch (Exception exception)
         {
@@ -66,11 +66,11 @@ public class UserManagementHub : Hub
         }
     }
 
-    public Task<Result> RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
+    public Task<Result> RemovePermissionFromUser(string apiKey, int userID, int permissionID)
     {
         try
         {
-            return Task.FromResult(UserManager.RemovePermissionFromUser(sessionKey, userID, permissionID));
+            return Task.FromResult(UserManager.RemovePermissionFromUser(apiKey, userID, permissionID));
         }
         catch (Exception exception)
         {
@@ -78,11 +78,11 @@ public class UserManagementHub : Hub
         }
     }
 
-    public Task<Result> EnableLoggingInForUser(string sessionKey, int userID)
+    public Task<Result> EnableLoggingInForUser(string apiKey, int userID)
     {
         try
         {
-            return Task.FromResult(UserManager.EnableLoggingInForUser(sessionKey, userID));
+            return Task.FromResult(UserManager.EnableLoggingInForUser(apiKey, userID));
         }
         catch (Exception exception)
         {
@@ -90,11 +90,11 @@ public class UserManagementHub : Hub
         }
     }
 
-    public Task<Result> DisableLoggingInForUser(string sessionKey, int userID)
+    public Task<Result> DisableLoggingInForUser(string apiKey, int userID)
     {
         try
         {
-            return Task.FromResult(UserManager.DisableLoggingInForUser(sessionKey, userID));
+            return Task.FromResult(UserManager.DisableLoggingInForUser(apiKey, userID));
         }
         catch (Exception exception)
         {
@@ -102,8 +102,5 @@ public class UserManagementHub : Hub
         }
     }
 
-    public async Task<Result> ChangePassword(string sessionKey, string currentPassword, string newPassword)
-    {
-        return await UserManager.ChangePassword(sessionKey, currentPassword, newPassword);
-    }
+    public async Task<Result> ChangePassword(string apiKey, string currentPassword, string newPassword) => await UserManager.ChangePassword(apiKey, currentPassword, newPassword);
 }

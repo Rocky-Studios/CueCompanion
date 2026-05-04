@@ -2,8 +2,8 @@ using SQLite;
 
 namespace CueCompanion;
 
-[Table("sessionKeys")]
-public class SessionKey
+[Table("api_keys")]
+public class ApiKey
 {
     [Column("id")]
     [PrimaryKey]

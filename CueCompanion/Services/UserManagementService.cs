@@ -22,77 +22,77 @@ public class UserManagementService : StateSubscriberService
         await _userManagementHub.StartAsync();
     }
 
-    public async Task<Result<UserInfo[]>> GetUsers(string sessionKey)
+    public async Task<Result<UserInfo[]>> GetUsers(string apiKey)
     {
         if (_userManagementHub is null)
             throw new InvalidOperationException("UserManagementHub connection is not established.");
-        Result<UserInfo[]> result = await _userManagementHub.InvokeAsync<Result<UserInfo[]>>("GetUsers", sessionKey);
+        Result<UserInfo[]> result = await _userManagementHub.InvokeAsync<Result<UserInfo[]>>("GetUsers", apiKey);
 
-        if (result.Error is "Invalid session key.") _userProvider?.RemoveSessionKey();
+        if (result.Error is "Invalid api key.") _userProvider?.RemoveApiKey();
         if (!result.IsSuccess) return result.Error!;
 
         return result.Value!;
     }
 
-    public async Task<Result> CreateNewUser(string sessionKey, string userName, string password)
+    public async Task<Result> CreateNewUser(string apiKey, string userName, string password)
     {
         if (_userManagementHub is null)
             throw new InvalidOperationException("UserManagementHub connection is not established.");
-        return await _userManagementHub.InvokeAsync<Result>("CreateNewUser", sessionKey, userName,
+        return await _userManagementHub.InvokeAsync<Result>("CreateNewUser", apiKey, userName,
                                                             password);
     }
 
-    public async Task<Result> RenameUser(string sessionKey, int userID, string newUserName)
+    public async Task<Result> RenameUser(string apiKey, int userID, string newUserName)
     {
         if (_userManagementHub is null)
             throw new InvalidOperationException("UserManagementHub connection is not established.");
-        return await _userManagementHub.InvokeAsync<Result>("RenameUser", sessionKey, userID, newUserName);
+        return await _userManagementHub.InvokeAsync<Result>("RenameUser", apiKey, userID, newUserName);
     }
 
-    public async Task DeleteUser(string sessionKey, int userId)
+    public async Task DeleteUser(string apiKey, int userId)
     {
         if (_userManagementHub is null)
             throw new InvalidOperationException("UserManagementHub connection is not established.");
-        await _userManagementHub.InvokeAsync("DeleteUser", sessionKey, userId);
+        await _userManagementHub.InvokeAsync("DeleteUser", apiKey, userId);
     }
 
-    public async Task AddPermissionToUser(string sessionKey, int userID, int permissionID)
+    public async Task AddPermissionToUser(string apiKey, int userID, int permissionID)
     {
         if (_userManagementHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
-        await _userManagementHub.InvokeAsync("AddPermissionToUser", sessionKey, userID, permissionID);
+        await _userManagementHub.InvokeAsync("AddPermissionToUser", apiKey, userID, permissionID);
     }
 
-    public async Task RemovePermissionFromUser(string sessionKey, int userID, int permissionID)
+    public async Task RemovePermissionFromUser(string apiKey, int userID, int permissionID)
     {
         if (_userManagementHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
-        await _userManagementHub.InvokeAsync("RemovePermissionFromUser", sessionKey, userID, permissionID);
+        await _userManagementHub.InvokeAsync("RemovePermissionFromUser", apiKey, userID, permissionID);
     }
 
-    public async Task<Result> EnableLoggingIn(string sessionKey, int userID)
+    public async Task<Result> EnableLoggingIn(string apiKey, int userID)
     {
         if (_userManagementHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
-        return await _userManagementHub.InvokeAsync<Result>("EnableLoggingInForUser", sessionKey, userID);
+        return await _userManagementHub.InvokeAsync<Result>("EnableLoggingInForUser", apiKey, userID);
     }
 
-    public async Task<Result> DisableLoggingIn(string sessionKey, int userID)
+    public async Task<Result> DisableLoggingIn(string apiKey, int userID)
     {
         if (_userManagementHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
-        return await _userManagementHub.InvokeAsync<Result>("DisableLoggingInForUser", sessionKey, userID);
+        return await _userManagementHub.InvokeAsync<Result>("DisableLoggingInForUser", apiKey, userID);
     }
 
-    public async Task<Result> ChangePassword(string sessionKey, string currentPassword, string newPassword)
+    public async Task<Result> ChangePassword(string apiKey, string currentPassword, string newPassword)
     {
         if (_userManagementHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
-        return await _userManagementHub.InvokeAsync<Result>("ChangePassword", sessionKey, currentPassword, newPassword);
+        return await _userManagementHub.InvokeAsync<Result>("ChangePassword", apiKey, currentPassword, newPassword);
     }
 }

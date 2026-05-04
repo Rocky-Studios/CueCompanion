@@ -267,7 +267,7 @@
     private async Task ShowDateOrTimeChanged()
     {
         if (_updateLock) return;
-        if (ShowService!.CurrentlyViewingShow is { } show && Auth.SessionKey is { } key)
+        if (ShowService!.CurrentlyViewingShow is { } show && Auth.ApiKey is { } key)
         {
             _updateLock = true;
             DateTime newStart = _selectedDate?.Add(_selectedStart ?? TimeSpan.Zero) ?? show.Start;
@@ -281,7 +281,7 @@
 
     private async Task ShowNameChanged(string newName)
     {
-        if (ShowService!.CurrentlyViewingShow is { } show && Auth.SessionKey is { } key)
+        if (ShowService!.CurrentlyViewingShow is { } show && Auth.ApiKey is { } key)
         {
             show.Name = newName;
             await ShowService.SendEditModeAction(key, EditModeMethod.Update, show);
@@ -303,7 +303,7 @@
             Start = DateTime.Now,
             End   = DateTime.Now.AddHours(1),
         };
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             var r = await ShowService!.SendEditModeAction(key, EditModeMethod.Create, newShow);
             r.IfError(e => Dialogs.ShowError("Failed to create new show", e));
@@ -322,7 +322,7 @@
 
         if ((result == null ? "Canceled" : "Deleted!") != "Deleted!") return;
 
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             Show show = ShowService!.Shows.FirstOrDefault(s => s.Id == showId) ?? new Show { Id = showId };
             if (ShowService.LiveModeShowID == showId)
@@ -347,7 +347,7 @@
             return;
         }
 
-        if (Auth.SessionKey is not { } key)
+        if (Auth.ApiKey is not { } key)
         {
             _ = Dialogs.ShowError("Failed to duplicate show", "No active session key was found.");
             return;
@@ -385,7 +385,7 @@
     private async Task SelectedShowChanged(Show? newShow)
     {
         ShowService!.CurrentlyViewingShow = newShow;
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
             (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
@@ -396,7 +396,7 @@
 
     private async Task OnStartShow()
     {
-        if (HasControlPermissions && Auth.SessionKey is { } key)
+        if (HasControlPermissions && Auth.ApiKey is { } key)
         {
             if (ShowService!.CurrentlyViewingShow == null)
             {
@@ -413,7 +413,7 @@
 
     private async Task OnStopShow()
     {
-        if (HasControlPermissions && Auth.SessionKey is { } key)
+        if (HasControlPermissions && Auth.ApiKey is { } key)
         {
             if (ShowService!.CurrentlyViewingShow == null)
             {
@@ -441,7 +441,7 @@
             return;
         }
 
-        if (Auth.SessionKey is not { } key)
+        if (Auth.ApiKey is not { } key)
         {
             _ = Dialogs.ShowError("Failed to export show", "No active session key was found.");
             return;
@@ -476,7 +476,7 @@
 
     private async Task OnImportFileSelected(InputFileChangeEventArgs args)
     {
-        if (Auth.SessionKey is not { } key)
+        if (Auth.ApiKey is not { } key)
         {
             _ = Dialogs.ShowError("Failed to import show", "No active session key was found.");
             return;

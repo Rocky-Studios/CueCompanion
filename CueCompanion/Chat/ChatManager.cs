@@ -6,17 +6,17 @@ public static class ChatManager
 {
     private static SQLiteConnection Db => DatabaseHandler.Connection;
 
-    public static Message? AddMessage(string sessionKey, string content, out bool success)
+    public static Message? AddMessage(string apiKey, string content, out bool success)
     {
-        SessionKey session = Db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);
-        if (session == null)
+        ApiKey api = Db.Table<ApiKey>().FirstOrDefault(s => s.Key == apiKey);
+        if (api == null)
         {
             success = false;
             return null;
         }
 
 
-        User user = Db.Table<User>().FirstOrDefault(u => u.Id == session.UserID);
+        User user = Db.Table<User>().FirstOrDefault(u => u.Id == api.UserID);
         if (user == null)
         {
             success = false;
@@ -35,12 +35,12 @@ public static class ChatManager
         return message;
     }
 
-    public static Message[] GetAllMessages(string sessionKey)
+    public static Message[] GetAllMessages(string apiKey)
     {
-        SessionKey session = Db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);
-        if (session == null) return [];
+        ApiKey api = Db.Table<ApiKey>().FirstOrDefault(s => s.Key == apiKey);
+        if (api == null) return [];
 
-        User user = Db.Table<User>().FirstOrDefault(u => u.Id == session.UserID);
+        User user = Db.Table<User>().FirstOrDefault(u => u.Id == api.UserID);
         if (user == null) return [];
 
         return Db.Table<Message>().ToArray();

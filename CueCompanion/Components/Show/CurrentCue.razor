@@ -136,7 +136,7 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             CueTask newTask = new()
             {
@@ -195,7 +195,7 @@
 
     private void CueTaskChanged(string newTask, CueTask cueTask)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             cueTask.Tasks = newTask;
             ShowService?.SendEditModeAction(key, EditModeMethod.Update, cueTask);
@@ -204,7 +204,7 @@
 
     private void DeleteCueTask(CueTask cueTask)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             ShowService?.SendEditModeAction(key, EditModeMethod.Delete, cueTask);
         }

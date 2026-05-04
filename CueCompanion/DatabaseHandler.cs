@@ -14,7 +14,7 @@ public static class DatabaseHandler
         Connection = new SQLiteConnection("data.db");
         Connection.CreateTable<Show>();
         Connection.CreateTable<User>();
-        Connection.CreateTable<SessionKey>();
+        Connection.CreateTable<ApiKey>();
         Connection.CreateTable<Permission>();
         Connection.CreateTable<UserPermission>();
         Connection.CreateTable<Role>();
@@ -46,7 +46,7 @@ public static class DatabaseHandler
                 PermissionManager.SetPermission(manageUsersPermission, adminUser, true);
         }
 
-        UserManager.RemoveExpiredSessionKeys();
+        UserManager.RemoveExpiredApiKeys();
         _purgeTimer = new PeriodicTimer(TimeSpan.FromMinutes(10));
         _ = Task.Run(async () =>
                      {

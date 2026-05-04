@@ -6,37 +6,37 @@ public static class NoteManager
 {
     private static SQLiteConnection Db => DatabaseHandler.Connection;
 
-    public static Result CreateNote(string sessionKey, Note note)
+    public static Result CreateNote(string apiKey, Note note)
     {
-        SessionKey session = Db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);
-        if (session == null) return "Invalid session key.";
+        ApiKey api = Db.Table<ApiKey>().FirstOrDefault(s => s.Key == apiKey);
+        if (api == null) return "Invalid api key.";
 
         Db.Insert(note);
         return Result.Success();
     }
 
-    public static Result UpdateNote(string sessionKey, Note newNote)
+    public static Result UpdateNote(string apiKey, Note newNote)
     {
-        SessionKey session = Db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);
-        if (session == null) return "Invalid session key.";
+        ApiKey api = Db.Table<ApiKey>().FirstOrDefault(s => s.Key == apiKey);
+        if (api == null) return "Invalid api key.";
 
         Db.Update(newNote);
         return Result.Success();
     }
 
-    public static Result DeleteNote(string sessionKey, int noteID)
+    public static Result DeleteNote(string apiKey, int noteID)
     {
-        SessionKey session = Db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);
-        if (session == null) return "Invalid session key.";
+        ApiKey api = Db.Table<ApiKey>().FirstOrDefault(s => s.Key == apiKey);
+        if (api == null) return "Invalid api key.";
 
         Db.Table<Note>().Delete(n => n.Id == noteID);
         return Result.Success();
     }
 
-    public static Result<Note[]> GetNotes(string sessionKey)
+    public static Result<Note[]> GetNotes(string apiKey)
     {
-        SessionKey session = Db.Table<SessionKey>().FirstOrDefault(s => s.Key == sessionKey);
-        if (session == null) return "Invalid session key.";
+        ApiKey api = Db.Table<ApiKey>().FirstOrDefault(s => s.Key == apiKey);
+        if (api == null) return "Invalid api key.";
 
         Note[] notes = Db.Table<Note>().ToArray();
         return notes;

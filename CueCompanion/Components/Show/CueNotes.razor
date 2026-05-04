@@ -163,7 +163,7 @@
 
     private async Task LoadNotesAsync()
     {
-        if (Auth.SessionKey is null)
+        if (Auth.ApiKey is null)
             return;
 
         Result<Note[]> notesResult = await NotesService.GetAllNotes();

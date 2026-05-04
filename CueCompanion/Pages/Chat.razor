@@ -96,7 +96,7 @@
         return () =>
                {
                    InvokeAsync(StateHasChanged);
-                   if (AuthService.SessionKey is { } key) ChatService?.GetAllMessages(key);
+                   if (AuthService.ApiKey is { } key) ChatService?.GetAllMessages(key);
                    _shouldScrollToBottom = true;
                };
     }
@@ -133,7 +133,7 @@
             return;
         }
 
-        if (!string.IsNullOrEmpty(_messageContent) && AuthService.SessionKey is { } key)
+        if (!string.IsNullOrEmpty(_messageContent) && AuthService.ApiKey is { } key)
         {
             if (ChatService != null) await ChatService.SendMessage(key, _messageContent);
             _messageContent       = string.Empty;

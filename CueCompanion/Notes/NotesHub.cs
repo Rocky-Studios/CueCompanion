@@ -5,18 +5,18 @@ namespace CueCompanion.Hubs;
 
 public class NotesHub : Hub
 {
-    public async Task<Result> CreateNote(string sessionKey, Note note)
+    public async Task<Result> CreateNote(string apiKey, Note note)
     {
-        Result r = NoteManager.CreateNote(sessionKey, note);
+        Result r = NoteManager.CreateNote(apiKey, note);
         if (r.IsSuccess) await Clients.All.SendAsync("NoteAdded", note);
         return r;
     }
 
-    public Task<Result<Note[]>> GetAllNotes(string sessionKey)
+    public Task<Result<Note[]>> GetAllNotes(string apiKey)
     {
         try
         {
-            return Task.FromResult(NoteManager.GetNotes(sessionKey));
+            return Task.FromResult(NoteManager.GetNotes(apiKey));
         }
         catch (Exception exception)
         {
@@ -24,16 +24,16 @@ public class NotesHub : Hub
         }
     }
 
-    public async Task<Result> UpdateNote(string sessionKey, Note newNote)
+    public async Task<Result> UpdateNote(string apiKey, Note newNote)
     {
-        Result r = NoteManager.UpdateNote(sessionKey, newNote);
+        Result r = NoteManager.UpdateNote(apiKey, newNote);
         if (r.IsSuccess) await Clients.All.SendAsync("NoteUpdated", newNote);
         return r;
     }
 
-    public async Task<Result> DeleteNote(string sessionKey, int noteID)
+    public async Task<Result> DeleteNote(string apiKey, int noteID)
     {
-        Result r = NoteManager.DeleteNote(sessionKey, noteID);
+        Result r = NoteManager.DeleteNote(apiKey, noteID);
         if (r.IsSuccess) await Clients.All.SendAsync("NoteDeleted", noteID);
         return r;
     }

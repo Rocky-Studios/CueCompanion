@@ -40,7 +40,7 @@
         string username = _model.UserName;
         string password = _model.Password;
 
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             Result r = await UserManagement.CreateNewUser(key, username, password);
             if (r.Error is { } errorMessage)

@@ -13,11 +13,11 @@ public class ShowHub : Hub
         PropertyNameCaseInsensitive = true,
     };
 
-    public Task<Result<int?>> GetCurrentShowID(string sessionKey)
+    public Task<Result<int?>> GetCurrentShowID(string apiKey)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "ViewShow");
             if (!r.IsSuccess) return Task.FromResult<Result<int?>>(r.Error!);
             bool hasPermission = r.Value;
             if (!hasPermission) return Task.FromResult<Result<int?>>("Access denied.");
@@ -30,11 +30,11 @@ public class ShowHub : Hub
         }
     }
 
-    public Task<Result<(Show[] shows, Role[] roles)>> GetShowsAndRoles(string sessionKey)
+    public Task<Result<(Show[] shows, Role[] roles)>> GetShowsAndRoles(string apiKey)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "ViewShow");
             if (!r.IsSuccess) return Task.FromResult<Result<(Show[] shows, Role[] roles)>>(r.Error!);
             bool hasPermission = r.Value;
             if (!hasPermission) return Task.FromResult<Result<(Show[] shows, Role[] roles)>>("Access denied.");
@@ -49,11 +49,11 @@ public class ShowHub : Hub
         }
     }
 
-    public Task<Result<ShowService.LiveInfo?>> GetLiveInfo(string sessionKey)
+    public Task<Result<ShowService.LiveInfo?>> GetLiveInfo(string apiKey)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "ViewShow");
             if (!r.IsSuccess) return Task.FromResult<Result<ShowService.LiveInfo?>>(r.Error!);
             bool hasPermission = r.Value;
             if (!hasPermission) return Task.FromResult<Result<ShowService.LiveInfo?>>("Access denied.");
@@ -71,11 +71,11 @@ public class ShowHub : Hub
         }
     }
 
-    public Task<Result<(Cue[] cues, CueTask[] tasks)>> GetCuesForShow(string sessionKey, int showID)
+    public Task<Result<(Cue[] cues, CueTask[] tasks)>> GetCuesForShow(string apiKey, int showID)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "ViewShow");
             if (!r.IsSuccess) return Task.FromResult<Result<(Cue[] cues, CueTask[] tasks)>>(r.Error!);
             bool hasPermission = r.Value;
             if (!hasPermission) return Task.FromResult<Result<(Cue[] cues, CueTask[] tasks)>>("Access denied.");
@@ -91,11 +91,11 @@ public class ShowHub : Hub
         }
     }
 
-    public Task<Result> StartShow(string sessionKey)
+    public Task<Result> StartShow(string apiKey)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "ControlShow");
             if (!r.IsSuccess) return Task.FromResult<Result>(r.Error!);
             bool hasPermission = r.Value;
             if (hasPermission)
@@ -113,11 +113,11 @@ public class ShowHub : Hub
         }
     }
 
-    public Task<Result> StopShow(string sessionKey)
+    public Task<Result> StopShow(string apiKey)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "ControlShow");
             if (!r.IsSuccess) return Task.FromResult<Result>(r.Error!);
             bool hasPermission = r.Value;
             if (hasPermission)
@@ -148,9 +148,9 @@ public class ShowHub : Hub
         });
     }
 
-    public async Task<Result> NextCue(string sessionKey)
+    public async Task<Result> NextCue(string apiKey)
     {
-        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+        var r = PermissionManager.UserHasPermission(apiKey, "ControlShow");
         if (!r.IsSuccess) return r.Error!;
         bool hasPermission = r.Value;
         if (!hasPermission) return "Access denied.";
@@ -170,9 +170,9 @@ public class ShowHub : Hub
         return Result.Success();
     }
 
-    public async Task<Result> PreviousCue(string sessionKey)
+    public async Task<Result> PreviousCue(string apiKey)
     {
-        Result<bool> r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+        var r = PermissionManager.UserHasPermission(apiKey, "ControlShow");
         if (!r.IsSuccess) return r.Error!;
         bool hasPermission = r.Value;
         if (!hasPermission) return "Access denied.";
@@ -193,14 +193,14 @@ public class ShowHub : Hub
     }
 
 
-    public Task<Result<object>> EditModeAction(string sessionKey,         EditModeMethod  method, JsonElement newObject,
+    public Task<Result<object>> EditModeAction(string apiKey,             EditModeMethod  method, JsonElement newObject,
                                                string objectTypeAsString, EditParameters? parameters)
     {
         try
         {
             try
             {
-                var r = PermissionManager.UserHasPermission(sessionKey, "EditShow");
+                var r = PermissionManager.UserHasPermission(apiKey, "EditShow");
                 if (!r.IsSuccess) return Task.FromResult<Result<object>>(r.Error!);
                 bool hasPermission = r.Value;
                 if (!hasPermission) return Task.FromResult<Result<object>>("Access denied.");
@@ -223,11 +223,11 @@ public class ShowHub : Hub
         }
     }
 
-    public Task<Result> SelectShow(string sessionKey, int? showID)
+    public Task<Result> SelectShow(string apiKey, int? showID)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "ControlShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "ControlShow");
             if (!r.IsSuccess) return Task.FromResult<Result>(r.Error!);
             bool hasPermission = r.Value;
             if (!hasPermission) return Task.FromResult<Result>("Access denied.");
@@ -242,11 +242,11 @@ public class ShowHub : Hub
         }
     }
 
-    public Task<Result<ShowBundle>> GetShowBundle(string sessionKey, int showID)
+    public Task<Result<ShowBundle>> GetShowBundle(string apiKey, int showID)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "ViewShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "ViewShow");
             if (!r.IsSuccess) return Task.FromResult(Result<ShowBundle>.Failure(r.Error!));
             bool hasPermission = r.Value;
             if (!hasPermission) return Task.FromResult(Result<ShowBundle>.Failure("Access denied."));
@@ -259,11 +259,11 @@ public class ShowHub : Hub
         }
     }
 
-    public Task<Result> AddShowFromBundle(string sessionKey, ShowBundle showBundle)
+    public Task<Result> AddShowFromBundle(string apiKey, ShowBundle showBundle)
     {
         try
         {
-            var r = PermissionManager.UserHasPermission(sessionKey, "EditShow");
+            var r = PermissionManager.UserHasPermission(apiKey, "EditShow");
             if (!r.IsSuccess) return Task.FromResult(Result.Failure(r.Error!));
             bool hasPermission = r.Value;
             if (!hasPermission) return Task.FromResult(Result.Failure("Access denied."));

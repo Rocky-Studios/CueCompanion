@@ -64,7 +64,7 @@
 
     private void CueNameChanged(string newName)
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             Task.Run(async () =>
             {
@@ -76,7 +76,7 @@
     
     private void CueDeleted()
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             Task.Run(async () =>
             {
@@ -88,7 +88,7 @@
     
     private void CueMovedUp()
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             Task.Run(async () =>
             {
@@ -103,7 +103,7 @@
     
     private void CueMovedDown()
     {
-        if (Auth.SessionKey is { } key)
+        if (Auth.ApiKey is { } key)
         {
             Task.Run(async () =>
             {

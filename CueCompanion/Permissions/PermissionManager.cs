@@ -90,9 +90,9 @@ public static class PermissionManager
         }
     }
 
-    public static Result<bool> UserHasPermission(string sessionKey, string permission)
+    public static Result<bool> UserHasPermission(string apiKey, string permission)
     {
-        Result<User?> r = UserManager.GetUserBySessionKey(sessionKey);
+        Result<User?> r = UserManager.GetUserByApiKey(apiKey);
         if (!r.IsSuccess) return r.Error!;
         User? user = r.Value;
         if (user == null) return "Invalid session key.";

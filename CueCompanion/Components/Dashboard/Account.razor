@@ -142,9 +142,9 @@
 
         _model.UserName = string.Empty;
         _model.Password = string.Empty;
-        string key = result.Value.sessionKey;
+        string key = result.Value.apiKey;
 
-        await UserProvider.SetSessionKey(key);
+        await UserProvider.SetApiKey(key);
 
         UserManagement.UpdateState();
 
@@ -166,7 +166,7 @@
         }
 
 
-        Result r = await UserManagement.ChangePassword(Auth.SessionKey!, _currentPasswordField, _newPasswordField);
+        Result r = await UserManagement.ChangePassword(Auth.ApiKey!, _currentPasswordField, _newPasswordField);
 
         if (r.IsSuccess)
             Snackbar.Add("Password changed successfully", Severity.Success);

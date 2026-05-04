@@ -25,11 +25,11 @@
     {
         Auth.IsLoading = true;
 
-        string? key = await GetSessionKey();
+        string? key = await GetApiKey();
 
         if (key != null)
         {
-            Result<(User user, string sessionKey)> res = await Connect(key);
+            Result<(User user, string apiKey)> res = await Connect(key);
             res.GetValue(s => Dialogs.ShowError("Failed to connect with session key", s));
         }
 
@@ -42,7 +42,7 @@
     {
         try
         {
-            _ = RemoveSessionKey();
+            _ = RemoveApiKey();
             _ = Auth.ClearConnectionAsync();
         }
         catch (Exception exception)
@@ -51,17 +51,17 @@
         }
     }
 
-    public async Task<Result<(User user, string sessionKey)>> Connect(string sessionKey)
+    public async Task<Result<(User user, string apiKey)>> Connect(string apiKey)
     {
-        Result<(User user, string sessionKey)> connectResult = await Auth.ConnectAsync(sessionKey);
-        if (connectResult.Value.sessionKey is { } key)
+        Result<(User user, string apiKey)> connectResult = await Auth.ConnectAsync(apiKey);
+        if (connectResult.Value.apiKey is { } key)
         {
-            await SetSessionKey(key);
+            await SetApiKey(key);
         }
 
-        if (connectResult.Meta is { } meta && meta.TryGetValue("clearSessionKey", out string? clear) && clear == "true")
+        if (connectResult.Meta is { } meta && meta.TryGetValue("clearApiKey", out string? clear) && clear == "true")
         {
-            await RemoveSessionKey();
+            await RemoveApiKey();
         }
 
         if (connectResult.Value.user is { } user)
@@ -73,38 +73,38 @@
         return connectResult;
     }
 
-    public async Task<Result<(User user, string sessionKey)>> Connect(string username, string password)
+    public async Task<Result<(User user, string apiKey)>> Connect(string username, string password)
     {
-        Result<(User user, string sessionKey)> result = await Auth.ConnectAsync(username, password);
-        if (result.Value.sessionKey is { } key)
+        Result<(User user, string apiKey)> result = await Auth.ConnectAsync(username, password);
+        if (result.Value.apiKey is { } key)
         {
-            await SetSessionKey(key);
+            await SetApiKey(key);
             Result<Permission[]> permissionsResult = await Auth.GetPermissionsForUserAsync();
             Auth.User?.SetPermissions(permissionsResult.GetValue(s => Dialogs.ShowError("Failed to get permissions", s)));
         }
 
-        if (result.Meta is { } meta && meta.TryGetValue("clearSessionKey", out string? clear) && clear == "true")
+        if (result.Meta is { } meta && meta.TryGetValue("clearApiKey", out string? clear) && clear == "true")
         {
-            await RemoveSessionKey();
+            await RemoveApiKey();
         }
 
         return result;
     }
 
-    public async Task<string?> GetSessionKey()
+    public async Task<string?> GetApiKey()
     {
-        Cookie? cookie = await Cookies.GetAsync("sessionKey");
+        Cookie? cookie = await Cookies.GetAsync("apiKey");
         return cookie?.Value;
     }
 
-    public async Task SetSessionKey(string key)
+    public async Task SetApiKey(string key)
     {
-        Auth.SessionKey = key;
-        await Cookies.SetAsync("sessionKey", key, DateTimeOffset.UtcNow.AddDays(1));
+        Auth.ApiKey = key;
+        await Cookies.SetAsync("apiKey", key, DateTimeOffset.UtcNow.AddDays(1));
     }
 
-    public async Task RemoveSessionKey()
+    public async Task RemoveApiKey()
     {
-        await Cookies.RemoveAsync("sessionKey");
+        await Cookies.RemoveAsync("apiKey");
     }
 }

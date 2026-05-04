@@ -6,7 +6,7 @@ public abstract class AuthDependantService(AuthService auth) : StateSubscriberSe
 
     protected Task<Result> InvokeWithSessionAsync(Func<string, Task<Result>> action)
     {
-        if (auth.SessionKey is not { } key)
+        if (auth.ApiKey is not { } key)
             return Task.FromResult(Result.Failure(InvalidSessionMessage));
 
         return action(key);
@@ -14,7 +14,7 @@ public abstract class AuthDependantService(AuthService auth) : StateSubscriberSe
 
     protected Task<Result<T>> InvokeWithSessionAsync<T>(Func<string, Task<Result<T>>> action)
     {
-        if (auth.SessionKey is not { } key)
+        if (auth.ApiKey is not { } key)
             return Task.FromResult(Result<T>.Failure(InvalidSessionMessage));
 
         return action(key);

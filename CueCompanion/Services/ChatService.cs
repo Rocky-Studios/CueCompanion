@@ -31,16 +31,16 @@ public class ChatService : StateSubscriberService, IAsyncDisposable
         UpdateState();
     }
 
-    public async Task SendMessage(string sessionKey, string content)
+    public async Task SendMessage(string apiKey, string content)
     {
         if (_chatHub == null) return;
-        await _chatHub.InvokeAsync("SendMessage", sessionKey, content);
+        await _chatHub.InvokeAsync("SendMessage", apiKey, content);
     }
 
-    public async Task GetAllMessages(string sessionKey)
+    public async Task GetAllMessages(string apiKey)
     {
         if (_chatHub == null) return;
-        Message[] getMessages = await _chatHub.InvokeAsync<Message[]>("GetAllMessages", sessionKey);
+        Message[] getMessages = await _chatHub.InvokeAsync<Message[]>("GetAllMessages", apiKey);
         Messages.Clear();
         Messages.AddRange(getMessages);
         UpdateState();
