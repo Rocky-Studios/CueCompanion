@@ -327,7 +327,6 @@ public static class ShowManager
         try
         {
             bundle.Show.Id = 0; // Reset IDs to let the database assign a new one
-            bundle.Show.Name += " (Imported)";
             _db.Insert(bundle.Show);
             int                  showID   = bundle.Show.Id;
             Dictionary<int, int> cueIdMap = new(); // Map old cue IDs to new ones

@@ -58,11 +58,18 @@
                     <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"
                                    OnClick="@(() => { DeleteShowButtonPressed(showID); })"/>
                 </MudTooltip>
+                <MudTooltip Text="Duplicate">
+                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"
+                                   OnClick="@(() => { DuplicateShowButtonPressed(showID); })"/>
+                </MudTooltip>
             }
             else
             {
                 <MudTooltip Text="Delete">
                     <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"/>
+                </MudTooltip>
+                <MudTooltip Text="Duplicate">
+                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"/>
                 </MudTooltip>
             }
             <MudTooltip Text="Create new">
@@ -332,6 +339,40 @@
         }
     }
 
+    private async void DuplicateShowButtonPressed(int showId)
+    {
+        if (ShowService!.CurrentlyViewingShow is not { } show)
+        {
+            _ = Dialogs.ShowError("Failed to duplicate show", "Please select a show to duplicate.");
+            return;
+        }
+
+        if (Auth.SessionKey is not { } key)
+        {
+            _ = Dialogs.ShowError("Failed to duplicate show", "No active session key was found.");
+            return;
+        }
+
+        var bundleResult = await ShowService.GetShowBundle(key, show.Id);
+        if (!bundleResult.IsSuccess)
+        {
+            _ = Dialogs.ShowError("Failed to duplicate show", bundleResult.Error ?? "Unable to load the show bundle.");
+            return;
+        }
+
+        ShowBundle bundle = bundleResult.Value;
+        bundle.Show.Name += " (Copy)";
+        Result importResult = await ShowService!.AddShowFromBundle(key, bundle);
+        importResult.IfError(e => Dialogs.ShowError("Failed to duplicate show", e));
+        if (importResult.IsSuccess)
+        {
+            Snackbar.Add($"Show {show.Name} duplicated successfully.", Severity.Success);
+        }
+
+        (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Show duplicated, but failed to refresh list",      e));
+        (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Show duplicated, but failed to refresh live info", e));
+    }
+
     private string ShowToStringFunc(Show? show) => show?.Name ?? "No show";
 
     private bool IsShowToday(Show show, bool falseIfSelected)
@@ -456,6 +497,8 @@
             }
 
             ShowBundle importedBundle = bundle.Value;
+            string     name           = importedBundle.Show.Name;
+            importedBundle.Show.Name += " (Imported)";
 
             Result importResult = await ShowService!.AddShowFromBundle(key, importedBundle);
             if (!importResult.IsSuccess)
@@ -465,7 +508,7 @@
             }
             else
             {
-                Snackbar.Add($"Show {bundle.Value.Show.Name} imported successfully.", Severity.Success);
+                Snackbar.Add($"Show {name} imported successfully.", Severity.Success);
             }
 
             (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Show imported, but failed to refresh list",      e));
