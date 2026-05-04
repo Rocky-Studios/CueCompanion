@@ -3,9 +3,9 @@
 @if (ShowService.IsLiveMode)
 {
     <div
-        style="background-color: var(--mud-palette-primary); padding: 4px; border-radius: 4px; width: fit-content; margin: auto;"
-        onclick="window.location.href = '/show'">
-
+        onclick="window.location.href = '/show'"
+        class="live-mode-label"
+    >
         <div>
             <MudText Typo="Typo.h2" Style="color: white">
                 LIVE MODE ACTIVE - @ShowService.LiveModeShow!.Name

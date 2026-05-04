@@ -238,3 +238,26 @@ textarea.mud-input-slot {
     flex-direction: row;
     overflow: scroll;
 }
+
+div.live-mode-label {
+    width: 100vw;
+    height: var(--mud-appbar-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2500;
+    position: fixed;
+}
+
+div.live-mode-label > div {
+    background-color: var(--mud-palette-primary);
+    padding: 4px;
+    border-radius: 4px;
+    width: fit-content;
+}
+
+@media (max-width: 800px) {
+    div.live-mode-label {
+        margin-top: var(--mud-appbar-height);
+    }
+}
