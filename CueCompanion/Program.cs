@@ -4,6 +4,10 @@ using CueCompanion.Services;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
+using QuestPDF;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace CueCompanion;
 
@@ -11,6 +15,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        PDF();
+        return;
         DatabaseHandler.Init();
 
         ShowManager.Init();
@@ -98,4 +104,55 @@ public class Program
     //
     //    return null;
     //}
+
+    private static void PDF()
+    {
+        Settings.License = LicenseType.Community;
+        Document.Create(container =>
+                        {
+                            container.Page(page =>
+                                           {
+                                               page.Size(PageSizes.A4);
+                                               page.Margin(2, Unit.Centimetre);
+                                               page.PageColor(Colors.White);
+                                               page.DefaultTextStyle(x => x.FontSize(20));
+
+                                               page.Header()
+                                                   .Text("CTHS Media Centre")
+                                                   .AlignCenter()
+                                                   .SemiBold().FontSize(16).FontColor(Colors.Black);
+
+                                               page.Content()
+                                                   .PaddingVertical(1, Unit.Centimetre)
+                                                   .Column(x =>
+                                                           {
+                                                               x.Spacing(20);
+
+                                                               x.Item()
+                                                                .Text("CTHS Media Centre")
+                                                                .AlignCenter()
+                                                                .Bold().FontSize(36).FontColor(Colors.Red.Medium);
+
+                                                               x.Item()
+                                                                .Text("Confidential information enclosed")
+                                                                .AlignCenter()
+                                                                .SemiBold().FontSize(20).FontColor(Colors.Black);
+
+                                                               x.Item()
+                                                                .Text("MADD Night 2026")
+                                                                .AlignCenter()
+                                                                .SemiBold().FontSize(28).FontColor(Colors.Black);
+                                                           });
+
+                                               page.Footer()
+                                                   .AlignCenter()
+                                                   .Text(x =>
+                                                         {
+                                                             x.Span("Page ");
+                                                             x.CurrentPageNumber();
+                                                         });
+                                           });
+                        })
+                .GeneratePdf("hello.pdf");
+    }
 }
