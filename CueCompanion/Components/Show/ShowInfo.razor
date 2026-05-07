@@ -92,10 +92,16 @@
                 <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
             </div>
             <div>
+                <MudTooltip Text="Export as JSON">
                 <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.FileDownload"
                            Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportShow">
                     Export
-                </MudButton>
+                </MudButton></MudTooltip>
+                <MudTooltip Text="Export as PDF">
+                <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.PictureAsPdf"
+                           Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportPDF">
+                    Export
+                </MudButton></MudTooltip>
             </div>
         </MudStack>
         <MudText Typo="Typo.body1">
@@ -461,17 +467,48 @@
             WriteIndented = true,
         });
 
-        string fileName = BuildExportFileName(show);
+        string fileName = BuildExportFileName(show, "json");
         await JsRuntime.InvokeVoidAsync("cueCompanionShowInfo.downloadJsonFile", fileName, json);
         Snackbar.Add($"Show {show.Name} exported successfully.", Severity.Success);
     }
+    
+    private async Task OnExportPDF()
+    {
+        if (ShowService!.CurrentlyViewingShow is not { } show)
+        {
+            _ = Dialogs.ShowError("Failed to export show", "Please select a show to export.");
+            return;
+        }
 
-    private static string BuildExportFileName(Show show)
+        if (Auth.ApiKey is not { } key)
+        {
+            _ = Dialogs.ShowError("Failed to export show", "No active session key was found.");
+            return;
+        }
+
+        var bundleResult = await ShowService.GetShowBundle(key, show.Id);
+        if (!bundleResult.IsSuccess)
+        {
+            _ = Dialogs.ShowError("Failed to export show", bundleResult.Error ?? "Unable to load the show bundle.");
+            return;
+        }
+
+        ShowBundle bundle = bundleResult.Value;
+
+        byte[] pdfBytes = PDFExport.GeneratePDF(bundle);
+        string pdfString = Convert.ToBase64String(pdfBytes);
+
+        string fileName = BuildExportFileName(show, "pdf");
+        await JsRuntime.InvokeVoidAsync("cueCompanionShowInfo.downloadJsonFile", fileName, pdfBytes);
+        Snackbar.Add($"Show {show.Name} exported successfully.", Severity.Success);
+    }
+
+    private static string BuildExportFileName(Show show, string extension)
     {
         string baseName     = string.IsNullOrWhiteSpace(show.Name) ? $"show-{show.Id}" : show.Name;
         char[] invalidChars = Path.GetInvalidFileNameChars();
         char[] chars        = baseName.Select(c => invalidChars.Contains(c) ? '_' : c).ToArray();
-        return $"{new string(chars)}.json";
+        return $"{new string(chars)}."+extension;
     }
 
     private async Task OnImportFileSelected(InputFileChangeEventArgs args)
