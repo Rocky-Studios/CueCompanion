@@ -104,9 +104,14 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
     {
         if (!TryGetConnectedHub(out HubConnection? hub, out string? error)) return error!;
 
-        var r                                     = await hub.InvokeAsync<Result<LiveInfo?>>("GetLiveInfo", apiKey);
-        var liveInfo                              = r.IsSuccess ? r.Value : null;
-        if (liveInfo != null) LiveModeCuePosition = liveInfo.Value.CuePosition;
+        var r        = await hub.InvokeAsync<Result<LiveInfo?>>("GetLiveInfo", apiKey);
+        var liveInfo = r.IsSuccess ? r.Value : null;
+        if (liveInfo != null)
+        {
+            LiveModeCuePosition = liveInfo.Value.CuePosition;
+            LiveModeShowID      = liveInfo.Value.LiveShowID;
+        }
+
         UpdateState();
         return r;
     }
