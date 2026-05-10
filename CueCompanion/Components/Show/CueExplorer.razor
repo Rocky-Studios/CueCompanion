@@ -21,8 +21,14 @@
                     @if (IsEditMode)
                     {
                         <MudTooltip Text="Add new cue">
-                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="@CreateNewCue"
-                                       Size="Size.Small"/>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
+                                           OnClick="@CreateNewCue"
+                                           Size="Size.Small"/>
+                        </MudTooltip>
+                        <MudTooltip Text="Delete all cues">
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Primary"
+                                           OnClick="@DeleteAllCuesButtonPressed"
+                                           Size="Size.Small"/>
                         </MudTooltip>
                     }
                     <MudText Typo="Typo.subtitle1">@ShowService.GetCuesInShow().Count() ITEMS</MudText>
@@ -138,6 +144,24 @@
                 Position = lastCuePosition + 1,
             };
             (await ShowService.SendEditModeAction(key, EditModeMethod.Create, newCue)).IfError(e => Dialogs.ShowError("Error creating new cue", e));
+        }
+    }
+
+    private async Task DeleteAllCuesButtonPressed()
+    {
+        bool? result = await DialogService.ShowMessageBoxAsync(
+                           "Warning",
+                           "Deleting all cues can not be undone!",
+                           "Delete!", cancelText: "Cancel");
+
+        if ((result == null ? "Canceled" : "Deleted!") != "Deleted!") return;
+
+
+        if (ShowService.CurrentlyViewingShow is { Id: { } showID } && Auth.ApiKey is { } key)
+        {
+            // Need to pass a cue to tell it in which show
+            Cue firstCue = ShowService.GetCuesInShow().First();
+            (await ShowService.SendEditModeAction(key, EditModeMethod.DeleteAll, firstCue)).IfError(e => Dialogs.ShowError("Error deleting cues", e));
         }
     }
     

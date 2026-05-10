@@ -268,6 +268,28 @@ public static class ShowManager
                     ReorderCues(cue.ShowId);
                 return Result.Success();
             }
+            case EditModeMethod.DeleteAll:
+            {
+                if (newObject is Cue cue)
+                {
+                    _db.Table<Cue>().ToList()
+                       .Where(c => c.ShowId == cue.ShowId)
+                       .ToList()
+                       .ForEach(c => _db.Delete(c));
+                    return Result.Success();
+                }
+
+                if (newObject is CueTask cueTask)
+                {
+                    _db.Table<CueTask>().ToList()
+                       .Where(ct => ct.CueId == cueTask.CueId)
+                       .ToList()
+                       .ForEach(ct => _db.Delete(ct));
+                    return Result.Success();
+                }
+
+                return "DeleteAll action is only supported for cues and tasks.";
+            }
             case EditModeMethod.Move:
             {
                 if (newObject is Cue cue && parameters is

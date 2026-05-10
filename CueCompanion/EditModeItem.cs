@@ -5,6 +5,7 @@ public enum EditModeMethod
     Create,
     Update,
     Delete,
+    DeleteAll,
     Move,
 }
 

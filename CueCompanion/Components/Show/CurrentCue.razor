@@ -1,4 +1,5 @@
-@inject AuthService Auth
+@inject AuthService         Auth
+@inject SimpleDialogService Dialogs
 @using System.ComponentModel.DataAnnotations
 @implements IDisposable
 <GridChild ColumnStart="2" ColumnEnd="2" RowStart="1" RowEnd="3">
@@ -13,7 +14,14 @@
 
         if (_currentCue is not null)
         {
-            <MudText Typo="Typo.h1">Current Cue - @_currentCue.Name </MudText>
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="2">
+                <MudText Typo="Typo.h1">Current Cue - @_currentCue.Name </MudText>
+                <MudTooltip Text="Delete all tasks">
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Primary"
+                                   OnClick="@DeleteAllTasksButtonPressed"
+                                   Size="Size.Medium"/>
+                </MudTooltip>
+            </MudStack>
 
             @if (!IsEditMode)
             {
@@ -111,7 +119,7 @@
     //              RoleID, IsChecked
     private Dictionary<int, bool> _roleFilters = new();
 
-    private Cue? _currentCue;
+    private Cue?           _currentCue;
     private List<CueTask>? _currentTasks;
     private Action?        _showServiceStateChangedHandler;
 
@@ -207,6 +215,24 @@
         if (Auth.ApiKey is { } key)
         {
             ShowService?.SendEditModeAction(key, EditModeMethod.Delete, cueTask);
+        }
+    }
+
+
+    private async Task DeleteAllTasksButtonPressed()
+    {
+        bool? result = await DialogService.ShowMessageBoxAsync(
+                           "Warning",
+                           "Deleting all tasks can not be undone!",
+                           "Delete!", cancelText: "Cancel");
+
+        if ((result == null ? "Canceled" : "Deleted!") != "Deleted!") return;
+
+
+        if (ShowService.CurrentlyViewingShow is { Id: { } showID } && Auth.ApiKey is { } key && _currentTasks?[0] is { } firstTask)
+        {
+            // Need to pass a task to tell it in which show and cue
+            (await ShowService.SendEditModeAction(key, EditModeMethod.DeleteAll, firstTask)).IfError(e => Dialogs.ShowError("Error deleting tasks", e));
         }
     }
 }
