@@ -29,9 +29,9 @@ public class User
         _permissions = permissions;
     }
 
-    public bool HasPermission(int permissionID)
+    public bool HasPermission(int permissionID, bool valueIfUnknown = false)
     {
-        if (_permissions == null || _permissions.Length == 0) return false;
+        if (_permissions == null || _permissions.Length == 0) return valueIfUnknown;
         return _permissions.Any(p => p.Id == permissionID);
     }
 }

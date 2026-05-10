@@ -106,6 +106,6 @@ public class AuthService : StateSubscriberService
         if (User == null) return valueIfUnknown;
         if (!PermissionsCache.TryGetValue(permissionName, out int permissionId)) return valueIfUnknown;
 
-        return User.HasPermission(permissionId);
+        return User.HasPermission(permissionId, valueIfUnknown);
     }
 }
