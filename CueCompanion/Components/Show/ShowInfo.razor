@@ -18,13 +18,13 @@
                 @if (IsLiveMode)
                 {
                     <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStopShow"
-                               Disabled="@IsEditMode">Stop
+                               Disabled="@IsShowStartStopButtonsDisabled">Stop
                     </MudButton>
                 }
                 else
                 {
                     <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@OnStartShow"
-                               Disabled="@IsEditMode">Start
+                               Disabled="@IsShowStartStopButtonsDisabled">Start
                     </MudButton>
                 }
             </MudTooltip>
@@ -208,6 +208,8 @@
 
     [CascadingParameter(Name = "IsEditMode")]
     public bool IsEditMode { get; set; }
+
+    private bool IsShowStartStopButtonsDisabled => IsEditMode || SelectedShowBound == null;
 
 
     [CascadingParameter]
