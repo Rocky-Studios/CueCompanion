@@ -31,9 +31,16 @@
         }
         <MudSelect T="Show?" Style="flex:1;" ToStringFunc="ShowToStringFunc" @bind-Value="@SelectedShowBound">
             @{
-                Show[] shows = ShowService!.Shows;
+                var shows = ShowService!.Shows.ToList();
+                shows.Sort((a, b) =>
+                           {
+                               bool aIsToday = IsShowToday(a, false);
+                               bool bIsToday = IsShowToday(b, false);
+                               if (aIsToday != bIsToday) return aIsToday ? -1 : 1;
+                               return DateTime.Compare(a.Start, b.Start);
+                           });
             }
-            @if(shows.Length == 0 || SelectedShowBound == null)
+            @if (shows.Count == 0 || SelectedShowBound == null)
             {
                 <MudSelectItem Value="@null" T="Show?"/>
             }
@@ -46,6 +53,7 @@
                         <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled"
                                  Style="margin-left:4px;">Today
                         </MudChip>
+                        <MudDivider Light="false"/>
                     }
                 </MudSelectItem>
             }
@@ -381,7 +389,11 @@
         (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Show duplicated, but failed to refresh live info", e));
     }
 
-    private string ShowToStringFunc(Show? show) => show?.Name ?? "No show";
+    private static string ShowToStringFunc(Show? show)
+    {
+        if (show is null) return "No show";
+        return show.Name + " (" + show.Start.ToShortDateString() + ")";
+    }
 
     private bool IsShowToday(Show show, bool falseIfSelected)
     {
