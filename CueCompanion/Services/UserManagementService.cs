@@ -77,7 +77,7 @@ public class UserManagementService : StateSubscriberService
         if (_userManagementHub == null)
             throw new InvalidOperationException("AuthHub connection is not established.");
 
-        return await _userManagementHub.InvokeAsync<Result>("EnableLoggingInForUser", apiKey, userID);
+        return await _userManagementHub.InvokeAsync<Result>("SetLoggingInForUser", apiKey, userID);
     }
 
     public async Task<Result> DisableLoggingIn(string apiKey, int userID)

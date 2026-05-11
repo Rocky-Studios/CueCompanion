@@ -82,7 +82,7 @@ public class UserManagementHub : Hub
     {
         try
         {
-            return Task.FromResult(UserManager.EnableLoggingInForUser(apiKey, userID));
+            return Task.FromResult(UserManager.SetLoggingInForUser(apiKey, userID, true));
         }
         catch (Exception exception)
         {
@@ -94,7 +94,7 @@ public class UserManagementHub : Hub
     {
         try
         {
-            return Task.FromResult(UserManager.DisableLoggingInForUser(apiKey, userID));
+            return Task.FromResult(UserManager.SetLoggingInForUser(apiKey, userID, false));
         }
         catch (Exception exception)
         {
@@ -102,5 +102,6 @@ public class UserManagementHub : Hub
         }
     }
 
-    public async Task<Result> ChangePassword(string apiKey, string currentPassword, string newPassword) => await UserManager.ChangePassword(apiKey, currentPassword, newPassword);
+    public async Task<Result> ChangePassword(string apiKey, string currentPassword, string newPassword) =>
+        UserManager.ChangePassword(apiKey, currentPassword, newPassword);
 }

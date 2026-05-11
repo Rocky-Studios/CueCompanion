@@ -62,18 +62,24 @@ public static class UserManager
 
     public static Result CreateNewUser(string apiKey, string userName, string password)
     {
-        var r = HasManageUsersPermission(apiKey);
-        if (!r.IsSuccess) return r.Error!;
+        AuditAction auditAction = new(AuditActionType.Create, DateTime.UtcNow, apiKey, null, $"Create user '{userName}'");
+        var         r           = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess)
+        {
+            auditAction.SetErrorAndUpdate(r.Error!);
+            return auditAction.Error;
+        }
 
         if (Db.Table<User>().Any(u => u.UserName == userName))
         {
-            return "Username already exists.";
+            auditAction.Error = "Username already exists.";
+            return auditAction.Error;
         }
 
         if (!ValidateUsername(userName))
         {
-            return
-                "Invalid username. Usernames must be 3-20 characters long and can only contain letters, digits, and underscores.";
+            auditAction.Error = "Invalid username. Usernames must be 3-20 characters long and can only contain letters, digits, and underscores.";
+            return auditAction.Error;
         }
 
         User newUser = new()
@@ -82,6 +88,9 @@ public static class UserManager
             PasswordHash = Hash.HashPassword(password),
         };
         Db.Insert(newUser);
+        auditAction.Success = true;
+        auditAction.ItemID  = newUser.Id;
+        auditAction.UpdateInDatabase();
         return Result.Success();
     }
 
@@ -95,19 +104,36 @@ public static class UserManager
 
     public static Result DeleteUser(string apiKey, int userId)
     {
-        var r = HasManageUsersPermission(apiKey);
-        if (!r.IsSuccess) return r.Error!;
+        AuditAction auditAction = new(AuditActionType.Delete, DateTime.UtcNow, apiKey, userId, $"Delete user ID{userId}");
+        var         r           = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess)
+        {
+            auditAction.SetErrorAndUpdate(r.Error!);
+            return auditAction.Error;
+        }
 
         User? user = Db.Table<User>().FirstOrDefault(u => u?.Id == userId, null);
-        if (user == null) return "User not found.";
+        if (user == null)
+        {
+            auditAction.Error = "User not found.";
+            return auditAction.Error;
+        }
+
         Db.Delete(user);
+        auditAction.Success = true;
+        auditAction.UpdateInDatabase();
         return Result.Success();
     }
 
     public static Result AddPermissionToUser(string apiKey, int userID, int permissionID)
     {
-        var r = HasManageUsersPermission(apiKey);
-        if (!r.IsSuccess) return r.Error!;
+        AuditAction auditAction = new(AuditActionType.Create, DateTime.UtcNow, apiKey, userID, $"Add permission ID{permissionID} to user ID{userID}");
+        var         r           = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess)
+        {
+            auditAction.Error = r.Error!;
+            return auditAction.Error;
+        }
 
         UserPermission userPermission = new()
         {
@@ -117,64 +143,86 @@ public static class UserManager
         };
 
         Db.Insert(userPermission);
+        auditAction.Success = true;
+        auditAction.UpdateInDatabase();
         return Result.Success();
     }
 
     public static Result RemovePermissionFromUser(string apiKey, int userID, int permissionID)
     {
-        var r = HasManageUsersPermission(apiKey);
-        if (!r.IsSuccess) return r.Error!;
+        AuditAction auditAction = new(AuditActionType.Delete, DateTime.UtcNow, apiKey, userID, $"Remove permission ID{permissionID} from user ID{userID}");
+        var         r           = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess)
+        {
+            auditAction.Error = r.Error!;
+            return auditAction.Error;
+        }
+
 
         UserPermission? userPermission = Db.Table<UserPermission>()
                                            .FirstOrDefault(up => up?.UserId == userID && up.PermissionId == permissionID, null);
-        if (userPermission == null) return "User permission not found.";
+        if (userPermission == null)
+        {
+            auditAction.SetErrorAndUpdate("User permission not found.");
+            return auditAction.Error;
+        }
+
         Db.Delete(userPermission);
+        auditAction.Success = true;
+        auditAction.UpdateInDatabase();
         return Result.Success();
     }
 
-    public static Result EnableLoggingInForUser(string apiKey, int userID)
+    public static Result SetLoggingInForUser(string apiKey, int userID, bool value)
     {
-        var r = HasManageUsersPermission(apiKey);
-        if (!r.IsSuccess) return r.Error!;
+        AuditAction auditAction = new(AuditActionType.Update, DateTime.UtcNow, apiKey, userID, $"Set logging in for user ID{userID} to {value}");
+        var         r           = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess)
+        {
+            auditAction.SetErrorAndUpdate("User not found.");
+            return auditAction.Error;
+        }
 
         User? user = Db.Table<User>().FirstOrDefault(u => u?.Id == userID, null);
-        if (user == null) return "User not found.";
-        user.CanLogin = true;
+        if (user == null)
+        {
+            auditAction.SetErrorAndUpdate("User not found.");
+            return auditAction.Error;
+        }
+
+        user.CanLogin = value;
         Db.Update(user);
+        auditAction.Success = true;
+        auditAction.UpdateInDatabase();
         return Result.Success();
     }
 
-    public static Result DisableLoggingInForUser(string apiKey, int userID)
+    public static Result ChangePassword(string apiKey, string currentPassword, string newPassword)
     {
-        var r = HasManageUsersPermission(apiKey);
-        if (!r.IsSuccess) return r.Error!;
-
-        User? user = Db.Table<User>().FirstOrDefault(u => u?.Id == userID, null);
-        if (user == null) return "User not found.";
-        user.CanLogin = false;
-        Db.Update(user);
-        return Result.Success();
-    }
-
-    public static Task<Result> ChangePassword(string apiKey, string currentPassword, string newPassword)
-    {
+        var  userResult = GetUserByApiKey(apiKey);
+        User user       = userResult.Value!;
+        int  userID     = user.Id;
+        if (!userResult.IsSuccess) return userResult.Error ?? "User not found.";
+        AuditAction auditAction = new(AuditActionType.Update, DateTime.UtcNow, apiKey, userID, $"Change password for user ID{userID}");
         try
         {
-            var userResult = GetUserByApiKey(apiKey);
-            if (!userResult.IsSuccess) return Task.FromResult<Result>(userResult.Error ?? "User not found.");
-
             string hashedProvidedPassword = Hash.HashPassword(currentPassword);
-            User   user                   = userResult.Value!;
             if (hashedProvidedPassword != user.PasswordHash)
-                return Task.FromResult<Result>("Current password is incorrect.");
+            {
+                auditAction.SetErrorAndUpdate("Current password is incorrect.");
+                return auditAction.Error;
+            }
 
             user.PasswordHash = Hash.HashPassword(newPassword);
             Db.Update(user);
-            return Task.FromResult(Result.Success());
+            auditAction.Success = true;
+            auditAction.UpdateInDatabase();
+            return Result.Success();
         }
         catch (Exception exception)
         {
-            return Task.FromException<Result>(exception);
+            auditAction.SetErrorAndUpdate(exception.ToString());
+            return auditAction.Error;
         }
     }
 
@@ -297,14 +345,25 @@ public static class UserManager
 
     public static Result RenameUser(string apiKey, int userID, string newUserName)
     {
-        var r = HasManageUsersPermission(apiKey);
-        if (!r.IsSuccess) return r.Error!;
+        AuditAction auditAction = new(AuditActionType.Update, DateTime.UtcNow, apiKey, userID, $"Rename user ID{userID} to '{newUserName}'");
+        var         r           = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess)
+        {
+            auditAction.SetErrorAndUpdate(r.Error!);
+            return auditAction.Error;
+        }
 
         User? user = Db.Table<User>().FirstOrDefault(u => u?.Id == userID, null);
-        if (user == null) return "User not found.";
+        if (user == null)
+        {
+            auditAction.SetErrorAndUpdate("User not found.");
+            return auditAction.Error;
+        }
 
         user.UserName = newUserName;
         Db.Update(user);
+        auditAction.Success = true;
+        auditAction.UpdateInDatabase();
         return Result.Success();
     }
 }

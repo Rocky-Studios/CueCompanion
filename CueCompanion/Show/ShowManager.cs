@@ -41,140 +41,6 @@ public static class ShowManager
         _db.InsertAll(toAdd);
     }
 
-    public static void CreateDefaultShow()
-    {
-        SQLiteConnection db = DatabaseHandler.Connection;
-
-        // Create the show
-        Show show = new()
-        {
-            Name  = "Music Night Showcase",
-            Start = DateTime.Now,
-            End   = DateTime.Now.AddHours(3),
-        };
-        db.Insert(show);
-
-        // Create cues based on the image
-        Cue cue1 = new() { ShowId = show.Id, Name = "Big Band", Position           = 1 };
-        Cue cue2 = new() { ShowId = show.Id, Name = "Rock Band", Position          = 2 };
-        Cue cue3 = new() { ShowId = show.Id, Name = "Choir", Position              = 3, DurationMins = 4 };
-        Cue cue4 = new() { ShowId = show.Id, Name = "Concert Band", Position       = 4 };
-        Cue cue5 = new() { ShowId = show.Id, Name = "Big Band (Reprise)", Position = 5 };
-
-        db.Insert(cue1);
-        db.Insert(cue2);
-        db.Insert(cue3);
-        db.Insert(cue4);
-        db.Insert(cue5);
-
-        // Lookup roles
-        Role soundRole  = db.Table<Role>().First(r => r.Name == "Sound");
-        Role cameraRole = db.Table<Role>().First(r => r.Name == "Camera");
-        Role stageRole  = db.Table<Role>().First(r => r.Name == "Stage");
-
-        // --- Cue Tasks from the image ---
-
-        // CUE 1 — Big Band
-        db.Insert(new CueTask
-        {
-            CueId  = cue1.Id,
-            RoleId = soundRole.Id,
-            Tasks  = "Mute M5 1-6; Mute Stage Overheads; Unmute Piano, Trumpets, Trombone, Sax, Guitar Amp, Bass Amp",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue1.Id,
-            RoleId = cameraRole.Id,
-            Tasks  = "Camera zoom out and pan across MPC",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue1.Id,
-            RoleId = stageRole.Id,
-            Tasks  = "Curtains closed",
-        });
-
-        // CUE 2 — Rock Band
-        db.Insert(new CueTask
-        {
-            CueId  = cue2.Id,
-            RoleId = soundRole.Id,
-            Tasks  = "Maintain band mix; prepare for guitar solo",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue2.Id,
-            RoleId = cameraRole.Id,
-            Tasks  = "Watch for sax solo",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue2.Id,
-            RoleId = stageRole.Id,
-            Tasks  = "No stage movement",
-        });
-
-        // CUE 3 — Choir (highlighted in red)
-        db.Insert(new CueTask
-        {
-            CueId  = cue3.Id,
-            RoleId = soundRole.Id,
-            Tasks  = "Bring up choir mics; reduce band levels",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue3.Id,
-            RoleId = cameraRole.Id,
-            Tasks  = "When conductor raises hands, zoom in on choir",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue3.Id,
-            RoleId = stageRole.Id,
-            Tasks  = "Curtains open slowly",
-        });
-
-        // CUE 4 — Concert Band
-        db.Insert(new CueTask
-        {
-            CueId  = cue4.Id,
-            RoleId = soundRole.Id,
-            Tasks  = "Balance woodwinds; reduce brass",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue4.Id,
-            RoleId = cameraRole.Id,
-            Tasks  = "Wide shot of full ensemble",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue4.Id,
-            RoleId = stageRole.Id,
-            Tasks  = "Music stands repositioned",
-        });
-
-        // CUE 5 — Big Band (Reprise)
-        db.Insert(new CueTask
-        {
-            CueId  = cue5.Id,
-            RoleId = soundRole.Id,
-            Tasks  = "Return to Big Band mix",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue5.Id,
-            RoleId = cameraRole.Id,
-            Tasks  = "Track trumpet section",
-        });
-        db.Insert(new CueTask
-        {
-            CueId  = cue5.Id,
-            RoleId = stageRole.Id,
-            Tasks  = "Curtains half‑closed for finale",
-        });
-    }
-
     private static SQLiteConnection _db = DatabaseHandler.Connection;
 
     public static void Init()
@@ -215,7 +81,7 @@ public static class ShowManager
         return Result.Success();
     }
 
-    public static Result<object> EditAction(EditModeMethod  method, object newObject, Type objectType,
+    public static Result<object> EditAction(string          apiKey, EditModeMethod method, object newObject, Type objectType,
                                             EditParameters? parameters)
     {
         void ReorderCues(int showID)
@@ -232,10 +98,39 @@ public static class ShowManager
             }
         }
 
+        int GetIDFromObject(object obj)
+        {
+            return obj switch
+                   {
+                       Show s     => s.Id,
+                       Cue c      => c.Id,
+                       CueTask ct => ct.Id,
+                       _          => throw new ArgumentOutOfRangeException(nameof(obj), $"Unsupported object type {obj.GetType()} for getting ID."),
+                   };
+        }
+
+        AuditActionType EditMethodToAuditMethod()
+        {
+            return method switch
+                   {
+                       EditModeMethod.Create    => AuditActionType.Create,
+                       EditModeMethod.Update    => AuditActionType.Update,
+                       EditModeMethod.Delete    => AuditActionType.Delete,
+                       EditModeMethod.DeleteAll => AuditActionType.Delete,
+                       EditModeMethod.Move      => AuditActionType.Update,
+                       _                        => throw new ArgumentOutOfRangeException(nameof(method), method, null),
+                   };
+        }
+
+        AuditAction auditAction = new(EditMethodToAuditMethod(), DateTime.UtcNow, apiKey, null, "EDIT MODE ACTION");
+
         if (!(newObject.GetType() == objectType))
         {
-            return "Type mismatch. Argument " + newObject + " is not of type" + objectType;
+            auditAction.SetErrorAndUpdate($"Type mismatch. Argument {newObject} is not of type {objectType}.");
+            return auditAction.Error;
         }
+
+        auditAction.UpdateInDatabase();
 
         switch (method)
         {
@@ -244,6 +139,8 @@ public static class ShowManager
                 _db.Insert(newObject);
                 if (newObject is Cue cue)
                     ReorderCues(cue.ShowId);
+                auditAction.Description += $" - Created object of type {objectType} with ID {GetIDFromObject(newObject)}.";
+                auditAction.UpdateInDatabase();
                 return newObject;
             }
             case EditModeMethod.Update:
@@ -251,6 +148,8 @@ public static class ShowManager
                 _db.Update(newObject);
                 if (newObject is Cue cue)
                     ReorderCues(cue.ShowId);
+                auditAction.Description += $" - Updated object of type {objectType} with ID {GetIDFromObject(newObject)}.";
+                auditAction.UpdateInDatabase();
                 return newObject;
             }
             case EditModeMethod.Delete:
@@ -258,6 +157,8 @@ public static class ShowManager
                 _db.Delete(newObject);
                 if (newObject is Cue cue)
                     ReorderCues(cue.ShowId);
+                auditAction.Description += $" - Deleted object of type {objectType} with ID {GetIDFromObject(newObject)}.";
+                auditAction.UpdateInDatabase();
                 return Result.Success();
             }
             case EditModeMethod.DeleteAll:
@@ -268,6 +169,8 @@ public static class ShowManager
                        .Where(c => c.ShowId == cue.ShowId)
                        .ToList()
                        .ForEach(c => _db.Delete(c));
+                    auditAction.Description += $" - Deleted all cues in show ID{cue.ShowId}";
+                    auditAction.UpdateInDatabase();
                     return Result.Success();
                 }
 
@@ -277,10 +180,13 @@ public static class ShowManager
                        .Where(ct => ct.CueId == cueTask.CueId)
                        .ToList()
                        .ForEach(ct => _db.Delete(ct));
+                    auditAction.Description += $" - Deleted all tasks in cue ID{cueTask.CueId}";
+                    auditAction.UpdateInDatabase();
                     return Result.Success();
                 }
 
-                return "DeleteAll action is only supported for cues and tasks.";
+                auditAction.SetErrorAndUpdate("DeleteAll action is only supported for cues and tasks.");
+                return auditAction.Error;
             }
             case EditModeMethod.Move:
             {
@@ -295,26 +201,38 @@ public static class ShowManager
                                        .FirstOrDefault(c => c.ShowId == cue.ShowId && c.Position == cue.Position + 1);
                     if ((direction == -1 && cueBefore == null) || (direction == 1 && cueAfter == null))
                     {
-                        return "Cannot move cue further in that direction.";
+                        auditAction.SetErrorAndUpdate("Cannot move cue further in that direction.");
+                        return auditAction.Error;
                     }
 
                     cue.Position += direction;
                     _db.Update(cue);
 
                     Cue? otherCue = direction == -1 ? cueBefore : cueAfter;
-                    if (otherCue == null) return "Internal server error";
+                    if (otherCue == null)
+                    {
+                        auditAction.SetErrorAndUpdate("Internal server error. Cue to swap with not found.");
+                        return auditAction.Error;
+                    }
 
                     // Move the other cue in the opposite direction to swap positions
                     otherCue.Position -= direction;
                     _db.Update(otherCue);
+                    auditAction.Description += $" - Moved cue ID {cue.Id} {(direction == -1 ? "up" : "down")} in show ID {cue.ShowId}.";
+                    auditAction.UpdateInDatabase();
                     return Result.Success();
                 }
                 else
                 {
-                    return "Move action is only implemented for Cues with a Direction parameter.";
+                    auditAction.SetErrorAndUpdate("Move action is only implemented for Cues with a Direction parameter.");
+                    return auditAction.Error;
                 }
             }
-            default: return "Not implemented " + method + " " + objectType;
+            default:
+            {
+                auditAction.SetErrorAndUpdate($"Not implemented {method} {objectType}");
+                return auditAction.Error;
+            }
         }
     }
 

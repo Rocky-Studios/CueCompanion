@@ -208,7 +208,7 @@ public class ShowHub : Hub
                 Type    objectType = Type.GetType(objectTypeAsString)!;
                 object? obj        = newObject.Deserialize(objectType, _options);
 
-                var res = ShowManager.EditAction(method, obj!, objectType, parameters);
+                var res = ShowManager.EditAction(apiKey, method, obj!, objectType, parameters);
                 _ = BroadcastShowUpdate();
                 return Task.FromResult(res);
             }

@@ -20,6 +20,7 @@ public static class DatabaseHandler
         Connection.CreateTable<Cue>();
         Connection.CreateTable<CueTask>();
         Connection.CreateTable<Message>();
+        Connection.CreateTable<AuditAction>();
 
 
         ShowManager.CreateDefaultRoles();
