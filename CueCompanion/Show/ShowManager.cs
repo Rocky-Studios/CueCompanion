@@ -72,11 +72,6 @@ public static class ShowManager
         Role cameraRole = db.Table<Role>().First(r => r.Name == "Camera");
         Role stageRole  = db.Table<Role>().First(r => r.Name == "Stage");
 
-        // Assign roles to user 1 for this show
-        db.Insert(new ShowRoleAssignment { ShowID = show.Id, RoleId = soundRole.Id, UserId  = 1 });
-        db.Insert(new ShowRoleAssignment { ShowID = show.Id, RoleId = cameraRole.Id, UserId = 1 });
-        db.Insert(new ShowRoleAssignment { ShowID = show.Id, RoleId = stageRole.Id, UserId  = 1 });
-
         // --- Cue Tasks from the image ---
 
         // CUE 1 — Big Band

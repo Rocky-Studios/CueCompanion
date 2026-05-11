@@ -19,7 +19,6 @@ public static class DatabaseHandler
         Connection.CreateTable<Role>();
         Connection.CreateTable<Cue>();
         Connection.CreateTable<CueTask>();
-        Connection.CreateTable<ShowRoleAssignment>();
         Connection.CreateTable<Message>();
 
 
