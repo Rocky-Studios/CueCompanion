@@ -1,5 +1,4 @@
 using CueCompanion.Components;
-using CueCompanion.Notes;
 using CueCompanion.UserManagement;
 using SQLite;
 
@@ -22,7 +21,6 @@ public static class DatabaseHandler
         Connection.CreateTable<CueTask>();
         Connection.CreateTable<ShowRoleAssignment>();
         Connection.CreateTable<Message>();
-        Connection.CreateTable<Note>();
 
 
         ShowManager.CreateDefaultRoles();
@@ -77,11 +75,5 @@ public static class DatabaseHandler
                                                          if (Connection.Table<Cue>().FirstOrDefault(c => c.Id == ct.CueId) == null)
                                                              Connection.Delete(ct);
                                                      });
-
-        Connection.Table<Note>().ToList().ForEach(n =>
-                                                  {
-                                                      if (Connection.Table<Show>().FirstOrDefault(s => s.Id == n.ShowId) == null)
-                                                          Connection.Delete(n);
-                                                  });
     }
 }

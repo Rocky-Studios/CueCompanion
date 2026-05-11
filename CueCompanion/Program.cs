@@ -4,6 +4,7 @@ using CueCompanion.Services;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
+using QuestPDF;
 using QuestPDF.Infrastructure;
 
 namespace CueCompanion;
@@ -12,7 +13,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        QuestPDF.Settings.License = LicenseType.Community;
+        Settings.License = LicenseType.Community;
         DatabaseHandler.Init();
 
         ShowManager.Init();
@@ -38,9 +39,6 @@ public class Program
 
         builder.Services.AddScoped<ConfigService>();
         builder.Services.AddSingleton<ConfigHub>();
-
-        builder.Services.AddScoped<NotesService>();
-        builder.Services.AddSingleton<NotesHub>();
 
         builder.Services.AddScoped<SimpleDialogService>();
 
@@ -73,7 +71,6 @@ public class Program
         app.MapHub<ShowHub>("/api/show");
         app.MapHub<ChatHub>("/api/chat");
         app.MapHub<ConfigHub>("/api/config");
-        app.MapHub<NotesHub>("/api/notes");
 
         app.UseStaticFiles();
         app.MapStaticAssets();

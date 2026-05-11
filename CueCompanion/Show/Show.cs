@@ -18,10 +18,4 @@ public class Show
 
     [Column("end")]
     public DateTime End { get; set; }
-
-    [Column("description")]
-    public string? Description { get; set; }
-
-    [Column("notes")]
-    public string? Notes { get; set; }
 }

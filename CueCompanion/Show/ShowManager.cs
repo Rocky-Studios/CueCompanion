@@ -1,4 +1,3 @@
-using CueCompanion.Notes;
 using SQLite;
 
 namespace CueCompanion;
@@ -49,11 +48,9 @@ public static class ShowManager
         // Create the show
         Show show = new()
         {
-            Name        = "Music Night Showcase",
-            Description = "Auto‑generated from cue sheet.",
-            Notes       = "Imported from image + example data.",
-            Start       = DateTime.Now,
-            End         = DateTime.Now.AddHours(3),
+            Name  = "Music Night Showcase",
+            Start = DateTime.Now,
+            End   = DateTime.Now.AddHours(3),
         };
         db.Insert(show);
 
@@ -332,14 +329,12 @@ public static class ShowManager
         if (show == null) return Result<ShowBundle>.Failure($"Show with ID {showID} not found.");
 
         var cues  = GetCuesForShow(showID);
-        var notes = _db.Table<Note>().Where(n => n.ShowId == showID).ToArray();
         var tasks = GetTasksForShow(showID);
 
         return new ShowBundle
         {
             Show  = show,
             Cues  = cues,
-            Notes = notes,
             Tasks = tasks,
         };
     }
@@ -360,13 +355,6 @@ public static class ShowManager
                 bundleCue.Id     = 0;
                 _db.Insert(bundleCue);
                 cueIdMap.Add(oldId, bundleCue.Id);
-            }
-
-            foreach (Note bundleNote in bundle.Notes)
-            {
-                bundleNote.ShowId = showID;
-                bundleNote.Id     = 0;
-                _db.Insert(bundleNote);
             }
 
             foreach (CueTask bundleTask in bundle.Tasks)
