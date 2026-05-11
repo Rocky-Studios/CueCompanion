@@ -7,7 +7,20 @@
             <EditableText @bind-Value="@Cue.Name" IsEditMode="IsEditMode" OnValueChanged="CueNameChanged" />
         </div>
 
-        <div class="d-flex align-items-center gap-1 flex-shrink-0">
+        <div class="d-flex align-items-center gap-1 flex-shrink-0 justify-content-between">
+            @if (!IsEditMode)
+            {
+                @if (Cue.DurationMins.HasValue)
+                {
+                    <MudText Inline="true">@(Cue.DurationMins + "m")</MudText>
+                }
+            }
+            else
+            {
+                <MudNumericField T="int?" Value="@Cue.DurationMins" ValueChanged="i => OnCueDurationChanged(Cue, i)"
+                                 Style="max-width: 120px;" Label="Duration" HelperText="Minutes"
+                                 Clearable="true"></MudNumericField>
+            }
             <MudCard Class="@GetBadgeClass(Cue.CardColor)"
                      Style="height: 30px; width: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
                 <MudText Inline="true">@Cue.Position</MudText>
@@ -16,15 +29,15 @@
             {
                 <MudTooltip Text="Move cue up">
                     <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Color="Color.Primary"
-                                   OnClick="@CueMovedUp"/>
+                                   Size="Size.Small" OnClick="@CueMovedUp"/>
                 </MudTooltip>
                 <MudTooltip Text="Delete cue">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Primary"
-                                   OnClick="@CueDeleted"/>
+                                   Size="Size.Small" OnClick="@CueDeleted"/>
                 </MudTooltip>
                 <MudTooltip Text="Move cue down">
                     <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Primary"
-                                   OnClick="@CueMovedDown"/>
+                                   Size="Size.Small" OnClick="@CueMovedDown"/>
                 </MudTooltip>
             }
         </div>
@@ -125,6 +138,19 @@
                 });
                 res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
             });
+        }
+    }
+
+    private void OnCueDurationChanged(Cue cue, int? duration)
+    {
+        if (Auth.ApiKey is { } key)
+        {
+            Task.Run(async () =>
+                     {
+                         cue.DurationMins = duration;
+                         var res = await ShowService.SendEditModeAction(key, EditModeMethod.Update, Cue);
+                         res.IfError(e => Dialogs.ShowError("Error", "Failed to change cue duration: " + e));
+                     });
         }
     }
 }
