@@ -10,7 +10,8 @@ public static class DatabaseHandler
 
     public static void Init()
     {
-        Connection = new SQLiteConnection("data.db");
+        Connection = new SQLiteConnection(Path.Combine(AppContext.BaseDirectory, "data.db"));
+
         Connection.CreateTable<Show>();
         Connection.CreateTable<User>();
         Connection.CreateTable<ApiKey>();
@@ -54,9 +55,18 @@ public static class DatabaseHandler
                              await _purgeTimer.WaitForNextTickAsync();
                          }
                      });
+        _backupTimer = new PeriodicTimer(TimeSpan.FromMinutes(10));
+        _ = Task.Run(async () =>
+                     {
+                         while (true)
+                         {
+                             Backup();
+                             await _backupTimer.WaitForNextTickAsync();
+                         }
+                     });
     }
 
-    private static PeriodicTimer _purgeTimer = null!;
+    private static PeriodicTimer _purgeTimer = null!, _backupTimer = null!;
 
     private static void PurgeUnreferencedItems()
     {
@@ -75,5 +85,29 @@ public static class DatabaseHandler
                                                          if (Connection.Table<Cue>().FirstOrDefault(c => c.Id == ct.CueId) == null)
                                                              Connection.Delete(ct);
                                                      });
+    }
+
+    private static void Backup()
+    {
+        try
+        {
+            string backupLocation    = Environment.GetEnvironmentVariable("BACKUP_PATH") ?? "backups";
+            string backupDirAbsolute = Path.Combine(AppContext.BaseDirectory, backupLocation);
+            if (!Directory.Exists(backupDirAbsolute))
+                Directory.CreateDirectory(backupDirAbsolute);
+
+            string backupFilePath = Path.Combine(backupDirAbsolute, $"database-{DateTime.UtcNow:yyyyMMdd-HHmmss-fffffff}.db");
+            string escapedPath    = backupFilePath.Replace("'", "''");
+
+            Console.WriteLine($"Backing up database to {backupFilePath}...");
+            Connection.Execute($"VACUUM INTO '{escapedPath}'");
+            AuditAction auditAction = new(AuditActionType.Other, DateTime.Now, "", null, "Database backup.");
+            auditAction.UpdateInDatabase();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }
