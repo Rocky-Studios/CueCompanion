@@ -127,28 +127,38 @@ span.nav-label
     margin-bottom: 2rem;
 }
 
-.mud-paper.cue-card-gray {
+.cue-card-gray, .mud-paper.cue-card-gray {
     background-color: #202020;
     color: #bbb;
 }
 
-.mud-paper.cue-card-blue {
-    background-color: #007bff;
-    color: white;
-}
-
-.mud-paper.cue-card-green {
-    background-color: #28a745;
-    color: white;
-}
-
-.mud-paper.cue-card-red {
+.cue-card-red, .mud-paper.cue-card-red {
     background-color: #dc3545;
     color: white;
 }
 
-.mud-paper.cue-card-dark-red {
+.cue-card-dark-red, .mud-paper.cue-card-dark-red {
     background-color: #7a2227;
+    color: white;
+}
+
+.cue-card-green, .mud-paper.cue-card-green {
+    background-color: #28a745;
+    color: white;
+}
+
+.cue-card-dark-green, .mud-paper.cue-card-dark-green {
+    background-color: #175f28;
+    color: white;
+}
+
+.cue-card-blue, .mud-paper.cue-card-blue {
+    background-color: #007bff;
+    color: white;
+}
+
+.cue-card-dark-blue, .mud-paper.cue-card-dark-blue {
+    background-color: #004ea2;
     color: white;
 }
 
@@ -260,4 +270,8 @@ div.live-mode-label > div {
     div.live-mode-label {
         margin-top: var(--mud-appbar-height);
     }
+}
+
+.mud-popover.mud-popover-open.mud-paper.mud-elevation-8.overflow-y-auto {
+    overflow-y: clip !important;
 }

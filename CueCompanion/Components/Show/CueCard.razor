@@ -1,25 +1,30 @@
 @inject AuthService Auth
 @inject SimpleDialogService Dialogs
 
-<MudCard Class="@GetClass()" @onclick="OnCardClick">
+<MudCard Class="@GetCardClass()" @onclick="OnCardClick">
     <div class="d-flex justify-content-between align-items-center m-1">
         <div class="me-2 flex-grow-1">
             <EditableText @bind-Value="@Cue.Name" IsEditMode="IsEditMode" OnValueChanged="CueNameChanged" />
         </div>
 
         <div class="d-flex align-items-center gap-1 flex-shrink-0">
-            <MudText Inline="true">@Cue.Position</MudText>
+            <MudCard Class="@GetBadgeClass(Cue.CardColor)"
+                     Style="height: 30px; width: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                <MudText Inline="true">@Cue.Position</MudText>
+            </MudCard>
             @if (IsEditMode)
             {
                 <MudTooltip Text="Move cue up">
-                    <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Color="MudBlazor.Color.Primary"
+                    <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Color="Color.Primary"
                                    OnClick="@CueMovedUp"/>
                 </MudTooltip>
                 <MudTooltip Text="Delete cue">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="MudBlazor.Color.Primary" OnClick="@CueDeleted" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Primary"
+                                   OnClick="@CueDeleted"/>
                 </MudTooltip>
                 <MudTooltip Text="Move cue down">
-                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Color="MudBlazor.Color.Primary" OnClick="@CueMovedDown" />
+                    <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Primary"
+                                   OnClick="@CueMovedDown"/>
                 </MudTooltip>
             }
         </div>
@@ -34,32 +39,39 @@
     public required ShowService ShowService { get; set; }
 
     [Parameter]
-    public required CueCardColor Color { get; set; } = CueCardColor.Gray;
-
-
-    [Parameter]
     public EventCallback OnClick { get; set; }
 
 
     [CascadingParameter(Name = "IsEditMode")]
     public bool IsEditMode { get; set; }
 
+    [Parameter]
+    public required bool IsSelected { get; set; }
 
     private async Task OnCardClick()
     {
         await OnClick.InvokeAsync();
     }
 
-    private string GetClass()
+    public static string GetBadgeClass(CueCardColor color)
     {
-        return Color switch
-        {
-            CueCardColor.Gray => "cue-card-gray",
-            CueCardColor.Green => "cue-card-green",
-            CueCardColor.Red => "cue-card-red",
-            CueCardColor.DarkRed => "cue-card-dark-red",
-            _                    => "cue-card-gray",
-        };
+        return color switch
+               {
+                   CueCardColor.Gray      => "cue-card-gray",
+                   CueCardColor.Red       => "cue-card-red",
+                   CueCardColor.DarkRed   => "cue-card-dark-red",
+                   CueCardColor.Green     => "cue-card-green",
+                   CueCardColor.DarkGreen => "cue-card-dark-green",
+                   CueCardColor.Blue      => "cue-card-blue",
+                   CueCardColor.DarkBlue  => "cue-card-dark-blue",
+                   _                      => "cue-card-gray",
+               };
+    }
+
+    public string GetCardClass()
+    {
+        if (IsSelected) return "cue-card-green";
+        return "cue-card-gray";
     }
 
     private void CueNameChanged(string newName)

@@ -16,11 +16,27 @@
         {
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="2">
                 <MudText Typo="Typo.h1">Current Cue - @_currentCue.Name </MudText>
-                <MudTooltip Text="Delete all tasks">
-                    <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Primary"
-                                   OnClick="@DeleteAllTasksButtonPressed"
-                                   Size="Size.Medium"/>
-                </MudTooltip>
+                @if (IsEditMode)
+                {
+                    <MudTooltip Text="Color">
+                        <!-- Bind to a wrapper property so we can persist changes when user selects a new color -->
+                        <MudSelect T="CueCardColor" @bind-Value="SelectedCardColor" Label="Card color"
+                                   RelativeWidth="DropdownWidth.Adaptive" Disabled="!IsEditMode"
+                                   Style="overflow: clip;">
+                            @foreach (CueCardColor color in Enum.GetValues<CueCardColor>())
+                            {
+                                <MudSelectItem Value="@color">
+                                    <span class="@CueCard.GetBadgeClass(color)">@color</span>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudTooltip>
+                    <MudTooltip Text="Delete all tasks">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Primary"
+                                       OnClick="@DeleteAllTasksButtonPressed"
+                                       Size="Size.Medium"/>
+                    </MudTooltip>
+                }
             </MudStack>
 
             @if (!IsEditMode)
@@ -201,7 +217,7 @@
         return Task.CompletedTask;
     }
 
-    private void CueTaskChanged(string newTask, CueTask cueTask)
+    private async Task CueTaskChanged(string newTask, CueTask cueTask)
     {
         if (Auth.ApiKey is { } key)
         {
@@ -233,6 +249,31 @@
         {
             // Need to pass a task to tell it in which show and cue
             (await ShowService.SendEditModeAction(key, EditModeMethod.DeleteAll, firstTask)).IfError(e => Dialogs.ShowError("Error deleting tasks", e));
+        }
+    }
+
+    private async Task CueCardColorChanged(Cue cue, CueCardColor newColor)
+    {
+        if (Auth.ApiKey is { } key)
+        {
+            cue.CardColor = newColor;
+            StateHasChanged();
+            (await ShowService.SendEditModeAction(key, EditModeMethod.Update, cue)).IfError(e => Dialogs.ShowError("Error changing cue color", e));
+        }
+    }
+
+    // Wrapper property used for two-way binding in the MudSelect. When set it updates the current cue and persists the change.
+    private CueCardColor SelectedCardColor
+    {
+        get => _currentCue?.CardColor ?? CueCardColor.Gray;
+        set
+        {
+            if (_currentCue is null) return;
+            if (_currentCue.CardColor == value) return;
+
+            // update model and persist asynchronously (fire-and-forget to avoid blocking setter)
+            _currentCue.CardColor = value;
+            _                     = CueCardColorChanged(_currentCue, value);
         }
     }
 }

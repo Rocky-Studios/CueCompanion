@@ -36,7 +36,8 @@
                 <div Class="d-flex flex-column gap-1">
                     @foreach (Cue cue in GetSortedCues())
                     {
-                        <CueCard Cue="@cue" Color="GetCueColor(cue)"
+                        <CueCard @key="cue.Position" Cue="@cue"
+                                 IsSelected="@(ShowService.CurrentCuePosition == cue.Position)"
                                  OnClick="@(() => OnCueCardClick(cue))"/>
                     }
                 </div>
@@ -93,9 +94,13 @@
 
     private void OnCueCardClick(Cue cue)
     {
-        if (!IsEditMode) return;
-        ShowService.CurrentCuePosition = cue.Position;
-        ShowService.UpdateState();
+        if (IsEditMode)
+        {
+            ShowService.CurrentCuePosition = cue.Position;
+            ShowService.UpdateState();
+        }
+
+        StateHasChanged();
     }
 
 
@@ -112,22 +117,6 @@
         if (HasControlPermissions && Auth.ApiKey is { } key)
         {
             (await ShowService.NextCueAsync(key)).IfError(e => Dialogs.ShowError("Error moving to next cue", e));
-        }
-    }
-
-    private CueCardColor GetCueColor(Cue cue)
-    {
-        if (IsEditMode)
-        {
-            if (ShowService.CurrentCuePosition == cue.Position)
-                return CueCardColor.Green;
-            return CueCardColor.Gray;
-        }
-        else
-        {
-            if (ShowService.CurrentCuePosition == cue.Position)
-                return CueCardColor.Green;
-            return CueCardColor.Gray;
         }
     }
 

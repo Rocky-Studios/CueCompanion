@@ -21,4 +21,7 @@ public class Cue
 
     [Column("duration_mins")]
     public int? DurationMins { get; set; }
+
+    [Column("card_color")]
+    public CueCardColor CardColor { get; set; } = CueCardColor.Gray;
 }
