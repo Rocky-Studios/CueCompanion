@@ -12,4 +12,7 @@ public sealed class ProgramConfig
 
     [YamlMember(Alias = "certificatePassword")]
     public string? CertificatePassword { get; set; }
+
+    [YamlMember(Alias = "databasePath")]
+    public string DatabasePath { get; set; } = "data.db";
 }

@@ -8,9 +8,9 @@ public static class DatabaseHandler
 {
     public static SQLiteConnection Connection { get; private set; } = null!;
 
-    public static void Init()
+    public static void Init(string databasePath)
     {
-        Connection = new SQLiteConnection(Path.Combine(AppContext.BaseDirectory, "data.db"));
+        Connection = new SQLiteConnection(databasePath);
 
         Connection.CreateTable<Show>();
         Connection.CreateTable<User>();

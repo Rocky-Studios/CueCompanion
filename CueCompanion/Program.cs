@@ -24,7 +24,6 @@ public class Program
     public static void Main(string[] args)
     {
         Settings.License = LicenseType.Community;
-        DatabaseHandler.Init();
 
         ShowManager.Init();
         ProgramConfig cfg           = new();
@@ -40,6 +39,7 @@ public class Program
 
         Console.WriteLine("Starting Cue Companion...");
 
+        DatabaseHandler.Init(cfg.DatabasePath);
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
         if (cfg.Urls.Length > 0) builder.WebHost.UseUrls(cfg.Urls);
