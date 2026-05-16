@@ -1,25 +1,60 @@
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using BitzArt.Blazor.Cookies;
 using CueCompanion.Hubs;
 using CueCompanion.Services;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
-using QuestPDF;
 using QuestPDF.Infrastructure;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+using Settings = QuestPDF.Settings;
 
 namespace CueCompanion;
 
 public class Program
 {
+    private static readonly IDeserializer _yamlDeserializer = new DeserializerBuilder()
+                                                             .WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+
+    private static readonly ISerializer _yamlSerializer = new SerializerBuilder()
+                                                         .WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+
     public static void Main(string[] args)
     {
         Settings.License = LicenseType.Community;
         DatabaseHandler.Init();
 
         ShowManager.Init();
-        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        ProgramConfig cfg           = new();
+        bool          cfgFileExists = File.Exists("config.yaml");
+        if (cfgFileExists)
+        {
+            string yaml = File.ReadAllText("config.yaml");
+            cfg = DeserializeConfig(yaml);
+        }
+
+        File.WriteAllText("config.yaml", _yamlSerializer.Serialize(cfg));
+
+
         Console.WriteLine("Starting Cue Companion...");
-        Console.WriteLine("If you haven't already, specific application URL with the ASPNETCORE_URLS environment variable");
+
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+        if (cfg.Urls.Length > 0) builder.WebHost.UseUrls(cfg.Urls);
+
+        builder.WebHost.ConfigureKestrel(options =>
+                                         {
+                                             if (!string.IsNullOrWhiteSpace(cfg.CertificatePath))
+                                             {
+                                                 X509Certificate2 certificate = X509CertificateLoader.LoadPkcs12FromFile(
+                                                     cfg.CertificatePath,
+                                                     cfg.CertificatePassword);
+
+                                                 options.ConfigureHttpsDefaults(httpsOptions => { httpsOptions.ServerCertificate = certificate; });
+                                             }
+                                         });
 
         // Add services to the container.
         StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
@@ -78,6 +113,12 @@ public class Program
            .AddInteractiveServerRenderMode();
 
         app.Run();
+    }
+
+    private static ProgramConfig DeserializeConfig(string yaml)
+    {
+        string normalizedYaml = Regex.Replace(yaml, @"\buRLs\b", "urls", RegexOptions.CultureInvariant);
+        return _yamlDeserializer.Deserialize<ProgramConfig>(normalizedYaml) ?? new ProgramConfig();
     }
 
     //private static string? GetArgValue(string[] args, string key)

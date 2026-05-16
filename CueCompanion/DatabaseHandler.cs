@@ -92,7 +92,7 @@ public static class DatabaseHandler
         try
         {
             string backupLocation    = Environment.GetEnvironmentVariable("BACKUP_PATH") ?? "backups";
-            string backupDirAbsolute = Path.Combine(AppContext.BaseDirectory, backupLocation);
+            string backupDirAbsolute = Path.Combine(Directory.GetCurrentDirectory(), backupLocation);
             if (!Directory.Exists(backupDirAbsolute))
                 Directory.CreateDirectory(backupDirAbsolute);
 

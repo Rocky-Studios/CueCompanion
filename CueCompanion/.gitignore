@@ -367,5 +367,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 data.db
+config.yaml
 
 CueCompanion.sln.DotSettings.user
