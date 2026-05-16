@@ -27,14 +27,14 @@ public class Program
 
         ShowManager.Init();
         ProgramConfig cfg           = new();
-        bool          cfgFileExists = File.Exists("config.yaml");
+        bool          cfgFileExists = File.Exists("../cc-config.yaml");
         if (cfgFileExists)
         {
-            string yaml = File.ReadAllText("config.yaml");
+            string yaml = File.ReadAllText("../cc-config.yaml");
             cfg = DeserializeConfig(yaml);
         }
 
-        File.WriteAllText("config.yaml", _yamlSerializer.Serialize(cfg));
+        File.WriteAllText("../cc-config.yaml", _yamlSerializer.Serialize(cfg));
 
 
         Console.WriteLine("Starting Cue Companion...");
