@@ -59,6 +59,13 @@
                 @foreach (CueTask cueTask in _currentTasks)
                 {
                     <MudPaper Class="mb-2" Outlined="true" Elevation="0">
+                        <MudStack Row="true" AlignItems="AlignItems.Center">
+                            @if (!IsEditMode)
+                            {
+                                <MudIcon Icon="@CueTask.CueTaskIconToString(cueTask.Icon)" Color="Color.Primary"
+                                         Size="Size.Large"/>
+                            }
+                            <div class="flex-grow-1 p-2" style="white-space: pre-wrap;">
                         @if (!IsEditMode)
                         {
                             Role? role = null;
@@ -70,13 +77,24 @@
                         else
                         {
                             <MudStack Row="true" Justify="Justify.FlexStart">
-                                <MudSelect Value="@cueTask.RoleId" T="int?"
-                                           ValueChanged="i => TaskRoleChanged(cueTask,i)" ToStringFunc="RoleIDToString"
+                                <MudSelect Value="@cueTask.RoleId" T="int?" Label="Role"
+                                           ValueChanged="i => TaskRoleChanged(cueTask, i)" ToStringFunc="RoleIDToString"
                                            Style="max-width: 200px;">
                                     <MudSelectItem T="int?" Value="null">Unassigned</MudSelectItem>
                                     @foreach (Role role in Roles)
-                                {
+                                    {
                                         <MudSelectItem T="int?" Value="@role.Id">@role.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudSelect Value="@cueTask.Icon" T="CueTaskIcon" Label="Icon"
+                                           ValueChanged="i => TaskIconChanged(cueTask, i)"
+                                           ToStringFunc="i => i.ToString()"
+                                           Style="max-width: 100px;">
+                                    @foreach (CueTaskIcon icon in Enum.GetValues(typeof(CueTaskIcon)))
+                                    {
+                                        <MudSelectItem T="CueTaskIcon" Value="@icon">
+                                            <MudIcon Icon="@CueTask.CueTaskIconToString(icon)" Color="Color.Primary"/>
+                                        </MudSelectItem>
                                     }
                                 </MudSelect>
                                 <MudTooltip Text="Delete task">
@@ -87,7 +105,10 @@
                             </MudStack>
                         }
                         <EditableText Value="@cueTask.Tasks" Label="" IsEditMode="@IsEditMode"
-                                      OnValueChanged="s=> { CueTaskChanged(s,cueTask); }" MaxLines="20"></EditableText>
+                                      OnValueChanged="s => { CueTaskChanged(s, cueTask); }"
+                                      MaxLines="20"></EditableText>
+                            </div>
+                        </MudStack>
                     </MudPaper>
                 }
             </div>
@@ -262,6 +283,16 @@
             task.RoleId = newRoleID;
             StateHasChanged();
             (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, task)).IfError(e => Dialogs.ShowError("Error changing task role", e));
+        }
+    }
+
+    private async Task TaskIconChanged(CueTask task, CueTaskIcon newIcon)
+    {
+        if (Auth.ApiKey is { } key)
+        {
+            task.Icon = newIcon;
+            StateHasChanged();
+            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, task)).IfError(e => Dialogs.ShowError("Error changing task icon", e));
         }
     }
 }
