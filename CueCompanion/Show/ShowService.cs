@@ -9,31 +9,6 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
     public int? LiveModeShowID { get; private set; }
     public bool IsLiveMode     => LiveModeShowID.HasValue;
 
-    public int? CurrentCuePosition
-    {
-        get => CurrentMode switch
-               {
-                   Mode.Live   => LiveModeCuePosition,
-                   Mode.Edit   => EditModeCuePosition,
-                   Mode.Browse => BrowseModeCuePosition,
-                   _           => null,
-               };
-        set
-        {
-            switch (CurrentMode)
-            {
-                case Mode.Live:
-                    break;
-                case Mode.Edit:
-                    EditModeCuePosition = value;
-                    break;
-                case Mode.Browse:
-                    BrowseModeCuePosition = value;
-                    break;
-            }
-        }
-    }
-
     public CueTask[] TasksForCurrentCue => Tasks.Where(t => t.CueId == CurrentCue?.Id).ToArray();
 
     public Cue? CurrentCue => Cues.FirstOrDefault(c => c.Position == CurrentCuePosition && c.ShowId == CurrentlyViewingShow?.Id);
@@ -45,19 +20,18 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
         if (_showHub != null) await _showHub.DisposeAsync();
     }
 
+    public int? CurrentCuePosition;
+
     private HubConnection? _showHub;
-    private int?           BrowseModeCuePosition;
 
     public Cue[] Cues = [];
-
-    public  Mode CurrentMode = Mode.Live;
-    private int? EditModeCuePosition;
 
     public int?      LiveModeCuePosition;
     public Role[]    Roles = [];
     public Show[]    Shows = [];
     public CueTask[] Tasks = [];
     public Show?     CurrentlyViewingShow;
+    public Action?   OnLiveCueChanged;
 
     public async Task StartAsync(string baseUrl)
     {
@@ -74,6 +48,7 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
                                        Cues                = update.Cues;
                                        Tasks               = update.Tasks;
                                        Shows               = update.Shows;
+                                       OnLiveCueChanged?.Invoke();
 
                                        // If show has been deleted or otherwise remove, switch to another
                                        if (Shows.All(s => s.Id != CurrentlyViewingShow?.Id))

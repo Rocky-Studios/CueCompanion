@@ -142,6 +142,11 @@ span.nav-label
     color: white;
 }
 
+.cue-card-light-gray, .mud-paper.cue-card-light-gray {
+    background-color: #545454;
+    color: white;
+}
+
 .cue-card-green, .mud-paper.cue-card-green {
     background-color: #28a745;
     color: white;

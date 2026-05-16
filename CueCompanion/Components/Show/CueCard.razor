@@ -61,6 +61,9 @@
     [Parameter]
     public required bool IsSelected { get; set; }
 
+    [Parameter]
+    public required bool IsSelectedLive { get; set; }
+
     private async Task OnCardClick()
     {
         await OnClick.InvokeAsync();
@@ -83,7 +86,8 @@
 
     public string GetCardClass()
     {
-        if (IsSelected) return "cue-card-green";
+        if (IsSelectedLive) return "cue-card-green";
+        if (IsSelected) return "cue-card-light-gray";
         return "cue-card-gray";
     }
 

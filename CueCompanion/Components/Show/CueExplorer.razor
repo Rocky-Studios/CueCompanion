@@ -2,18 +2,26 @@
 @inject SimpleDialogService Dialogs
 
 <GridChild ColumnStart="1" ColumnEnd="2" RowStart="1" RowEnd="3">
-    <MudText Typo="Typo.h1">Cue Explorer</MudText>
+    <MudText Typo="Typo.h1" Inline="true">
+        Cue Explorer
+    </MudText>
+    @if (ShowService.LiveModeCuePosition is { } cuePos && !IsEditMode)
+    {
+        <MudText Typo="Typo.h2" Inline="true">
+            <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="@PreviousCue" Color="Color.Primary"/>
+            @cuePos
+            <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="@NextCue" Color="Color.Primary"/>
+            <MudTooltip Text="Automatically jump if the next cue goes live" Inline="true">
+                @{
+                    string icon = _followLiveCue ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff;
+                    Color  c    = _followLiveCue ? Color.Primary : Color.Default;
+                }
+                <MudIconButton Icon="@icon" OnClick="@(() => { _followLiveCue = !_followLiveCue; })" Color="@c"/>
+            </MudTooltip>
+        </MudText>
+    }
     @if (ShowService.CurrentlyViewingShow is { } show)
     {
-        @if (ShowService.CurrentCuePosition is { } cuePos && !IsEditMode)
-            {
-                <MudText Typo="Typo.subtitle1">CURRENT CUE</MudText>
-                <MudText Typo="Typo.h2">
-                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="@PreviousCue"/>
-                    @cuePos
-                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="@NextCue"/>
-                </MudText>
-            }
 
             <MudCard Elevation="4" style="background-color: #141414">
                 <div class="d-flex justify-content-between">
@@ -38,6 +46,7 @@
                     {
                         <CueCard @key="cue.Position" Cue="@cue"
                                  IsSelected="@(ShowService.CurrentCuePosition == cue.Position)"
+                                 IsSelectedLive="@(ShowService.LiveModeCuePosition == cue.Position)"
                                  OnClick="@(() => OnCueCardClick(cue))"/>
                     }
                 </div>
@@ -72,6 +81,7 @@
 
     private int? _loadedShowId;
     private bool _isLoadingCues;
+    private bool _followLiveCue = true;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -90,15 +100,18 @@
         {
             _isLoadingCues = false;
         }
+
+        ShowService.OnLiveCueChanged += () =>
+                                        {
+                                            if (_followLiveCue) ShowService.CurrentCuePosition = ShowService.LiveModeCuePosition;
+                                            ShowService.UpdateState();
+                                        };
     }
 
     private void OnCueCardClick(Cue cue)
     {
-        if (IsEditMode)
-        {
-            ShowService.CurrentCuePosition = cue.Position;
-            ShowService.UpdateState();
-        }
+        ShowService.CurrentCuePosition = cue.Position;
+        ShowService.UpdateState();
 
         StateHasChanged();
     }
