@@ -19,8 +19,8 @@
                     <MudTooltip Text="Color">
                         <!-- Bind to a wrapper property so we can persist changes when user selects a new color -->
                         <MudSelect T="CueCardColor" @bind-Value="SelectedCardColor" Label="Badge color"
-                                   RelativeWidth="DropdownWidth.Adaptive" Disabled="!IsEditMode"
-                                   Style="overflow: clip;">
+                                   RelativeWidth="DropdownWidth.Relative" Disabled="!IsEditMode"
+                                   Style="overflow: clip; max-width: 150px;">
                             @foreach (CueCardColor color in Enum.GetValues<CueCardColor>())
                             {
                                 <MudSelectItem Value="@color">
@@ -57,6 +57,7 @@
 
             <div>
                 @foreach (CueTask cueTask in _currentTasks)
+                    if (IsTaskVisible(cueTask))
                 {
                     <MudPaper Class="mb-2" Outlined="true" Elevation="0">
                         <MudStack Row="true" AlignItems="AlignItems.Center">
@@ -79,7 +80,7 @@
                             <MudStack Row="true" Justify="Justify.FlexStart">
                                 <MudSelect Value="@cueTask.RoleId" T="int?" Label="Role"
                                            ValueChanged="i => TaskRoleChanged(cueTask, i)" ToStringFunc="RoleIDToString"
-                                           Style="max-width: 200px;">
+                                           Style="max-width: 250px;">
                                     <MudSelectItem T="int?" Value="null">Unassigned</MudSelectItem>
                                     @foreach (Role role in Roles)
                                     {
@@ -90,10 +91,16 @@
                                            ValueChanged="i => TaskIconChanged(cueTask, i)"
                                            ToStringFunc="i => i.ToString()"
                                            Style="max-width: 100px;">
-                                    @foreach (CueTaskIcon icon in Enum.GetValues(typeof(CueTaskIcon)))
+                                    @foreach ((CueTaskIcon icon, string name) in new[]
+                                        {
+                                            (CueTaskIcon.Task, "Task"),
+                                            (CueTaskIcon.Note, "Note"),
+                                            (CueTaskIcon.Warning, "Warning"),
+                                        })
                                     {
                                         <MudSelectItem T="CueTaskIcon" Value="@icon">
                                             <MudIcon Icon="@CueTask.CueTaskIconToString(icon)" Color="Color.Primary"/>
+                                            @name
                                         </MudSelectItem>
                                     }
                                 </MudSelect>
@@ -295,4 +302,6 @@
             (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, task)).IfError(e => Dialogs.ShowError("Error changing task icon", e));
         }
     }
+
+    private bool IsTaskVisible(CueTask cueTask) => cueTask.RoleId == null || (_roleFilters.TryGetValue(cueTask.RoleId.Value, out bool isChecked) && isChecked) || AllRolesSelected == true || IsEditMode;
 }
