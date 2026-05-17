@@ -103,6 +103,7 @@
 
         ShowService.OnLiveCueChanged += () =>
                                         {
+                                            if (!ShowService.IsLiveMode) return;
                                             if (_followLiveCue) ShowService.CurrentCuePosition = ShowService.LiveModeCuePosition;
                                             ShowService.UpdateState();
                                         };

@@ -126,6 +126,7 @@
                     Direction = -1,
                 });
                 res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
+                if (res.IsSuccess) ShowService.CurrentCuePosition += -1;
             });
         }
     }
@@ -141,6 +142,7 @@
                     Direction = 1,
                 });
                 res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
+                if (res.IsSuccess) ShowService.CurrentCuePosition += 1;
             });
         }
     }
