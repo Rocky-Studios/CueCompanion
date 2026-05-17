@@ -250,6 +250,9 @@
         _selectedStart                   = show?.Start.TimeOfDay;
         _selectedEnd                     = show?.End.TimeOfDay;
         _updateLock                      = false;
+        if (ShowService.IsLiveMode && SelectedShowBound == null && ShowService.LiveModeShow is { } liveModeShow)
+            // Automatically select live show if none is selected
+            SelectedShowBound = liveModeShow;
     }
 
     private async Task OnDateChanged(DateTime? newDate)
