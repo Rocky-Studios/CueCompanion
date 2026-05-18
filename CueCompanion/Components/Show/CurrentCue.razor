@@ -186,7 +186,12 @@
         {
             _roleFilters = roles.ToDictionary(
                 role => role.Id,
-                role => _roleFilters.TryGetValue(role.Id, out bool isChecked) && isChecked);
+                role =>
+                {
+                    bool hasExistingValue = _roleFilters.TryGetValue(role.Id, out bool isChecked);
+                    if (!hasExistingValue) return true; // if there is no existing value for this role, default to checked (visible)
+                    return hasExistingValue && isChecked;
+                });
         }
     }
 
