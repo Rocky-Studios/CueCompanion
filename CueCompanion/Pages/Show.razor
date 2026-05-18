@@ -32,15 +32,14 @@
                         </div>
                     </MudOverlay>
                     <div class="show-columns">
-                        <div class="show-column">
-                            <CueExplorer/>
-                        </div>
-                        <div class="show-column">
-                            <CurrentCue/>
-                        </div>
-                        <div class="show-column">
-                            <ShowInfo/>
-                        </div>
+                        <GridChild ColumnStart="1" ColumnEnd="2" RowStart="1" RowEnd="2">
+                            <div style="height: 100%; display: flex; flex-direction: column; box-sizing: border-box;">
+                                <CueExplorer/>
+                                <div style="height: 16px"></div>
+                                <ShowInfo/>
+                            </div>
+                        </GridChild>
+                        <CurrentCue/>
                     </div>
                 </CascadingValue>
             </CascadingValue>

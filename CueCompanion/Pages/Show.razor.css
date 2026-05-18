@@ -21,6 +21,9 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+
+    grid-template-columns: minmax(400px, 1fr) minmax(800px, 2fr);
+    align-items: start;
 }
 
 .show-column {
@@ -32,8 +35,5 @@
 @media (min-width: 1000px) {
     .show-columns {
         display: grid;
-        grid-template-columns: minmax(400px, 1fr) minmax(800px, 2fr);
-        gap: 16px;
-        align-items: start;
     }
 }

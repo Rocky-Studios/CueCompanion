@@ -1,7 +1,7 @@
-@inject AuthService Auth
+@inject AuthService         Auth
 @inject SimpleDialogService Dialogs
 
-<GridChild ColumnStart="1" ColumnEnd="2" RowStart="1" RowEnd="3">
+<MudPaper>
     <MudText Typo="Typo.h1" Inline="true">
         Cue Explorer
     </MudText>
@@ -22,42 +22,47 @@
     }
     @if (ShowService.CurrentlyViewingShow is { } show)
     {
-
-            <MudCard Elevation="4" style="background-color: #141414">
-                <div class="d-flex justify-content-between">
-                    <MudText Typo="Typo.subtitle1">CUES</MudText>
-                    @if (IsEditMode)
-                    {
-                        <MudTooltip Text="Add new cue">
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
-                                           OnClick="@CreateNewCue"
-                                           Size="Size.Small"/>
-                        </MudTooltip>
-                        <MudTooltip Text="Delete all cues">
-                            <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Primary"
-                                           OnClick="@DeleteAllCuesButtonPressed"
-                                           Size="Size.Small"/>
-                        </MudTooltip>
-                    }
-                    <MudText Typo="Typo.subtitle1">@ShowService.GetCuesInShow().Count() ITEMS</MudText>
-                </div>
-                <div Class="d-flex flex-column gap-1">
-                    @foreach (Cue cue in GetSortedCues())
-                    {
-                        <CueCard @key="cue.Position" Cue="@cue"
-                                 IsSelected="@(ShowService.CurrentCuePosition == cue.Position)"
-                                 IsSelectedLive="@(ShowService.LiveModeCuePosition == cue.Position)"
-                                 OnClick="@(() => OnCueCardClick(cue))"/>
-                    }
-                </div>
-            </MudCard>
+        <MudCard Elevation="4" style="background-color: #141414">
+            <div class="d-flex justify-content-between">
+                <MudText Typo="Typo.subtitle1">CUES</MudText>
+                @if (IsEditMode)
+                {
+                    <MudTooltip Text="Add new cue">
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
+                                       OnClick="@CreateNewCue"
+                                       Size="Size.Small"/>
+                    </MudTooltip>
+                    <MudTooltip Text="Delete all cues">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Primary"
+                                       OnClick="@DeleteAllCuesButtonPressed"
+                                       Size="Size.Small"/>
+                    </MudTooltip>
+                }
+                <MudText Typo="Typo.subtitle1">@ShowService.GetCuesInShow().Count() ITEMS</MudText>
+            </div>
+            <div Class="d-flex flex-column gap-1 cue-list">
+                @foreach (Cue cue in GetSortedCues())
+                {
+                    <CueCard @key="cue.Position" Cue="@cue"
+                             IsSelected="@(ShowService.CurrentCuePosition == cue.Position)"
+                             IsSelectedLive="@(ShowService.LiveModeCuePosition == cue.Position)"
+                             OnClick="@(() => OnCueCardClick(cue))"/>
+                }
+            </div>
+        </MudCard>
     }
     else
     {
         <MudText>No show loaded</MudText>
     }
-    
-</GridChild>
+
+</MudPaper>
+<style>
+    .cue-list {
+        /*max-height: 50vh;*/
+        overflow-y: scroll;
+    }
+</style>
 
 
 @code

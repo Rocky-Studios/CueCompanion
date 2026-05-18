@@ -8,7 +8,7 @@
 @inject IDialogService      DialogService
 
 
-<GridChild ColumnStart="1" ColumnEnd="2" RowStart="2" RowEnd="3">
+<MudPaper>
     <MudText Typo="Typo.h1">Show Info</MudText>
     <div style="display:flex; align-items:center; gap:8px;">
         @if (HasControlPermissions)
@@ -161,7 +161,7 @@
             </tr>
         </table>
     }
-</GridChild>
+</MudPaper>
 
 <style>
     .show-info-table {

@@ -1,16 +1,29 @@
-<div Style="@GridStyle">
-    <MudPaper>
+<div Style="@GridStyle" class="@Class">
     @ChildContent
-    </MudPaper>
 </div>
 
 @code
 {
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public required int ColumnStart { get; set; }
-    [Parameter] public required int ColumnEnd { get; set; }
-    [Parameter] public required int RowStart { get; set; }
-    [Parameter] public required int RowEnd { get; set; }
-    
-    private string GridStyle => $"grid-column: {ColumnStart}/{ColumnEnd}; grid-row: {RowStart}/{RowEnd}";
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public required int ColumnStart { get; set; }
+
+    [Parameter]
+    public required int ColumnEnd { get; set; }
+
+    [Parameter]
+    public required int RowStart { get; set; }
+
+    [Parameter]
+    public required int RowEnd { get; set; }
+
+    [Parameter]
+    public string Class { get; set; }
+
+    [Parameter]
+    public string Style { get; set; }
+
+    private string GridStyle => $"{Style} grid-column: {ColumnStart}/{ColumnEnd}; grid-row: {RowStart}/{RowEnd}";
 }
