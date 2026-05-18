@@ -23,25 +23,32 @@ jobs:
           $version = $csproj.Project.PropertyGroup.Version
           echo "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Download latest artifact
+      - name: Download Linux artifact
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: publish.yml
           workflow_conclusion: success
-          name_is_regexp: true
-          name: ".*"
+          name: CueCompanion-Build-linux64
           path: ./release-assets
 
-      - name: Create Release and Upload Asset
+      - name: Download Windows artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: publish.yml
+          workflow_conclusion: success
+          name: CueCompanion-Build-win64
+          path: ./release-assets
+
+      - name: Create Release and Upload Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Find the first artifact file
-          $artifact = Get-ChildItem -Path ./release-assets -Recurse -File | Select-Object -First 1
-          if ($artifact) {
-            gh release create v${{ steps.version.outputs.version }} $artifact.FullName --title "CueCompanion v${{ steps.version.outputs.version }}" --latest
+          $artifacts = Get-ChildItem -Path ./release-assets -Recurse -File
+          if ($artifacts) {
+            $artifactPaths = $artifacts.FullName -join ' '
+            gh release create v${{ steps.version.outputs.version }} $artifactPaths --title "CueCompanion v${{ steps.version.outputs.version }}" --latest
           } else {
-            Write-Error "No artifact found"
+            Write-Error "No artifacts found"
             exit 1
           }
         shell: pwsh
