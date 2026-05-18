@@ -29,7 +29,7 @@ jobs:
           workflow: publish.yml
           workflow_conclusion: success
           name: CueCompanion-Build-linux64
-          path: ./release-assets
+          path: ./release-assets/linux64
 
       - name: Download Windows artifact
         uses: dawidd6/action-download-artifact@v3
@@ -37,15 +37,25 @@ jobs:
           workflow: publish.yml
           workflow_conclusion: success
           name: CueCompanion-Build-win64
-          path: ./release-assets
+          path: ./release-assets/win64
+
+      - name: Create zip archives
+        shell: pwsh
+        run: |
+          if (Test-Path ./release-assets/linux64) {
+            Compress-Archive -Path ./release-assets/linux64/* -DestinationPath ./release-assets/CueCompanion-Build-linux64.zip -Force
+          }
+          if (Test-Path ./release-assets/win64) {
+            Compress-Archive -Path ./release-assets/win64/* -DestinationPath ./release-assets/CueCompanion-Build-win64.zip -Force
+          }
 
       - name: Create Release and Upload Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $artifacts = Get-ChildItem -Path ./release-assets -Recurse -File
-          if ($artifacts) {
-            $artifactPaths = $artifacts.FullName -join ' '
+          $artifacts = Get-ChildItem -Path ./release-assets -MaxDepth 1 -File -Filter "*.zip"
+          if ($artifacts.Count -gt 0) {
+            $artifactPaths = $artifacts.FullName
             gh release create v${{ steps.version.outputs.version }} $artifactPaths --title "CueCompanion v${{ steps.version.outputs.version }}" --latest
           } else {
             Write-Error "No artifacts found"
