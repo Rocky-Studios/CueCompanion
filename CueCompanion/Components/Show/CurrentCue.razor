@@ -3,136 +3,140 @@
 @implements IDisposable
 <GridChild ColumnStart="2" ColumnEnd="3" RowStart="1" RowEnd="2">
     <MudPaper>
-    @if (ShowService is
-         {
-             TasksForCurrentCue: { } tasks,
-         })
-    {
-        _currentCue   = ShowService.CurrentCue;
-        _currentTasks = IsEditMode ? ShowService.Tasks.Where(t => t.CueId == _currentCue?.Id).ToList() : tasks.ToList();
-
-        if (_currentCue is not null)
+        @if (ShowService is
+             {
+                 TasksForCurrentCue: { } tasks,
+             })
         {
-            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="2">
-                <MudText Typo="Typo.h1">Current Cue - @_currentCue.Name </MudText>
-                @if (IsEditMode)
-                {
-                    <MudTooltip Text="Color">
-                        <!-- Bind to a wrapper property so we can persist changes when user selects a new color -->
-                        <MudSelect T="CueCardColor" @bind-Value="SelectedCardColor" Label="Badge color"
-                                   RelativeWidth="DropdownWidth.Relative" Disabled="!IsEditMode"
-                                   Style="overflow: clip; max-width: 150px;">
-                            @foreach (CueCardColor color in Enum.GetValues<CueCardColor>())
-                            {
-                                <MudSelectItem Value="@color">
-                                    <span class="@CueCard.GetBadgeClass(color)">@color</span>
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudTooltip>
-                    <MudTooltip Text="New task">
-                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
-                                       OnClick="@CreateNewTaskButtonPressed"
-                                       Size="Size.Medium"/>
-                    </MudTooltip>
-                    <MudTooltip Text="Delete all tasks">
-                        <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Primary"
-                                       OnClick="@DeleteAllTasksButtonPressed"
-                                       Size="Size.Medium"/>
-                    </MudTooltip>
-                }
-            </MudStack>
+            _currentCue   = ShowService.CurrentCue;
+            _currentTasks = IsEditMode ? ShowService.Tasks.Where(t => t.CueId == _currentCue?.Id).ToList() : tasks.ToList();
 
-            @if (!IsEditMode)
+            if (_currentCue is not null)
             {
-                <div class="d-flex flex-grow-1 flex-wrap justify-center align-center px-8 pb-8 pt-2">
-                    <MudCheckBox Color="Color.Primary" Label="All" Dense="true" T="bool?"
-                                 Value="@AllRolesSelected" ValueChanged="OnAllRolesChanged"></MudCheckBox>
-                    @foreach (Role role in Roles)
+                <MudText Typo="Typo.h1" Align="Align.Center">Current Cue - @_currentCue.Name </MudText>
+                <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
+                    @if (IsEditMode)
                     {
-                        <MudCheckBox Color="Color.Primary" Label="@role.Name" T="bool" Dense="true"
-                                     @bind-Value="_roleFilters[role.Id]"/>
-                    }
-                </div>
-            }
-
-            <div>
-                @foreach (CueTask cueTask in _currentTasks)
-                    if (IsTaskVisible(cueTask))
-                    {
-                        <MudPaper Class="mb-2" Outlined="true" Elevation="0">
-                            <MudStack Row="true" AlignItems="AlignItems.Center">
-                                @if (!IsEditMode)
+                        <MudTooltip Text="Color">
+                            <!-- Bind to a wrapper property so we can persist changes when user selects a new color -->
+                            <MudSelect T="CueCardColor" @bind-Value="SelectedCardColor" Label="Badge color"
+                                       Disabled="!IsEditMode"
+                                       Style="overflow: clip; width: 150px;">
+                                @foreach (CueCardColor color in Enum.GetValues<CueCardColor>())
                                 {
-                                    <MudIcon Icon="@CueTask.CueTaskIconToString(cueTask.Icon)" Color="Color.Primary"
-                                             Size="Size.Large"/>
+                                    <MudSelectItem Value="@color">
+                                        <span class="@CueCard.GetBadgeClass(color)">@color</span>
+                                    </MudSelectItem>
                                 }
-                                <div class="flex-grow-1 p-2" style="white-space: pre-wrap;">
+                            </MudSelect>
+                        </MudTooltip>
+                        <MudTooltip Text="New task">
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
+                                           OnClick="@CreateNewTaskButtonPressed"
+                                           Size="Size.Medium"/>
+                        </MudTooltip>
+                        <MudTooltip Text="Delete all tasks">
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Primary"
+                                           OnClick="@DeleteAllTasksButtonPressed"
+                                           Size="Size.Medium"/>
+                        </MudTooltip>
+                    }
+                </MudStack>
+
+                @if (!IsEditMode)
+                {
+                    <div class="d-flex flex-grow-1 flex-wrap justify-center align-center px-8 pb-8 pt-2">
+                        <MudCheckBox Color="Color.Primary" Label="All" Dense="true" T="bool?"
+                                     Value="@AllRolesSelected" ValueChanged="OnAllRolesChanged"></MudCheckBox>
+                        @foreach (Role role in Roles)
+                        {
+                            <MudCheckBox Color="Color.Primary" Label="@role.Name" T="bool" Dense="true"
+                                         @bind-Value="_roleFilters[role.Id]"/>
+                        }
+                    </div>
+                }
+
+                <MudCard Style="max-height: calc(100vh - 64px - 150px - var(--mud-appbar-height)); overflow: scroll;">
+                    @foreach (CueTask cueTask in _currentTasks)
+                        if (IsTaskVisible(cueTask))
+                        {
+                            <MudPaper Class="mb-2" Outlined="true" Elevation="0">
+                                <MudStack Row="true" AlignItems="AlignItems.Center">
                                     @if (!IsEditMode)
                                     {
-                                        Role? role = null;
-                                        if (cueTask.RoleId.HasValue)
-                                            role = Roles.FirstOrDefault(r => r.Id == cueTask?.RoleId.Value);
-                                        string roleName = role?.Name ?? "Unassigned";
-                                        <MudText Typo="Typo.h3" Inline="true">@roleName</MudText>
+                                        <MudIcon Icon="@CueTask.CueTaskIconToString(cueTask.Icon)" Color="Color.Primary"
+                                                 Size="Size.Large"/>
                                     }
-                                    else
-                                    {
-                                        <MudStack Row="true" Justify="Justify.FlexStart">
-                                            <MudSelect Value="@cueTask.RoleId" T="int?" Label="Role"
-                                                       ValueChanged="i => TaskRoleChanged(cueTask, i)"
-                                                       ToStringFunc="RoleIDToString"
-                                                       Style="max-width: 250px;">
-                                                <MudSelectItem T="int?" Value="null">Unassigned</MudSelectItem>
-                                                @foreach (Role role in Roles)
-                                                {
-                                                    <MudSelectItem T="int?" Value="@role.Id">@role.Name</MudSelectItem>
-                                                }
-                                            </MudSelect>
-                                            <MudSelect Value="@cueTask.Icon" T="CueTaskIcon" Label="Icon"
-                                                       ValueChanged="i => TaskIconChanged(cueTask, i)"
-                                                       ToStringFunc="i => i.ToString()"
-                                                       Style="max-width: 100px;">
-                                                @foreach ((CueTaskIcon icon, string name) in new[]
+                                    <div class="flex-grow-1 p-2" style="white-space: pre-wrap;">
+                                        @if (!IsEditMode)
+                                        {
+                                            Role? role = null;
+                                            if (cueTask.RoleId.HasValue)
+                                                role = Roles.FirstOrDefault(r => r.Id == cueTask?.RoleId.Value);
+                                            string roleName = role?.Name ?? "Unassigned";
+                                            <MudText Typo="Typo.h3" Inline="true">@roleName</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudStack Row="true" Justify="Justify.SpaceBetween"
+                                                      AlignItems="AlignItems.Center">
+                                                <MudSelect Value="@cueTask.RoleId" T="int?" Label="Role"
+                                                           ValueChanged="i => TaskRoleChanged(cueTask, i)"
+                                                           ToStringFunc="RoleIDToString"
+                                                           Style="max-width: 250px;">
+                                                    <MudSelectItem T="int?" Value="null">Unassigned</MudSelectItem>
+                                                    @foreach (Role role in Roles)
                                                     {
-                                                        (CueTaskIcon.Task, "Task"),
-                                                        (CueTaskIcon.Note, "Note"),
-                                                        (CueTaskIcon.Warning, "Warning"),
-                                                    })
-                                                {
-                                                    <MudSelectItem T="CueTaskIcon" Value="@icon">
-                                                        <MudIcon Icon="@CueTask.CueTaskIconToString(icon)"
-                                                                 Color="Color.Primary"/>
-                                                        @name
-                                                    </MudSelectItem>
-                                                }
-                                            </MudSelect>
-                                            <MudTooltip Text="Delete task">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                               OnClick="@(() => { DeleteCueTask(cueTask); })"
-                                                               Color="Color.Primary" Size="Size.Small"/>
-                                            </MudTooltip>
-                                        </MudStack>
-                                    }
-                                    <EditableText Value="@cueTask.Tasks" Label="" IsEditMode="@IsEditMode"
-                                                  OnValueChanged="s => { CueTaskChanged(s, cueTask); }"
-                                                  MaxLines="20"></EditableText>
-                                </div>
-                            </MudStack>
-                        </MudPaper>
-                    }
-            </div>
+                                                        <MudSelectItem T="int?"
+                                                                       Value="@role.Id">@role.Name</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                                    <MudSelect Value="@cueTask.Icon" T="CueTaskIcon" Label="Icon"
+                                                               ValueChanged="i => TaskIconChanged(cueTask, i)"
+                                                               ToStringFunc="i => i.ToString()"
+                                                               Style="max-width: 100px;">
+                                                        @foreach ((CueTaskIcon icon, string name) in new[]
+                                                            {
+                                                                (CueTaskIcon.Task, "Task"),
+                                                                (CueTaskIcon.Note, "Note"),
+                                                                (CueTaskIcon.Warning, "Warning"),
+                                                            })
+                                                        {
+                                                            <MudSelectItem T="CueTaskIcon" Value="@icon">
+                                                                <MudIcon Icon="@CueTask.CueTaskIconToString(icon)"
+                                                                         Color="Color.Primary"/>
+                                                                @name
+                                                            </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                    <MudTooltip Text="Delete task">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                                       OnClick="@(() => { DeleteCueTask(cueTask); })"
+                                                                       Color="Color.Primary" Size="Size.Medium"/>
+                                                    </MudTooltip>
+                                                </MudStack>
+                                            </MudStack>
+                                        }
+                                        <EditableText Value="@cueTask.Tasks" Label="" IsEditMode="@IsEditMode"
+                                                      OnValueChanged="s => { CueTaskChanged(s, cueTask); }"
+                                                      MaxLines="20" TopMargin="true"></EditableText>
+                                    </div>
+                                </MudStack>
+                            </MudPaper>
+                        }
+                </MudCard>
+            }
+            else
+            {
+                <MudText Typo="Typo.h1">Current Cue</MudText>
+                <MudText>No cue selected</MudText>
+            }
         }
         else
         {
             <MudText Typo="Typo.h1">Current Cue</MudText>
             <MudText>No cue selected</MudText>
-        }
-    }
-    else
-    {
-        <MudText Typo="Typo.h1">Current Cue</MudText>
-        <MudText>No cue selected</MudText>
         }
     </MudPaper>
 </GridChild>

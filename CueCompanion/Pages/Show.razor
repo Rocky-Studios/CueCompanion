@@ -34,9 +34,18 @@
                     <div class="show-columns">
                         <GridChild ColumnStart="1" ColumnEnd="2" RowStart="1" RowEnd="2">
                             <div style="height: 100%; display: flex; flex-direction: column; box-sizing: border-box;">
-                                <CueExplorer/>
-                                <div style="height: 16px"></div>
-                                <ShowInfo/>
+                                @* Desktop/tablet *@
+                                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                                    <CueExplorer/>
+                                    <div style="height: 16px"></div>
+                                    <ShowInfo/>
+                                </MudHidden>
+                                @* Mobile *@
+                                <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                                    <ShowInfo/>
+                                    <div style="height: 16px"></div>
+                                    <CueExplorer/>
+                                </MudHidden>
                             </div>
                         </GridChild>
                         <CurrentCue/>

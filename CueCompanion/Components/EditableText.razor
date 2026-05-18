@@ -1,6 +1,6 @@
 @if (IsEditMode)
 {
-    <div style="display: flex; align-items: center; gap: 4px;">
+    <div style="@style">
         <MudText Typo="Typo.subtitle1" style="margin: 0;">@Label</MudText>
         <MudTextField @bind-Value="@Value" style="flex: 1;" Class="no-padding-input" @onblur="OnBlur"
                       AdornmentIcon="@Icons.Material.Filled.Edit" Adornment="Adornment.End"
@@ -18,6 +18,8 @@ else
 
 @code
 {
+    private string style => "display: flex; align-items: center; gap: 4px; margin-left: -4px;" + (TopMargin ? "margin-top: 8px;" : "");
+
     [Parameter]
     public string Value { get; set; } = string.Empty;
 
@@ -41,6 +43,9 @@ else
 
     [Parameter]
     public bool Outlined { get; set; }
+
+    [Parameter]
+    public bool TopMargin { get; set; }
 
     private async Task OnBlur(FocusEventArgs e)
     {
