@@ -281,6 +281,9 @@ div.live-mode-label > div {
     overflow-y: clip !important;
 }
 
-.show-column {
-    height: 100%;
+
+@media (min-width: 1000px) {
+    .show-column {
+        height: 100%;
+    }
 }

@@ -63,9 +63,16 @@
     </div>
 }
 
+<style>
+    @@media (max-width: 999px) {
+        .show-column {
+            width: 100% !important;
+        }
+    }
+</style>
+
 @code
 {
-
     public bool HasEditPermissions
     {
         get
