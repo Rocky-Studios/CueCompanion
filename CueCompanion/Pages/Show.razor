@@ -7,7 +7,8 @@
 @using CueCompanion.Components.Show
 @implements IAsyncDisposable
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="height: calc(100vh - 2rem - var(--mud-appbar-height));">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge"
+              Style="height: calc(100vh - 2rem - var(--mud-appbar-height)); overflow-y: auto; overflow-x: hidden;">
     @if (Auth.User == null)
     {
         <MudAlert Severity="Severity.Error">You must be logged in to access the show page.</MudAlert>
@@ -42,6 +43,9 @@
                         <div class="show-column" style="width: 60%;">
                             <CurrentCue/>
                         </div>
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                            <div style="height: 80px;"></div>
+                        </MudHidden>
                     </div>
                 </CascadingValue>
             </CascadingValue>
@@ -69,6 +73,7 @@
             width: 100% !important;
         }
     }
+
 </style>
 
 @code

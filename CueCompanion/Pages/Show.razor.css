@@ -22,12 +22,12 @@
     flex-direction: column;
     gap: 16px;
     align-items: start;
-    height: 100%;
 }
 
 
 @media (min-width: 1000px) {
     .show-columns {
         flex-direction: row;
+        height: 100%;
     }
 }
