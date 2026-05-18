@@ -1,0 +1,48 @@
+name: Create Release
+
+on:
+  workflow_run:
+    workflows: [ "publish" ]
+    types: [ completed ]
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read version from .csproj
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$csproj = Get-Content 'CueCompanion/CueCompanion.csproj'
+          $version = $csproj.Project.PropertyGroup.Version
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Download latest artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: publish.yml
+          workflow_conclusion: success
+          name_is_regexp: true
+          name: ".*"
+          path: ./release-assets
+
+      - name: Create Release and Upload Asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find the first artifact file
+          $artifact = Get-ChildItem -Path ./release-assets -Recurse -File | Select-Object -First 1
+          if ($artifact) {
+            gh release create v${{ steps.version.outputs.version }} $artifact.FullName --title "CueCompanion v${{ steps.version.outputs.version }}" --latest
+          } else {
+            Write-Error "No artifact found"
+            exit 1
+          }
+        shell: pwsh
+  
