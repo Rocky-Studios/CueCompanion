@@ -280,3 +280,7 @@ div.live-mode-label > div {
 .mud-popover.mud-popover-open.mud-paper.mud-elevation-8.overflow-y-auto {
     overflow-y: clip !important;
 }
+
+.show-column {
+    height: 100%;
+}

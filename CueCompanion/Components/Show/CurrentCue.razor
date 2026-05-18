@@ -1,8 +1,7 @@
 @inject AuthService         Auth
 @inject SimpleDialogService Dialogs
 @implements IDisposable
-<GridChild ColumnStart="2" ColumnEnd="3" RowStart="1" RowEnd="2">
-    <MudPaper>
+<MudPaper MaxHeight="100%" Style="display: flex; flex-direction: column; gap: 1rem;">
         @if (ShowService is
              {
                  TasksForCurrentCue: { } tasks,
@@ -56,7 +55,7 @@
                     </div>
                 }
 
-                <MudCard Style="max-height: calc(100vh - 64px - 150px - var(--mud-appbar-height)); overflow: scroll;">
+            <MudCard Style="flex-grow: 1; overflow-y: auto;">
                     @foreach (CueTask cueTask in _currentTasks)
                         if (IsTaskVisible(cueTask))
                         {
@@ -139,7 +138,6 @@
             <MudText>No cue selected</MudText>
         }
     </MudPaper>
-</GridChild>
 
 
 @code

@@ -21,19 +21,13 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-
-    grid-template-columns: minmax(400px, 1fr) minmax(800px, 2fr);
     align-items: start;
+    height: 100%;
 }
 
-.show-column {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
 
 @media (min-width: 1000px) {
     .show-columns {
-        display: grid;
+        flex-direction: row;
     }
 }
