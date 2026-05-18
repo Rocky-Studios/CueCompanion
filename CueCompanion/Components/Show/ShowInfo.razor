@@ -60,35 +60,13 @@
         </MudSelect>
         @if (HasEditPermissions)
         {
-            if (ShowService?.CurrentlyViewingShow?.Id is { } showID)
-            {
-                <MudTooltip Text="Delete">
-                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"
-                                   OnClick="@(() => { DeleteShowButtonPressed(showID); })"/>
-                </MudTooltip>
-                <MudTooltip Text="Duplicate">
-                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"
-                                   OnClick="@(() => { DuplicateShowButtonPressed(showID); })"/>
-                </MudTooltip>
-            }
-            else
-            {
-                <MudTooltip Text="Delete">
-                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"/>
-                </MudTooltip>
-                <MudTooltip Text="Duplicate">
-                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"/>
-                </MudTooltip>
-            }
-            <MudTooltip Text="Create new">
-                <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
-            </MudTooltip>
-            <InputFile id="@IMPORT_INPUT_ID" style="display:none;" accept=".json,application/json"
-                       OnChange="@OnImportFileSelected"/>
-            <MudTooltip Text="Import">
-                <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileUpload"
-                               OnClick="@OnFileUploadPressed"/>
-            </MudTooltip>
+            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                <ShowActionButtons NewShowButtonPressed="NewShowButtonPressed"
+                                   DeleteShowButtonPressed="DeleteShowButtonPressed"
+                                   DuplicateShowButtonPressed="DuplicateShowButtonPressed"
+                                   OnFileUploadPressed="OnFileUploadPressed"
+                                   OnImportFileSelected="OnImportFileSelected"/>
+            </MudHidden>
         }
     </div>
     @if (ShowService!.CurrentlyViewingShow is { } show)
@@ -99,19 +77,45 @@
                               OnValueChanged="ShowNameChanged"/>
                 <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
             </div>
+            <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <div>
                 <MudTooltip Text="Export as JSON">
-                <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.FileDownload"
-                           Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportShow">
-                    Export
-                </MudButton></MudTooltip>
+                    <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.FileDownload"
+                               Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportShow">
+                        Export
+                    </MudButton>
+                </MudTooltip>
                 <MudTooltip Text="Export as PDF">
-                <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.PictureAsPdf"
-                           Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportPDF">
-                    Export
-                </MudButton></MudTooltip>
+                    <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.PictureAsPdf"
+                               Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportPDF">
+                        Export
+                    </MudButton>
+                </MudTooltip>
             </div>
+            </MudHidden>
         </MudStack>
+
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="0">
+                <MudTooltip Text="Export as JSON">
+                    <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.FileDownload"
+                               Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportShow">
+                        Export
+                    </MudButton>
+                </MudTooltip>
+                <MudTooltip Text="Export as PDF">
+                    <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.PictureAsPdf"
+                               Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportPDF">
+                        Export
+                    </MudButton>
+                </MudTooltip>
+                <ShowActionButtons NewShowButtonPressed="NewShowButtonPressed"
+                                   DeleteShowButtonPressed="DeleteShowButtonPressed"
+                                   DuplicateShowButtonPressed="DuplicateShowButtonPressed"
+                                   OnFileUploadPressed="OnFileUploadPressed"
+                                   OnImportFileSelected="OnImportFileSelected"/>
+            </MudStack>
+        </MudHidden>
 
         <MudDivider/>
         <table class="show-info-table">
