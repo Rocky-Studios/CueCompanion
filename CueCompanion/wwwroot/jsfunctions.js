@@ -20,8 +20,8 @@ window.cueCompanionShowInfo.openImportPicker = (inputId) => {
     element.click();
 };
 
-window.cueCompanionShowInfo.downloadJsonFile = (fileName, content) => {
-    const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
+window.cueCompanionShowInfo.downloadFile = (fileName, fileType, content) => {
+    const blob = new Blob([content], {type: fileType});
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
 
