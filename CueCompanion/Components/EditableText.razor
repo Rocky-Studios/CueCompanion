@@ -8,6 +8,7 @@
                       MaxLines="@(MaxLines)"
                       Sizing="InputSizing.Auto"
                       Variant="@(Outlined ? Variant.Outlined : Variant.Text)"
+                      Validation="@((string input) => Validation(input))"
         ></MudTextField>
     </div>
 }
@@ -47,8 +48,22 @@ else
     [Parameter]
     public bool TopMargin { get; set; }
 
+    [Parameter]
+    public bool CanBeEmpty { get; set; }
+
+    string? Validation(string input)
+    {
+        if (CanBeEmpty) return null;
+
+
+        if (input.Length == 0) return "Value cannot be empty";
+        return null;
+    }
+
     private async Task OnBlur(FocusEventArgs e)
     {
+        if (Validation(Value) != null) return;
+
         await ValueChanged.InvokeAsync(Value);
         await OnValueChanged.InvokeAsync(Value);
     }

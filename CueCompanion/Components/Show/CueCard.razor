@@ -93,6 +93,11 @@
 
     private void CueNameChanged(string newName)
     {
+        if (newName.Length == 0)
+        {
+            _ = Dialogs.ShowError("Invalid cue name", "Cue name cannot be empty.");
+            return;
+        }
         if (Auth.ApiKey is { } key)
         {
             Task.Run(async () =>

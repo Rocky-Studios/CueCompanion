@@ -79,20 +79,20 @@
                 <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
             </div>
             <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <div>
-                <MudTooltip Text="Export as JSON">
-                    <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.FileDownload"
-                               Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportShow">
-                        Export
-                    </MudButton>
-                </MudTooltip>
-                <MudTooltip Text="Export as PDF">
-                    <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.PictureAsPdf"
-                               Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportPDF">
-                        Export
-                    </MudButton>
-                </MudTooltip>
-            </div>
+                <div>
+                    <MudTooltip Text="Export as JSON">
+                        <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.FileDownload"
+                                   Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportShow">
+                            Export
+                        </MudButton>
+                    </MudTooltip>
+                    <MudTooltip Text="Export as PDF">
+                        <MudButton Color="Color.Primary" EndIcon="@Icons.Material.Filled.PictureAsPdf"
+                                   Disabled="@(ShowService.CurrentlyViewingShow is null)" OnClick="@OnExportPDF">
+                            Export
+                        </MudButton>
+                    </MudTooltip>
+                </div>
             </MudHidden>
         </MudStack>
 
@@ -299,6 +299,11 @@
 
     private async Task ShowNameChanged(string newName)
     {
+        if (newName.Length == 0)
+        {
+            _ = Dialogs.ShowError("Invalid show name", "Show name cannot be empty.");
+            return;
+        }
         if (ShowService!.CurrentlyViewingShow is { } show && Auth.ApiKey is { } key)
         {
             show.Name = newName;

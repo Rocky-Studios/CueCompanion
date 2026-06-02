@@ -229,6 +229,11 @@
 
     private void CueTaskChanged(string newTask, CueTask cueTask)
     {
+        if (newTask.Length == 0)
+        {
+            _ = Dialogs.ShowError("Invalid task", "Task cannot be empty.");
+            return;
+        }
         if (Auth.ApiKey is { } key)
         {
             cueTask.Tasks = newTask;
