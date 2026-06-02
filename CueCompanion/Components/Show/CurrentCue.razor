@@ -55,7 +55,7 @@
                     </div>
                 }
 
-            <MudCard Style="flex-grow: 1; overflow-y: auto;">
+            <MudCard Style="flex-grow: 1; overflow-y: auto; min-height: 40px;">
                     @foreach (CueTask cueTask in _currentTasks)
                         if (IsTaskVisible(cueTask))
                         {
@@ -64,7 +64,7 @@
                                     @if (!IsEditMode)
                                     {
                                         <MudIcon Icon="@CueTask.CueTaskIconToString(cueTask.Icon)" Color="Color.Primary"
-                                                 Size="Size.Large"/>
+                                                 Size="Size.Large" Style="margin-left: 16px;"/>
                                     }
                                     <div class="flex-grow-1 p-2" style="white-space: pre-wrap;">
                                         @if (!IsEditMode)
