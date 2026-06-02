@@ -1,24 +1,26 @@
 @inject ShowService ShowService
-
-@if (ShowService?.CurrentlyViewingShow?.Id is { } showID)
+@if (IsEditMode)
 {
-    <MudTooltip Text="Delete">
-        <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"
-                       OnClick="@(() => { DeleteShowButtonPressed.InvokeAsync(showID); })"/>
-    </MudTooltip>
-    <MudTooltip Text="Duplicate">
-        <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"
-                       OnClick="@(() => { DuplicateShowButtonPressed.InvokeAsync(showID); })"/>
-    </MudTooltip>
-}
-else
-{
-    <MudTooltip Text="Delete">
-        <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"/>
-    </MudTooltip>
-    <MudTooltip Text="Duplicate">
-        <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"/>
-    </MudTooltip>
+    @if (ShowService?.CurrentlyViewingShow?.Id is { } showID)
+    {
+        <MudTooltip Text="Delete">
+            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"
+                           OnClick="@(() => { DeleteShowButtonPressed.InvokeAsync(showID); })"/>
+        </MudTooltip>
+        <MudTooltip Text="Duplicate">
+            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"
+                           OnClick="@(() => { DuplicateShowButtonPressed.InvokeAsync(showID); })"/>
+        </MudTooltip>
+    }
+    else
+    {
+        <MudTooltip Text="Delete">
+            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"/>
+        </MudTooltip>
+        <MudTooltip Text="Duplicate">
+            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"/>
+        </MudTooltip>
+    }
 }
 <MudTooltip Text="Create new">
     <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
@@ -48,4 +50,7 @@ else
 
     [Parameter]
     public required EventCallback<InputFileChangeEventArgs> OnImportFileSelected { get; set; }
+
+    [Parameter]
+    public required bool IsEditMode { get; set; }
 }
