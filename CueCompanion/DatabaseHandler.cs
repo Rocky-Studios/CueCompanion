@@ -46,7 +46,7 @@ public static class DatabaseHandler
         }
 
         UserManager.RemoveExpiredApiKeys();
-        _purgeTimer = new PeriodicTimer(TimeSpan.FromMinutes(10));
+        _purgeTimer = new PeriodicTimer(TimeSpan.FromDays(7));
         _ = Task.Run(async () =>
                      {
                          while (true)
