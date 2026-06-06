@@ -28,7 +28,7 @@ public static class UserManager
         User? user = r.Value;
         if (user == null) return "Invalid session key.";
         var r2 = HasManageUsersPermission(apiKey);
-        if (!r2.IsSuccess) return r.Error!;
+        if (!r2.IsSuccess) return r2.Error!;
 
         var            users     = Db.Table<User>().ToArray();
         List<UserInfo> userInfos = [];
