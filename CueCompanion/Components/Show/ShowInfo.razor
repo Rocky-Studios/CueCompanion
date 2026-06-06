@@ -331,7 +331,11 @@
             var r = await ShowService!.SendEditModeAction(key, EditModeMethod.Create, newShow);
             r.IfError(e => Dialogs.ShowError("Failed to create new show", e));
             if (r.Value is not { } returnedShow) return;
-            if (ShowService.Shows.Any(s => s.Id == returnedShow.Id)) return; // Show already exists in list, no need to add
+            if (ShowService.Shows.Any(s => s.Id == returnedShow.Id))
+            {
+                SelectedShowBound = returnedShow;
+                return; // Show already exists in list, no need to add
+            }
             ShowService.Shows = ShowService.Shows.Append(returnedShow).ToArray();
             SelectedShowBound = returnedShow;
         }
@@ -358,7 +362,10 @@
             var r = await ShowService.SendEditModeAction(key, EditModeMethod.Delete, show);
             r.IfError(e => Dialogs.ShowError("Failed to delete show", e));
             ShowService.Shows                = ShowService.Shows.ToList().Where(s => s.Id != showId).ToArray();
-            ShowService.CurrentlyViewingShow = null;
+            Show? nextSelectShow = null;
+            if (ShowService.Shows.Length > 0)
+                nextSelectShow = ShowService.Shows[0];
+            ShowService.CurrentlyViewingShow = nextSelectShow;
             ShowService.UpdateState();
         }
     }

@@ -1,27 +1,17 @@
 @inject ShowService ShowService
-@if (IsEditMode)
+
+@if (ShowService?.CurrentlyViewingShow?.Id is { } showID)
 {
-    @if (ShowService?.CurrentlyViewingShow?.Id is { } showID)
-    {
-        <MudTooltip Text="Delete">
-            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"
-                           OnClick="@(() => { DeleteShowButtonPressed.InvokeAsync(showID); })"/>
-        </MudTooltip>
-        <MudTooltip Text="Duplicate">
-            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"
-                           OnClick="@(() => { DuplicateShowButtonPressed.InvokeAsync(showID); })"/>
-        </MudTooltip>
-    }
-    else
-    {
-        <MudTooltip Text="Delete">
-            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"/>
-        </MudTooltip>
-        <MudTooltip Text="Duplicate">
-            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"/>
-        </MudTooltip>
-    }
+    <MudTooltip Text="Delete">
+        <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Delete"
+                       OnClick="@(() => { DeleteShowButtonPressed.InvokeAsync(showID); })"/>
+    </MudTooltip>
+    <MudTooltip Text="Duplicate">
+        <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.FileCopy"
+                       OnClick="@(() => { DuplicateShowButtonPressed.InvokeAsync(showID); })"/>
+    </MudTooltip>
 }
+
 <MudTooltip Text="Create new">
     <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.Add" OnClick="@NewShowButtonPressed"/>
 </MudTooltip>
@@ -51,4 +41,9 @@
 
     [Parameter]
     public required bool IsEditMode { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        ShowService.OnStateChanged += StateHasChanged;
+    }
 }
