@@ -1,4 +1,5 @@
-﻿using QuestPDF.Fluent;
+﻿using CueCompanion.Components.Show;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
@@ -6,7 +7,7 @@ namespace CueCompanion;
 
 public static class PDFExport
 {
-    public static byte[] GeneratePDF(ShowBundle bundle)
+    public static byte[] GeneratePDF(ShowBundle bundle, PDFExportOptions options)
     {
         Show show = bundle.Show;
         var  cues = bundle.Cues;
@@ -23,7 +24,7 @@ public static class PDFExport
                                                       page.DefaultTextStyle(x => x.FontSize(20));
 
                                                       page.Header()
-                                                          .Text("CTHS Media Centre")
+                                                          .Text(options.HeaderText)
                                                           .AlignCenter()
                                                           .SemiBold().FontSize(16).FontColor(Colors.Black);
 
@@ -34,7 +35,7 @@ public static class PDFExport
                                                                       x.Spacing(20);
 
                                                                       x.Item()
-                                                                       .Text("CTHS Media Centre")
+                                                                       .Text(options.Organisation)
                                                                        .AlignCenter()
                                                                        .Bold().FontSize(36).FontColor(Colors.Red.Medium);
 
@@ -47,15 +48,26 @@ public static class PDFExport
                                                                        .Text("Current as of " + DateTime.Now.ToShortDateString())
                                                                        .AlignCenter()
                                                                        .Light().FontSize(20).FontColor(Colors.Black);
-                                                                      x.Item()
-                                                                       .Text("DRAFT ONLY not to be used for production")
-                                                                       .AlignCenter()
-                                                                       .FontSize(20).FontColor(Colors.Black);
+
+                                                                      if (options.Draft)
+                                                                      {
+                                                                          x.Item()
+                                                                           .Text("DRAFT ONLY not to be used for production")
+                                                                           .AlignCenter()
+                                                                           .FontSize(20).FontColor(Colors.Black);
+                                                                      }
 
                                                                       x.Item()
                                                                        .Text(show.Name)
                                                                        .AlignCenter()
                                                                        .SemiBold().FontSize(48).FontColor(Colors.Black);
+
+                                                                      x.Item()
+                                                                       .Text(options.CoverInfo)
+                                                                       .AlignCenter().SemiBold()
+                                                                       .FontSize(20).FontColor(Colors.Black);
+
+
                                                                       x.Item().PageBreak();
                                                                       ShowInfo(x.Item(), show);
                                                                       x.Item()
@@ -67,8 +79,11 @@ public static class PDFExport
                                                                        .AlignCenter()
                                                                        .Light().FontSize(20).FontColor(Colors.Black);
                                                                       CueList(x.Item(), cues);
-                                                                      x.Item().PageBreak();
-                                                                      Runsheet(x.Item(), cues, tasks, roles);
+                                                                      if (options.IncludeRunsheet)
+                                                                      {
+                                                                          x.Item().PageBreak();
+                                                                          Runsheet(x.Item(), cues, tasks, roles, options);
+                                                                      }
                                                                   });
 
                                                       PageFooter(page);
@@ -138,7 +153,7 @@ public static class PDFExport
                         });
     }
 
-    private static void Runsheet(IContainer container, Cue[] cues, CueTask[] tasks, Role[] roles)
+    private static void Runsheet(IContainer container, Cue[] cues, CueTask[] tasks, Role[] roles, PDFExportOptions options)
     {
         Dictionary<int, string> roleNames = [];
         foreach (Role role in roles)
@@ -146,57 +161,90 @@ public static class PDFExport
             roleNames.Add(role.Id, role.Name);
         }
 
-        container.Table(table =>
-                        {
-                            table.ColumnsDefinition(columns =>
-                                                    {
-                                                        columns.ConstantColumn(40);
-                                                        columns.RelativeColumn();
-                                                    });
+        container.Column(x =>
+                         {
+                             x.Item().Text("Runsheet").FontSize(28).SemiBold().AlignCenter();
+                             string showingRolesText = "";
+                             bool   multipleRoles    = options.IncludeRoleIDs.Length > 1;
+                             foreach (int optionsIncludeRoleID in options.IncludeRoleIDs)
+                                 if (roleNames.TryGetValue(optionsIncludeRoleID, out string? roleName))
+                                 {
+                                     if (string.IsNullOrEmpty(showingRolesText))
+                                     {
+                                         string pl = multipleRoles ? "s" : "";
+                                         showingRolesText = $"Tasks for role${pl}: {roleName}";
+                                     }
+                                     else
+                                         showingRolesText += $", {roleName}";
+                                 }
 
-                            foreach (Cue cue in cues)
-                            {
-                                table.Cell()
-                                     .AlignMiddle()
-                                     .Padding(8)
-                                     .Text($"{cue.Position}");
-                                table.Cell().Row(r =>
-                                                 {
-                                                     r.RelativeItem()
-                                                      .Padding(8)
-                                                      .AlignMiddle()
-                                                      .Text(cue.Name)
-                                                      .FontSize(16);
-                                                     r.RelativeItem(3)
-                                                      .Padding(8)
-                                                      .Column(column =>
-                                                              {
-                                                                  column.Spacing(4);
+                             x.Item().Text(showingRolesText).FontSize(12);
+                             x.Spacing(20);
+                             x.Item().Table(table =>
+                                            {
+                                                table.ColumnsDefinition(columns =>
+                                                                        {
+                                                                            columns.ConstantColumn(40);
+                                                                            columns.RelativeColumn();
+                                                                        });
 
-                                                                  foreach (CueTask task in tasks.Where(t => t.CueId == cue.Id))
-                                                                  {
-                                                                      string taskText = task.RoleId is { } roleId &&
-                                                                                        roleNames.TryGetValue(roleId, out string? roleName)
-                                                                                            ? $"{roleName}: {task.Tasks}"
-                                                                                            : task.Tasks;
+                                                foreach (Cue cue in cues)
+                                                {
+                                                    table.Cell()
+                                                         .AlignMiddle()
+                                                         .Padding(8)
+                                                         .Text($"{cue.Position}");
+                                                    table.Cell().Row(r =>
+                                                                     {
+                                                                         r.RelativeItem()
+                                                                          .Padding(8)
+                                                                          .AlignMiddle()
+                                                                          .Text(cue.Name)
+                                                                          .FontSize(16);
+                                                                         r.RelativeItem(3)
+                                                                          .Padding(8)
+                                                                          .Column(column =>
+                                                                                  {
+                                                                                      column.Spacing(4);
 
-                                                                      column.Item().Row(taskRow =>
-                                                                                        {
-                                                                                            taskRow.ConstantItem(14)
-                                                                                                   .AlignMiddle()
-                                                                                                   .Svg(TaskIconSvg(task.Icon))
-                                                                                                   .FitArea();
+                                                                                      foreach (CueTask task in tasks.Where(t => t.CueId == cue.Id))
+                                                                                      {
+                                                                                          string taskText = task.Tasks;
+                                                                                          bool   show     = true;
+                                                                                          if (task.RoleId is { } roleId)
+                                                                                          {
+                                                                                              if (multipleRoles)
+                                                                                              {
+                                                                                                  if (roleNames.TryGetValue(roleId, out string? roleName))
+                                                                                                      taskText = $"{roleName}: {task.Tasks}";
+                                                                                              }
 
-                                                                                            taskRow.RelativeItem()
-                                                                                                   .AlignMiddle()
-                                                                                                   .Text(taskText)
-                                                                                                   .FontSize(10);
-                                                                                        });
-                                                                  }
-                                                              });
-                                                 });
-                            }
-                        });
+                                                                                              if (options.IncludeRoleIDs.Length > 0 &&
+                                                                                                  !options.IncludeRoleIDs.Contains(roleId))
+                                                                                                  show = false;
+                                                                                          }
+
+
+                                                                                          if (!show) continue;
+
+                                                                                          column.Item().Row(taskRow =>
+                                                                                                  {
+                                                                                                      taskRow.ConstantItem(14)
+                                                                                                         .AlignMiddle()
+                                                                                                         .Svg(TaskIconSvg(task.Icon))
+                                                                                                         .FitArea();
+
+                                                                                                      taskRow.RelativeItem()
+                                                                                                         .AlignMiddle()
+                                                                                                         .Text(taskText)
+                                                                                                         .FontSize(10);
+                                                                                                  });
+                                                                                      }
+                                                                                  });
+                                                                     });
+                                                }
+                                            });
+                         });
     }
 
     private static string TaskIconSvg(CueTaskIcon icon) =>

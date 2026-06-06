@@ -5,6 +5,7 @@ using CueCompanion.Hubs;
 using CueCompanion.Services;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.ResponseCompression;
+using MudBlazor;
 using MudBlazor.Services;
 using QuestPDF.Infrastructure;
 using YamlDotNet.Serialization;
@@ -76,6 +77,7 @@ public class Program
         builder.Services.AddSingleton<ConfigHub>();
 
         builder.Services.AddScoped<SimpleDialogService>();
+        builder.Services.AddScoped<DialogService>();
 
         builder.Services.AddSignalR();
         builder.Services.AddBlazorCookiesServerSideServices();

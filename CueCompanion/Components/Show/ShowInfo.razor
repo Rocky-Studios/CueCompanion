@@ -515,6 +515,15 @@
             return;
         }
 
+        // Show dialog to get export options
+        IDialogReference dialog = await DialogService.ShowAsync<PDFExportDialog>("PDF Export Options");
+        DialogResult?    result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        PDFExportOptions? options = (PDFExportOptions)result.Data;
+
         var bundleResult = await ShowService.GetShowBundle(key, show.Id);
         if (!bundleResult.IsSuccess)
         {
@@ -524,7 +533,7 @@
 
         ShowBundle bundle = bundleResult.Value;
 
-        byte[] pdfBytes = PDFExport.GeneratePDF(bundle);
+        byte[] pdfBytes  = PDFExport.GeneratePDF(bundle, options);
         string pdfString = Convert.ToBase64String(pdfBytes);
 
         string fileName = BuildExportFileName(show, "pdf");

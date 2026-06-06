@@ -1,0 +1,104 @@
+@inject DialogService DialogService
+@inject ShowService   ShowService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">PDF Export Options</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudStack Row="true">
+                <MudCheckBox @bind-Value="options.Draft" Label="Draft" Color="Color.Primary"/>
+                <MudCheckBox @bind-Value="options.IncludeRunsheet" Label="Include runsheet" Color="Color.Primary"/>
+            </MudStack>
+            <MudTextField @bind-Value="options.Organisation" Label="Organisation name"></MudTextField>
+            <MudTextField @bind-Value="options.HeaderText" Label="Header text"></MudTextField>
+            <MudTextField @bind-Value="options.CoverInfo" Label="Cover info"></MudTextField>
+            <MudText Typo="Typo.h3">Include roles</MudText>
+            <div class="d-flex flex-grow-1 flex-wrap justify-center align-center px-8 pb-8" style="margin-top: -16px;">
+                <MudCheckBox Color="Color.Primary" Label="All" Dense="true" T="bool?"
+                             Value="@AllRolesSelected" ValueChanged="OnAllRolesChanged"></MudCheckBox>
+                @foreach (Role role in Roles)
+                {
+                    <MudCheckBox Color="Color.Primary" Label="@role.Name" T="bool" Dense="true"
+                                 @bind-Value="_roleFilters[role.Id]"/>
+                }
+            </div>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Export as PDF</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    IMudDialogInstance Dialog { get; set; }
+
+    readonly PDFExportOptions options = new();
+
+    private void Submit()
+    {
+        options.IncludeRoleIDs = _roleFilters.Where(kv => kv.Value).Select(kv => kv.Key).ToArray();
+        Dialog.Close(DialogResult.Ok(options));
+    }
+
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+
+
+    private bool? AllRolesSelected => All();
+
+    private Role[] Roles => ShowService?.Roles ?? [];
+
+    private bool? All()
+    {
+        if (_roleFilters.Count > 0 && _roleFilters.Values.All(isChecked => isChecked)) return true;
+        if (_roleFilters.Count > 0 && _roleFilters.Values.All(isChecked => !isChecked)) return false;
+        return null;
+    }
+
+    //              RoleID, IsChecked
+    private Dictionary<int, bool> _roleFilters = new();
+
+
+    private Task OnAllRolesChanged(bool? value)
+    {
+        if (ShowService?.Roles is { } roles)
+        {
+            foreach (Role role in roles)
+            {
+                _roleFilters[role.Id] = value ?? true;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+
+    protected override void OnParametersSet()
+    {
+        if (ShowService?.Roles is { } roles)
+        {
+            _roleFilters = roles.ToDictionary(
+                role => role.Id,
+                role =>
+                {
+                    bool hasExistingValue = _roleFilters.TryGetValue(role.Id, out bool isChecked);
+                    if (!hasExistingValue) return true; // if there is no existing value for this role, default to checked (visible)
+                    return hasExistingValue && isChecked;
+                });
+        }
+    }
+
+}
+
+
+
+
+
+
