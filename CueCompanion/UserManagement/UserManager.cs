@@ -366,4 +366,35 @@ public static class UserManager
         auditAction.UpdateInDatabase();
         return Result.Success();
     }
+
+    public static Result<string> ForceChangePassword(string apiKey, int userID)
+    {
+        var r = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess) return Result<string>.Failure(r.Error!);
+
+        if (!r.GetValue()) return Result<string>.Failure("Access denied.");
+
+        AuditAction auditAction = new(AuditActionType.Update, DateTime.UtcNow, apiKey, userID, $"Change password for user ID{userID}");
+        try
+        {
+            User? user = Db.Table<User>().FirstOrDefault(u => u?.Id == userID, null);
+            if (user == null)
+            {
+                auditAction.SetErrorAndUpdate("User not found.");
+                return Result<string>.Failure(auditAction.Error);
+            }
+
+            string newPassword = RandomNumberGenerator.GetHexString(8);
+            user.PasswordHash = Hash.HashPassword(newPassword);
+            Db.Update(user);
+            auditAction.Success = true;
+            auditAction.UpdateInDatabase();
+            return Result<string>.Success(newPassword);
+        }
+        catch (Exception exception)
+        {
+            auditAction.SetErrorAndUpdate(exception.ToString());
+            return Result<string>.Failure(auditAction.Error);
+        }
+    }
 }

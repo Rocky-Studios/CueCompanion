@@ -127,8 +127,8 @@
     {
         if (Auth.ApiKey is { } key)
         {
-            (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
-            (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
+            (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.Show("Error loading show", e));
+            (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.Show("Error loading show", e));
 
             StateHasChanged();
         }

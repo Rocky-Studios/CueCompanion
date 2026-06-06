@@ -127,7 +127,7 @@
     {
         if (Auth.User != null) // Already logged in
         {
-            await Dialogs.ShowError("Login failed", "Already logged in");
+            await Dialogs.Show("Login failed", "Already logged in");
             return;
         }
 
@@ -135,7 +135,7 @@
         var result = await UserProvider.Connect(_model.UserName, _model.Password);
         if (result.Error is { } error)
         {
-            await Dialogs.ShowError("Login failed", error);
+            await Dialogs.Show("Login failed", error);
             _isLoading = false;
             return;
         }
@@ -155,13 +155,13 @@
     {
         if (_newPasswordField != _confirmNewPasswordField)
         {
-            await Dialogs.ShowError("Error", "New password and confirmation do not match");
+            await Dialogs.Show("Error", "New password and confirmation do not match");
             return;
         }
 
         if (_currentPasswordField == null || _newPasswordField == null)
         {
-            await Dialogs.ShowError("Error", "Current and new password must be filled out");
+            await Dialogs.Show("Error", "Current and new password must be filled out");
             return;
         }
 

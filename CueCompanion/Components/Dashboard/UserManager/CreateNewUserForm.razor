@@ -45,7 +45,7 @@
             Result r = await UserManagement.CreateNewUser(key, username, password);
             if (r.Error is { } errorMessage)
             {
-                await Dialogs.ShowError("Create new user failed", errorMessage);
+                await Dialogs.Show("Create new user failed", errorMessage);
                 return;
             }
 
@@ -54,7 +54,7 @@
             var r2 = await UserManagement.GetUsers(key);
             if (r2.Error is { } errorMessage2)
             {
-                await Dialogs.ShowError("Failed to retrieve users", errorMessage2);
+                await Dialogs.Show("Failed to retrieve users", errorMessage2);
                 return;
             }
 

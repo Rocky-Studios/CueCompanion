@@ -95,4 +95,12 @@ public class UserManagementService : StateSubscriberService
 
         return await _userManagementHub.InvokeAsync<Result>("ChangePassword", apiKey, currentPassword, newPassword);
     }
+
+    public async Task<Result<string>> ForceChangePassword(string apiKey, int userID)
+    {
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        return await _userManagementHub.InvokeAsync<Result<string>>("ForceChangePassword", apiKey, userID);
+    }
 }

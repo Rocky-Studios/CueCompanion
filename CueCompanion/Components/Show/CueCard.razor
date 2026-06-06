@@ -95,7 +95,7 @@
     {
         if (newName.Length == 0)
         {
-            _ = Dialogs.ShowError("Invalid cue name", "Cue name cannot be empty.");
+            _ = Dialogs.Show("Invalid cue name", "Cue name cannot be empty.");
             return;
         }
         if (Auth.ApiKey is { } key)
@@ -103,7 +103,7 @@
             Task.Run(async () =>
             {
                 var res = await ShowService.SendEditModeAction(key, EditModeMethod.Update, Cue);
-                res.IfError(e => Dialogs.ShowError("Error changing cue name", e));
+                res.IfError(e => Dialogs.Show("Error changing cue name", e));
             });
         }
     }
@@ -115,7 +115,7 @@
             Task.Run(async () =>
             {
                 var res = await ShowService.SendEditModeAction(key, EditModeMethod.Delete, Cue);
-                res.IfError(e => Dialogs.ShowError("Error deleting cue", e));
+                res.IfError(e => Dialogs.Show("Error deleting cue", e));
             });
         }
     }
@@ -130,7 +130,7 @@
                 {
                     Direction = -1,
                 });
-                res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
+                res.IfError(e => Dialogs.Show("Error", "Failed to move cue: " + e));
                 if (res.IsSuccess) ShowService.CurrentCuePosition += -1;
             });
         }
@@ -146,7 +146,7 @@
                 {
                     Direction = 1,
                 });
-                res.IfError(e => Dialogs.ShowError("Error", "Failed to move cue: " + e));
+                res.IfError(e => Dialogs.Show("Error", "Failed to move cue: " + e));
                 if (res.IsSuccess) ShowService.CurrentCuePosition += 1;
             });
         }
@@ -160,7 +160,7 @@
                      {
                          cue.DurationMins = duration;
                          var res = await ShowService.SendEditModeAction(key, EditModeMethod.Update, Cue);
-                         res.IfError(e => Dialogs.ShowError("Error", "Failed to change cue duration: " + e));
+                         res.IfError(e => Dialogs.Show("Error", "Failed to change cue duration: " + e));
                      });
         }
     }

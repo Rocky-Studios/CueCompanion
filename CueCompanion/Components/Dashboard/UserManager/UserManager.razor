@@ -67,10 +67,11 @@
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"
                                                OnClick="@(() => OpenUsernameChangeDialog(context))"/>
                             </MudTooltip>
-                        }
-                        @if (context.UserName != "admin")
-                        {
-                            @if (context.CanLogin)
+                            <MudTooltip Text="Force change password">
+                                <MudIconButton Icon="@Icons.Material.Filled.Key" Color="Color.Primary"
+                                               OnClick="@(() => { ForceChangePassword(context.UserID); })"/>
+                            </MudTooltip>
+                            if (context.CanLogin)
                             {
                                 <MudTooltip Text="Logging in enabled">
                                     <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Primary"
@@ -84,9 +85,6 @@
                                                    OnClick="@(() => { EnableLoggingIn(context.UserID); })"/>
                                 </MudTooltip>
                             }
-                        }
-                        @if (context.UserName != "admin")
-                        {
                             <MudTooltip Text="Delete">
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Primary"
                                                OnClick="@(() => { DeleteUser(context.UserID); })"/>
@@ -136,7 +134,7 @@
                                              if (HasPermissions && Auth.ApiKey is { } key)
                                              {
                                                  var r = await UserManagement.GetUsers(key);
-                                                 UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
+                                                 UserManagement.UserInfos = r.GetValue(s => Dialogs.Show("Failed to retrieve users", s));
                                              }
 
                                              await InvokeAsync(StateHasChanged);
@@ -156,7 +154,7 @@
             int permissionID = Auth.PermissionsCache[permission];
             await UserManagement.AddPermissionToUser(Auth.ApiKey, userID, permissionID);
             var r = await UserManagement.GetUsers(key);
-            UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
+            UserManagement.UserInfos = r.GetValue(s => Dialogs.Show("Failed to retrieve users", s));
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -168,7 +166,7 @@
             int permissionID = Auth.PermissionsCache[permission];
             await UserManagement.RemovePermissionFromUser(Auth.ApiKey, userID, permissionID);
             var r                      = await UserManagement.GetUsers(key);
-            if (r.IsSuccess) UserManagement.UserInfos = r.GetValue(s => Dialogs.ShowError("Failed to retrieve users", s));
+            if (r.IsSuccess) UserManagement.UserInfos = r.GetValue(s => Dialogs.Show("Failed to retrieve users", s));
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -222,6 +220,19 @@
         }
     }
 
+    private async void ForceChangePassword(int userID)
+    {
+        if (Auth.ApiKey is { } key)
+        {
+            var r = await UserManagement.ForceChangePassword(key, userID);
+            await Dialogs.Show(r.IsSuccess ? "Success" : "Failed",
+                               r.IsSuccess ? "Password change forced successfully to " + r.GetValue() : r.Error!,
+                               "Forced password change");
+
+            UserManagement.UpdateState();
+        }
+    }
+
 
     private async Task UsernameChangeDialogConfirmButtonPressed()
     {
@@ -238,7 +249,7 @@
         if (Auth.ApiKey is { } key)
         {
             Result r = await UserManagement.RenameUser(key, _editingUserId.Value, newUserName);
-            r.IfError(async void (errorMessage) => { await Dialogs.ShowError("Failed to change username", errorMessage); });
+            r.IfError(async void (errorMessage) => { await Dialogs.Show("Failed to change username", errorMessage); });
             if (r.IsSuccess)
             {
                 UserInfo u   = UserManagement.UserInfos.FirstOrDefault(u => u.UserID == _editingUserId.Value);

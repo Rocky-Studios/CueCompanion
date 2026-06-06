@@ -301,7 +301,7 @@
     {
         if (newName.Length == 0)
         {
-            _ = Dialogs.ShowError("Invalid show name", "Show name cannot be empty.");
+            _ = Dialogs.Show("Invalid show name", "Show name cannot be empty.");
             return;
         }
         if (ShowService!.CurrentlyViewingShow is { } show && Auth.ApiKey is { } key)
@@ -329,7 +329,7 @@
         if (Auth.ApiKey is { } key)
         {
             var r = await ShowService!.SendEditModeAction(key, EditModeMethod.Create, newShow);
-            r.IfError(e => Dialogs.ShowError("Failed to create new show", e));
+            r.IfError(e => Dialogs.Show("Failed to create new show", e));
             if (r.Value is not { } returnedShow) return;
             if (ShowService.Shows.Any(s => s.Id == returnedShow.Id))
             {
@@ -355,12 +355,12 @@
             Show show = ShowService!.Shows.FirstOrDefault(s => s.Id == showId) ?? new Show { Id = showId };
             if (ShowService.LiveModeShowID == showId)
             {
-                _ = Dialogs.ShowError("Cannot delete show", "You cannot delete a show that is currently live.");
+                _ = Dialogs.Show("Cannot delete show", "You cannot delete a show that is currently live.");
                 return;
             }
 
             var r = await ShowService.SendEditModeAction(key, EditModeMethod.Delete, show);
-            r.IfError(e => Dialogs.ShowError("Failed to delete show", e));
+            r.IfError(e => Dialogs.Show("Failed to delete show", e));
             ShowService.Shows                = ShowService.Shows.ToList().Where(s => s.Id != showId).ToArray();
             Show? nextSelectShow = null;
             if (ShowService.Shows.Length > 0)
@@ -374,34 +374,34 @@
     {
         if (ShowService!.CurrentlyViewingShow is not { } show)
         {
-            _ = Dialogs.ShowError("Failed to duplicate show", "Please select a show to duplicate.");
+            _ = Dialogs.Show("Failed to duplicate show", "Please select a show to duplicate.");
             return;
         }
 
         if (Auth.ApiKey is not { } key)
         {
-            _ = Dialogs.ShowError("Failed to duplicate show", "No active session key was found.");
+            _ = Dialogs.Show("Failed to duplicate show", "No active session key was found.");
             return;
         }
 
         var bundleResult = await ShowService.GetShowBundle(key, show.Id);
         if (!bundleResult.IsSuccess)
         {
-            _ = Dialogs.ShowError("Failed to duplicate show", bundleResult.Error ?? "Unable to load the show bundle.");
+            _ = Dialogs.Show("Failed to duplicate show", bundleResult.Error ?? "Unable to load the show bundle.");
             return;
         }
 
         ShowBundle bundle = bundleResult.Value;
         bundle.Show.Name += " (Copy)";
         Result importResult = await ShowService!.AddShowFromBundle(key, bundle);
-        importResult.IfError(e => Dialogs.ShowError("Failed to duplicate show", e));
+        importResult.IfError(e => Dialogs.Show("Failed to duplicate show", e));
         if (importResult.IsSuccess)
         {
             Snackbar.Add($"Show {show.Name} duplicated successfully.", Severity.Success);
         }
 
-        (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Show duplicated, but failed to refresh list",      e));
-        (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Show duplicated, but failed to refresh live info", e));
+        (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.Show("Show duplicated, but failed to refresh list",      e));
+        (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.Show("Show duplicated, but failed to refresh live info", e));
     }
 
     private static string ShowToStringFunc(Show? show)
@@ -422,8 +422,8 @@
         ShowService!.CurrentlyViewingShow = newShow;
         if (Auth.ApiKey is { } key)
         {
-            (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
-            (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Error loading show", e));
+            (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.Show("Error loading show", e));
+            (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.Show("Error loading show", e));
         }
 
         ShowService.UpdateState();
@@ -435,14 +435,14 @@
         {
             if (ShowService!.CurrentlyViewingShow == null)
             {
-                _ = Dialogs.ShowError("Error starting show", "Please select a show to start.");
+                _ = Dialogs.Show("Error starting show", "Please select a show to start.");
                 return;
             }
 
             Result r = await ShowService.SelectShowAsync(key, ShowService.CurrentlyViewingShow.Id);
-            r.IfError(e => Dialogs.ShowError("Error starting show", e));
+            r.IfError(e => Dialogs.Show("Error starting show", e));
             if (r.IsSuccess) Snackbar.Add($"Show {ShowService.CurrentlyViewingShow!.Name} is now live.", Severity.Success);
-            (await ShowService.StartShowAsync(key)).IfError(e => Dialogs.ShowError("Error starting show",                                       e));
+            (await ShowService.StartShowAsync(key)).IfError(e => Dialogs.Show("Error starting show", e));
         }
     }
 
@@ -452,14 +452,14 @@
         {
             if (ShowService!.CurrentlyViewingShow == null)
             {
-                _ = Dialogs.ShowError("Error stopping show", "Please select a show to stop.");
+                _ = Dialogs.Show("Error stopping show", "Please select a show to stop.");
                 return;
             }
 
             Result r = await ShowService.StopShowAsync(key);
-            r.IfError(e => Dialogs.ShowError("Error stopping show", e));
+            r.IfError(e => Dialogs.Show("Error stopping show", e));
             if (r.IsSuccess) Snackbar.Add($"Show {ShowService.CurrentlyViewingShow!.Name} has been stopped.", Severity.Success);
-            (await ShowService.SelectShowAsync(key, null)).IfError(e => Dialogs.ShowError("Error stopping show", e));
+            (await ShowService.SelectShowAsync(key, null)).IfError(e => Dialogs.Show("Error stopping show", e));
         }
     }
 
@@ -472,20 +472,20 @@
     {
         if (ShowService!.CurrentlyViewingShow is not { } show)
         {
-            _ = Dialogs.ShowError("Failed to export show", "Please select a show to export.");
+            _ = Dialogs.Show("Failed to export show", "Please select a show to export.");
             return;
         }
 
         if (Auth.ApiKey is not { } key)
         {
-            _ = Dialogs.ShowError("Failed to export show", "No active session key was found.");
+            _ = Dialogs.Show("Failed to export show", "No active session key was found.");
             return;
         }
 
         var bundleResult = await ShowService.GetShowBundle(key, show.Id);
         if (!bundleResult.IsSuccess)
         {
-            _ = Dialogs.ShowError("Failed to export show", bundleResult.Error ?? "Unable to load the show bundle.");
+            _ = Dialogs.Show("Failed to export show", bundleResult.Error ?? "Unable to load the show bundle.");
             return;
         }
 
@@ -505,20 +505,20 @@
     {
         if (ShowService!.CurrentlyViewingShow is not { } show)
         {
-            _ = Dialogs.ShowError("Failed to export show", "Please select a show to export.");
+            _ = Dialogs.Show("Failed to export show", "Please select a show to export.");
             return;
         }
 
         if (Auth.ApiKey is not { } key)
         {
-            _ = Dialogs.ShowError("Failed to export show", "No active session key was found.");
+            _ = Dialogs.Show("Failed to export show", "No active session key was found.");
             return;
         }
 
         var bundleResult = await ShowService.GetShowBundle(key, show.Id);
         if (!bundleResult.IsSuccess)
         {
-            _ = Dialogs.ShowError("Failed to export show", bundleResult.Error ?? "Unable to load the show bundle.");
+            _ = Dialogs.Show("Failed to export show", bundleResult.Error ?? "Unable to load the show bundle.");
             return;
         }
 
@@ -544,7 +544,7 @@
     {
         if (Auth.ApiKey is not { } key)
         {
-            _ = Dialogs.ShowError("Failed to import show", "No active session key was found.");
+            _ = Dialogs.Show("Failed to import show", "No active session key was found.");
             return;
         }
 
@@ -558,7 +558,7 @@
             }
             catch (Exception e)
             {
-                _ = Dialogs.ShowError("Failed to import show", $"The selected file is not a valid show. \n\n {e.Message}");
+                _ = Dialogs.Show("Failed to import show", $"The selected file is not a valid show. \n\n {e.Message}");
                 return;
             }
 
@@ -569,7 +569,7 @@
             Result importResult = await ShowService!.AddShowFromBundle(key, importedBundle);
             if (!importResult.IsSuccess)
             {
-                _ = Dialogs.ShowError("Failed to import show", importResult.Error ?? "Unknown error");
+                _ = Dialogs.Show("Failed to import show", importResult.Error ?? "Unknown error");
                 return;
             }
             else
@@ -577,12 +577,12 @@
                 Snackbar.Add($"Show {name} imported successfully.", Severity.Success);
             }
 
-            (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.ShowError("Show imported, but failed to refresh list",      e));
-            (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.ShowError("Show imported, but failed to refresh live info", e));
+            (await ShowService.GetShowsAndRoles(key)).IfError(e => Dialogs.Show("Show imported, but failed to refresh list",      e));
+            (await ShowService.GetLiveInfoAsync(key)).IfError(e => Dialogs.Show("Show imported, but failed to refresh live info", e));
         }
         catch (Exception e)
         {
-            _ = Dialogs.ShowError("Failed to import show", e.Message);
+            _ = Dialogs.Show("Failed to import show", e.Message);
         }
     }
 }

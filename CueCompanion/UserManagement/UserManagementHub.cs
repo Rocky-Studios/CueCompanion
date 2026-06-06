@@ -102,6 +102,8 @@ public class UserManagementHub : Hub
         }
     }
 
-    public async Task<Result> ChangePassword(string apiKey, string currentPassword, string newPassword) =>
-        UserManager.ChangePassword(apiKey, currentPassword, newPassword);
+    public Task<Result> ChangePassword(string apiKey, string currentPassword, string newPassword) =>
+        Task.FromResult(UserManager.ChangePassword(apiKey, currentPassword, newPassword));
+
+    public Task<Result<string>> ForceChangePassword(string apiKey, int userID) => Task.FromResult(UserManager.ForceChangePassword(apiKey, userID));
 }

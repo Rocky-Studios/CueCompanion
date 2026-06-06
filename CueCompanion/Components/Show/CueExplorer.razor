@@ -99,7 +99,7 @@
         _isLoadingCues = true;
         try
         {
-            (await ShowService.GetCuesForShowAsync(key, showId)).IfError(e => Dialogs.ShowError("Error loading cues", e));
+            (await ShowService.GetCuesForShowAsync(key, showId)).IfError(e => Dialogs.Show("Error loading cues", e));
             _loadedShowId = showId;
         }
         finally
@@ -128,7 +128,7 @@
     {
         if (HasControlPermissions && Auth.ApiKey is { } key)
         {
-            (await ShowService.PreviousCueAsync(key)).IfError(e => Dialogs.ShowError("Error moving to previous cue", e));
+            (await ShowService.PreviousCueAsync(key)).IfError(e => Dialogs.Show("Error moving to previous cue", e));
         }
     }
 
@@ -136,7 +136,7 @@
     {
         if (HasControlPermissions && Auth.ApiKey is { } key)
         {
-            (await ShowService.NextCueAsync(key)).IfError(e => Dialogs.ShowError("Error moving to next cue", e));
+            (await ShowService.NextCueAsync(key)).IfError(e => Dialogs.Show("Error moving to next cue", e));
         }
     }
 
@@ -152,7 +152,7 @@
                 ShowId = showID,
                 Position = lastCuePosition + 1,
             };
-            (await ShowService.SendEditModeAction(key, EditModeMethod.Create, newCue)).IfError(e => Dialogs.ShowError("Error creating new cue", e));
+            (await ShowService.SendEditModeAction(key, EditModeMethod.Create, newCue)).IfError(e => Dialogs.Show("Error creating new cue", e));
         }
     }
 
@@ -170,7 +170,7 @@
         {
             // Need to pass a cue to tell it in which show
             Cue firstCue = ShowService.GetCuesInShow().First();
-            (await ShowService.SendEditModeAction(key, EditModeMethod.DeleteAll, firstCue)).IfError(e => Dialogs.ShowError("Error deleting cues", e));
+            (await ShowService.SendEditModeAction(key, EditModeMethod.DeleteAll, firstCue)).IfError(e => Dialogs.Show("Error deleting cues", e));
         }
     }
     

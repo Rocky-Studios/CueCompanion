@@ -231,7 +231,7 @@
     {
         if (newTask.Length == 0)
         {
-            _ = Dialogs.ShowError("Invalid task", "Task cannot be empty.");
+            _ = Dialogs.Show("Invalid task", "Task cannot be empty.");
             return;
         }
         if (Auth.ApiKey is { } key)
@@ -263,7 +263,7 @@
         if (ShowService!.CurrentlyViewingShow is { Id: { } showID } && Auth.ApiKey is { } key && _currentTasks?[0] is { } firstTask)
         {
             // Need to pass a task to tell it in which show and cue
-            (await ShowService.SendEditModeAction(key, EditModeMethod.DeleteAll, firstTask)).IfError(e => Dialogs.ShowError("Error deleting tasks", e));
+            (await ShowService.SendEditModeAction(key, EditModeMethod.DeleteAll, firstTask)).IfError(e => Dialogs.Show("Error deleting tasks", e));
         }
     }
 
@@ -273,7 +273,7 @@
         {
             cue.CardColor = newColor;
             StateHasChanged();
-            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, cue)).IfError(e => Dialogs.ShowError("Error changing cue color", e));
+            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, cue)).IfError(e => Dialogs.Show("Error changing cue color", e));
         }
     }
 
@@ -305,7 +305,7 @@
         {
             task.RoleId = newRoleID;
             StateHasChanged();
-            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, task)).IfError(e => Dialogs.ShowError("Error changing task role", e));
+            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, task)).IfError(e => Dialogs.Show("Error changing task role", e));
         }
     }
 
@@ -315,7 +315,7 @@
         {
             task.Icon = newIcon;
             StateHasChanged();
-            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, task)).IfError(e => Dialogs.ShowError("Error changing task icon", e));
+            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, task)).IfError(e => Dialogs.Show("Error changing task icon", e));
         }
     }
 

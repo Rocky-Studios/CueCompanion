@@ -30,7 +30,7 @@
         if (key != null)
         {
             Result<(User user, string apiKey)> res = await Connect(key);
-            res.GetValue(s => Dialogs.ShowError("Failed to connect with session key", s));
+            res.GetValue(s => Dialogs.Show("Failed to connect with session key", s));
         }
 
         Auth.IsLoading = false;
@@ -67,7 +67,7 @@
         if (connectResult.Value.user is { } user)
         {
             Result<Permission[]> permissionsResult = await Auth.GetPermissionsForUserAsync();
-            user.SetPermissions(permissionsResult.GetValue(s => Dialogs.ShowError("Failed to get permissions", s)));
+            user.SetPermissions(permissionsResult.GetValue(s => Dialogs.Show("Failed to get permissions", s)));
         }
 
         return connectResult;
@@ -80,7 +80,7 @@
         {
             await SetApiKey(key);
             Result<Permission[]> permissionsResult = await Auth.GetPermissionsForUserAsync();
-            Auth.User?.SetPermissions(permissionsResult.GetValue(s => Dialogs.ShowError("Failed to get permissions", s)));
+            Auth.User?.SetPermissions(permissionsResult.GetValue(s => Dialogs.Show("Failed to get permissions", s)));
         }
 
         if (result.Meta is { } meta && meta.TryGetValue("clearApiKey", out string? clear) && clear == "true")
