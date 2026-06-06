@@ -8,8 +8,9 @@ public static class PDFExport
 {
     public static byte[] GeneratePDF(ShowBundle bundle)
     {
-        Show      show  = bundle.Show;
-        var       cues  = bundle.Cues;
+        Show show = bundle.Show;
+        var  cues = bundle.Cues;
+        cues.Sort((c1, c2) => c1.Position.CompareTo(c2.Position));
         CueTask[] tasks = bundle.Tasks;
         Role[]    roles = ShowManager.GetRoles();
         return Document.Create(container =>
