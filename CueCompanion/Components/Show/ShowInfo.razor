@@ -13,7 +13,7 @@
     <div style="display:flex; align-items:center; gap:8px;">
         @if (HasControlPermissions)
         {
-            string text = IsEditMode ? "Live mode cannot be changed while in edit mode." : IsLiveMode ? "Stop live mode" : "Start live mode";
+            string text = ShowService.IsEditMode ? "Live mode cannot be changed while in edit mode." : IsLiveMode ? "Stop live mode" : "Start live mode";
             <MudTooltip Text="@text">
                 @if (IsLiveMode)
                 {
@@ -66,7 +66,7 @@
                                    DuplicateShowButtonPressed="DuplicateShowButtonPressed"
                                    OnFileUploadPressed="OnFileUploadPressed"
                                    OnImportFileSelected="OnImportFileSelected"
-                                   IsEditMode="IsEditMode"/>
+                                   IsEditMode="ShowService.IsEditMode"/>
             </MudHidden>
         }
     </div>
@@ -74,7 +74,7 @@
     {
         <MudStack Row="true" Justify="Justify.SpaceBetween">
             <div>
-                <EditableText Label="Show Name:" @bind-Value="show.Name" IsEditMode="IsEditMode"
+                <EditableText Label="Show Name:" @bind-Value="show.Name" IsEditMode="ShowService.IsEditMode"
                               OnValueChanged="ShowNameChanged"/>
                 <MudText Typo="Typo.subtitle2">Show ID: @show.Id</MudText>
             </div>
@@ -120,7 +120,7 @@
 
         <MudDivider/>
         <table class="show-info-table">
-            @if (!IsEditMode)
+            @if (!ShowService.IsEditMode)
             {
                 <tr>
                     <td>Date</td>
@@ -213,10 +213,7 @@
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
 
-    [CascadingParameter(Name = "IsEditMode")]
-    public bool IsEditMode { get; set; }
-
-    private bool IsShowStartStopButtonsDisabled => IsEditMode || SelectedShowBound == null;
+    private bool IsShowStartStopButtonsDisabled => ShowService.IsEditMode || SelectedShowBound == null;
 
 
     [CascadingParameter]

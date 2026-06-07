@@ -33,6 +33,8 @@ public class ShowService : StateSubscriberService, IAsyncDisposable
     public Show?     CurrentlyViewingShow;
     public Action?   OnLiveCueChanged;
 
+    public bool IsEditMode = false;
+
     public async Task StartAsync(string baseUrl)
     {
         _showHub = new HubConnectionBuilder()

@@ -8,18 +8,18 @@
              })
         {
             _currentCue   = ShowService.CurrentCue;
-            _currentTasks = IsEditMode ? ShowService.Tasks.Where(t => t.CueId == _currentCue?.Id).ToList() : tasks.ToList();
+        _currentTasks = ShowService.IsEditMode ? ShowService.Tasks.Where(t => t.CueId == _currentCue?.Id).ToList() : tasks.ToList();
 
             if (_currentCue is not null)
             {
                 <MudText Typo="Typo.h1" Align="Align.Center">Current Cue - @_currentCue.Name </MudText>
                 <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
-                    @if (IsEditMode)
+                    @if (ShowService.IsEditMode)
                     {
                         <MudTooltip Text="Color">
                             <!-- Bind to a wrapper property so we can persist changes when user selects a new color -->
                             <MudSelect T="CueCardColor" @bind-Value="SelectedCardColor" Label="Badge color"
-                                       Disabled="!IsEditMode"
+                                       Disabled="!ShowService.IsEditMode"
                                        Style="overflow: clip; width: 150px;">
                                 @foreach (CueCardColor color in Enum.GetValues<CueCardColor>())
                                 {
@@ -42,7 +42,7 @@
                     }
                 </MudStack>
 
-                @if (!IsEditMode)
+            @if (!ShowService.IsEditMode)
                 {
                     <div class="d-flex flex-grow-1 flex-wrap justify-center align-center px-8 pb-8 pt-2">
                         <MudCheckBox Color="Color.Primary" Label="All" Dense="true" T="bool?"
@@ -61,13 +61,13 @@
                         {
                             <MudPaper Class="mb-2" Outlined="true" Elevation="0">
                                 <MudStack Row="true" AlignItems="AlignItems.Center">
-                                    @if (!IsEditMode)
+                                    @if (!ShowService.IsEditMode)
                                     {
                                         <MudIcon Icon="@CueTask.CueTaskIconToString(cueTask.Icon)" Color="Color.Primary"
                                                  Size="Size.Large" Style="margin-left: 16px;"/>
                                     }
                                     <div class="flex-grow-1 p-2" style="white-space: pre-wrap;">
-                                        @if (!IsEditMode)
+                                        @if (!ShowService.IsEditMode)
                                         {
                                             Role? role = null;
                                             if (cueTask.RoleId.HasValue)
@@ -117,7 +117,8 @@
                                                 </MudStack>
                                             </MudStack>
                                         }
-                                        <EditableText Value="@cueTask.Tasks" Label="" IsEditMode="@IsEditMode"
+                                        <EditableText Value="@cueTask.Tasks" Label=""
+                                                      IsEditMode="@ShowService.IsEditMode"
                                                       OnValueChanged="s => { CueTaskChanged(s, cueTask); }"
                                                       MaxLines="20" TopMargin="true"></EditableText>
                                     </div>
@@ -142,9 +143,6 @@
 
 @code
 {
-    [CascadingParameter(Name = "IsEditMode")]
-    public bool IsEditMode { get; set; }
-
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
 
@@ -319,5 +317,5 @@
         }
     }
 
-    private bool IsTaskVisible(CueTask cueTask) => cueTask.RoleId == null || (_roleFilters.TryGetValue(cueTask.RoleId.Value, out bool isChecked) && isChecked) || AllRolesSelected == true || IsEditMode;
+    private bool IsTaskVisible(CueTask cueTask) => cueTask.RoleId == null || (_roleFilters.TryGetValue(cueTask.RoleId.Value, out bool isChecked) && isChecked) || AllRolesSelected == true || ShowService.IsEditMode;
 }

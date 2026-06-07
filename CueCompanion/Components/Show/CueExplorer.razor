@@ -5,7 +5,7 @@
     <MudText Typo="Typo.h1" Align="Align.Center">
         Cue Explorer
     </MudText>
-    @if (ShowService.LiveModeCuePosition is { } cuePos && !IsEditMode)
+    @if (ShowService.LiveModeCuePosition is { } cuePos && !ShowService.IsEditMode)
     {
         <MudText Typo="Typo.h2" Inline="true">
             <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="@PreviousCue" Color="Color.Primary"/>
@@ -25,7 +25,7 @@
         <MudCard Elevation="4" style="background-color: #141414">
             <div class="d-flex justify-content-between">
                 <MudText Typo="Typo.subtitle1">CUES</MudText>
-                @if (IsEditMode)
+                @if (ShowService.IsEditMode)
                 {
                     <MudTooltip Text="Add new cue">
                         <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
@@ -74,8 +74,6 @@
     [CascadingParameter]
     public required UserProvider UserProvider { get; set; }
 
-    [CascadingParameter(Name = "IsEditMode")]
-    public bool IsEditMode { get; set; }
     public bool HasControlPermissions
     {
         get

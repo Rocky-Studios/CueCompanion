@@ -23,31 +23,29 @@
         @if (HasViewPermissions)
         {
             <CascadingValue Value="ShowService">
-                <CascadingValue Name="IsEditMode" Value="_isEditMode">
-                    <MudOverlay @bind-Visible="_isEditMode" AutoClose="false"
-                                Style="z-index: 2000 !important; pointer-events: none;">
-                        <div class="edit-mode-overlay">
-                            <div class="edit-mode-label">
-                                EDIT MODE ACTIVE
-                            </div>
+                <MudOverlay @bind-Visible="ShowService.IsEditMode" AutoClose="false"
+                            Style="z-index: 2000 !important; pointer-events: none;">
+                    <div class="edit-mode-overlay">
+                        <div class="edit-mode-label">
+                            EDIT MODE ACTIVE
                         </div>
-                    </MudOverlay>
-                    <div class="show-columns" style="display: flex; gap: 1rem;">
-                        <div class="show-column" style="width: 40%;">
-                            <div style="height: 100%; display: flex; flex-direction: column; box-sizing: border-box;">
-                                    <ShowInfo/>
-                                    <div style="height: 16px"></div>
-                                    <CueExplorer/>
-                            </div>
-                        </div>
-                        <div class="show-column" style="width: 60%;">
-                            <CurrentCue/>
-                        </div>
-                        <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                            <div style="height: 80px;"></div>
-                        </MudHidden>
                     </div>
-                </CascadingValue>
+                </MudOverlay>
+                <div class="show-columns" style="display: flex; gap: 1rem;">
+                    <div class="show-column" style="width: 40%;">
+                        <div style="height: 100%; display: flex; flex-direction: column; box-sizing: border-box;">
+                            <ShowInfo/>
+                            <div style="height: 16px"></div>
+                            <CueExplorer/>
+                        </div>
+                    </div>
+                    <div class="show-column" style="width: 60%;">
+                        <CurrentCue/>
+                    </div>
+                    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                        <div style="height: 80px;"></div>
+                    </MudHidden>
+                </div>
             </CascadingValue>
         }
     }
@@ -99,8 +97,7 @@
     [CascadingParameter]
     public required UserProvider UserProvider { get; set; }
 
-    private bool    _isEditMode;
-    private Color   EditButtonColor => _isEditMode ? Color.Primary : Color.Default;
+    private Color EditButtonColor => ShowService.IsEditMode ? Color.Primary : Color.Default;
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,7 +133,7 @@
 
     private void ToggleEditMode()
     {
-        _isEditMode             = !_isEditMode;
+        ShowService.IsEditMode = !ShowService.IsEditMode;
         StateHasChanged();
     }
 
