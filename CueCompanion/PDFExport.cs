@@ -172,7 +172,7 @@ public static class PDFExport
                                      if (string.IsNullOrEmpty(showingRolesText))
                                      {
                                          string pl = multipleRoles ? "s" : "";
-                                         showingRolesText = $"Tasks for role${pl}: {roleName}";
+                                         showingRolesText = $"Tasks for role{pl}: {roleName}";
                                      }
                                      else
                                          showingRolesText += $", {roleName}";
