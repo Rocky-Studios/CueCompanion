@@ -1,9 +1,11 @@
 @page "/about"
+@using System.Reflection
 
 <PageTitle>About - Cue Companion</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudText Typo="Typo.h1" GutterBottom="true">About Cue Companion</MudText>
+    <MudText Typo="Typo.body2">Version: @Version</MudText>
     <MudText Typo="Typo.body1" GutterBottom="true">
         Cue Companion is essentially a live, digital run sheet. It is designed to help production teams manage and
         organize cues for live events, theater productions, concerts, and other performances.
@@ -184,6 +186,28 @@
 </MudContainer>
 
 @code {
+
+    private string Version { get; set; } = "Unknown";
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            // Get the assembly of the current application
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            // Try to read version from assembly metadata
+            Version = assembly.GetName().Version?.ToString() ?? "Unknown";
+
+            // Alternative method: Read directly from project file if needed
+            // This requires additional setup and may not work in all scenarios
+        }
+        catch
+        {
+            Version = "Unknown";
+        }
+    }
+
     bool _expanded;
 
     private void OnExpandCollapseClick()
