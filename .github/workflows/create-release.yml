@@ -1,9 +1,6 @@
 name: Create Release
 
 on:
-  workflow_run:
-    workflows: [ "publish" ]
-    types: [ completed ]
   workflow_dispatch:
 
 jobs:
