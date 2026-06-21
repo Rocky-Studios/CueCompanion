@@ -65,11 +65,15 @@
                 </div>
             }
 
-            <MudCard Style="flex-grow: 1; overflow-y: auto; min-height: 40px;">
+            <MudCard Style="flex-grow: 1; overflow-y: auto; gap: 8px;">
+                @if (_currentTasks.Count == 0)
+                {
+                    <MudText Class="p-4" Align="Align.Center">No tasks for this cue</MudText>
+                }
                 @foreach (CueTask cueTask in _currentTasks)
                     if (IsTaskVisible(cueTask))
                     {
-                        <MudPaper Class="mb-2" Outlined="true" Elevation="0">
+                        <MudPaper Outlined="true" Elevation="0">
                             <MudStack Row="true" AlignItems="AlignItems.Center">
                                 @if (!ShowService.IsEditMode)
                                 {
