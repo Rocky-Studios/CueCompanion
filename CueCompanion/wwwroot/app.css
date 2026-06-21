@@ -132,6 +132,11 @@ span.nav-label
     color: #bbb;
 }
 
+.cue-card-white, .mud-paper.cue-card-white {
+    background-color: #fff;
+    color: #202020;
+}
+
 .cue-card-red, .mud-paper.cue-card-red {
     background-color: #dc3545;
     color: white;
@@ -164,6 +169,36 @@ span.nav-label
 
 .cue-card-dark-blue, .mud-paper.cue-card-dark-blue {
     background-color: #004ea2;
+    color: white;
+}
+
+.cue-card-orange, .mud-paper.cue-card-orange {
+    background-color: #f47f36;
+    color: white;
+}
+
+.cue-card-dark-orange, .mud-paper.cue-card-dark-orange {
+    background-color: #90491f;
+    color: white;
+}
+
+.cue-card-purple, .mud-paper.cue-card-purple {
+    background-color: #9e2e7e;
+    color: white;
+}
+
+.cue-card-dark-purple, .mud-paper.cue-card-dark-purple {
+    background-color: #7a156d;
+    color: white;
+}
+
+.cue-card-yellow, .mud-paper.cue-card-yellow {
+    background-color: #f4d436;
+    color: black;
+}
+
+.cue-card-dark-yellow, .mud-paper.cue-card-dark-yellow {
+    background-color: #907d1d;
     color: white;
 }
 

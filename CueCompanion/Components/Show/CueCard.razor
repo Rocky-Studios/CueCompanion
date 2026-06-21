@@ -21,7 +21,7 @@
                                  Style="max-width: 120px;" Label="Duration" HelperText="Minutes"
                                  Clearable="true"></MudNumericField>
             }
-            <MudCard Class="@GetBadgeClass(Cue.CardColor)"
+            <MudCard Class="@GetBadgeClass(Cue.BadgeColor)"
                      Style="height: 30px; width: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
                 <MudText Inline="true">@Cue.Position</MudText>
             </MudCard>
@@ -66,18 +66,25 @@
         await OnClick.InvokeAsync();
     }
 
-    public static string GetBadgeClass(CueCardColor color)
+    public static string GetBadgeClass(CueBadgeColor color)
     {
         return color switch
                {
-                   CueCardColor.Gray      => "cue-card-gray",
-                   CueCardColor.Red       => "cue-card-red",
-                   CueCardColor.DarkRed   => "cue-card-dark-red",
-                   CueCardColor.Green     => "cue-card-green",
-                   CueCardColor.DarkGreen => "cue-card-dark-green",
-                   CueCardColor.Blue      => "cue-card-blue",
-                   CueCardColor.DarkBlue  => "cue-card-dark-blue",
-                   _                      => "cue-card-gray",
+                   CueBadgeColor.Gray       => "cue-card-gray",
+                   CueBadgeColor.White      => "cue-card-white",
+                   CueBadgeColor.Red        => "cue-card-red",
+                   CueBadgeColor.DarkRed    => "cue-card-dark-red",
+                   CueBadgeColor.Green      => "cue-card-green",
+                   CueBadgeColor.DarkGreen  => "cue-card-dark-green",
+                   CueBadgeColor.Blue       => "cue-card-blue",
+                   CueBadgeColor.DarkBlue   => "cue-card-dark-blue",
+                   CueBadgeColor.Orange     => "cue-card-orange",
+                   CueBadgeColor.DarkOrange => "cue-card-dark-orange",
+                   CueBadgeColor.Purple     => "cue-card-purple",
+                   CueBadgeColor.DarkPurple => "cue-card-dark-purple",
+                   CueBadgeColor.Yellow     => "cue-card-yellow",
+                   CueBadgeColor.DarkYellow => "cue-card-dark-yellow",
+                   _                        => "cue-card-gray",
                };
     }
 
