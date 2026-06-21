@@ -2,9 +2,10 @@
 @inject SimpleDialogService Dialogs
 
 <MudCard Class="@GetCardClass()" @onclick="OnCardClick">
-    <div class="d-flex justify-content-between align-items-center m-1">
+    <div class="d-flex justify-content-between align-items-center">
         <div class="me-2 flex-grow-1">
-            <EditableText @bind-Value="@Cue.Name" IsEditMode="ShowService.IsEditMode" OnValueChanged="CueNameChanged"/>
+            <EditableText @bind-Value="@Cue.Name" IsEditMode="ShowService.IsEditMode" OnValueChanged="CueNameChanged"
+                          Class="cue-name"/>
         </div>
 
         <div class="d-flex align-items-center gap-1 flex-shrink-0 justify-content-between">
@@ -88,11 +89,28 @@
                };
     }
 
+    public static string GetSizeClass(CueSize size)
+    {
+        return size switch
+        {
+            CueSize.Small      => "cue-card-small",
+            CueSize.Medium     => "cue-card-medium",
+            CueSize.Large      => "cue-card-large",
+            CueSize.ExtraLarge => "cue-card-extra-large",
+            _                  => "cue-card-medium",
+        };
+    }
+
     public string GetCardClass()
     {
-        if (IsSelectedLive) return "cue-card-green";
-        if (IsSelected) return "cue-card-light-gray";
-        return "cue-card-gray";
+        string colorClass;
+        if (IsSelectedLive) colorClass  = "cue-card-green";
+        else if (IsSelected) colorClass = "cue-card-light-gray";
+        else colorClass                 = "cue-card-gray";
+
+        string sizeClass = GetSizeClass(Cue.Size);
+
+        return $"{colorClass} {sizeClass}";
     }
 
     private void CueNameChanged(string newName)

@@ -202,6 +202,45 @@ span.nav-label
     color: white;
 }
 
+.cue-card-small, .mud-paper.cue-card-small {
+    padding: 0.25rem 1rem;
+}
+
+.cue-card-medium, .mud-paper.cue-card-medium {
+    padding: 1rem;
+}
+
+.cue-card-large, .mud-paper.cue-card-large {
+    padding: 1.5rem 1rem;
+    font-size: larger;
+}
+
+.cue-card-extra-large, .mud-paper.cue-card-extra-large {
+    padding: 1.5rem 1rem;
+    font-size: x-large;
+    font-weight: bold;
+}
+
+.cue-card-small .cue-name {
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+.cue-card-medium .cue-name {
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.cue-card-large .cue-name {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.cue-card-extra-large .cue-name {
+    font-size: 1.75rem;
+    font-weight: bold;
+}
+
 .edit-mode-button-container {
     position: fixed;
     bottom: 2rem;

@@ -24,4 +24,7 @@ public class Cue
 
     [Column("badge_color")]
     public CueBadgeColor BadgeColor { get; set; } = CueBadgeColor.Gray;
+
+    [Column("size")]
+    public CueSize Size { get; set; } = CueSize.Medium;
 }

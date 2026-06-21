@@ -1,8 +1,8 @@
 @if (IsEditMode)
 {
     <div style="@style">
-        <MudText Typo="Typo.subtitle1" style="margin: 0;">@Label</MudText>
-        <MudTextField @bind-Value="@Value" style="flex: 1;" Class="no-padding-input" @onblur="OnBlur"
+        <MudText Typo="Typo.subtitle1" style="margin: 0;" Class="@Class">@Label</MudText>
+        <MudTextField @bind-Value="@Value" style="flex: 1;" Class="@("no-padding-input" + Class)" @onblur="OnBlur"
                       AdornmentIcon="@Icons.Material.Filled.Edit" Adornment="Adornment.End"
                       Lines="@(DefaultLines)"
                       MaxLines="@(MaxLines)"
@@ -14,7 +14,7 @@
 }
 else
 {
-    <MudText Typo="Typo.subtitle1">@Label@Value</MudText>
+    <MudText Typo="Typo.subtitle1" Class="@Class">@Label@Value</MudText>
 }
 
 @code
@@ -26,6 +26,9 @@ else
 
     [Parameter]
     public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
 
     [Parameter]
     public EventCallback<string> ValueChanged { get; set; }

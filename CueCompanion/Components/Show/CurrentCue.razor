@@ -30,6 +30,15 @@
                             }
                         </div>
                     </MudSelect>
+                    <MudSelect T="CueSize" @bind-Value="SelectedSize" Label="Size"
+                               Disabled="!ShowService.IsEditMode">
+                        @foreach (CueSize size in Enum.GetValues<CueSize>())
+                        {
+                            <MudSelectItem Value="@size" Class="color-item">
+                                <span style="padding: 2px; border-radius: 2px;">@size</span>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
                     <MudTooltip Text="New task">
                         <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
                                        OnClick="@CreateNewTaskButtonPressed"
@@ -295,6 +304,16 @@
         }
     }
 
+    private async Task CueSizeChanged(Cue cue, CueSize newSize)
+    {
+        if (Auth.ApiKey is { } key)
+        {
+            cue.Size = newSize;
+            StateHasChanged();
+            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, cue)).IfError(e => Dialogs.Show("Error changing cue size", e));
+        }
+    }
+
     // Wrapper property used for two-way binding in the MudSelect. When set it updates the current cue and persists the change.
     private CueBadgeColor SelectedBadgeColor
     {
@@ -307,6 +326,20 @@
             // update model and persist asynchronously (fire-and-forget to avoid blocking setter)
             _currentCue.BadgeColor = value;
             _                      = CueCardColorChanged(_currentCue, value);
+        }
+    }
+
+    private CueSize SelectedSize
+    {
+        get => _currentCue?.Size ?? CueSize.Medium;
+        set
+        {
+            if (_currentCue is null) return;
+            if (_currentCue.Size == value) return;
+
+            // update model and persist asynchronously (fire-and-forget to avoid blocking setter)
+            _currentCue.Size = value;
+            _                = CueSizeChanged(_currentCue, value);
         }
     }
 
