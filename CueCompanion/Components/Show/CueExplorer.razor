@@ -1,7 +1,7 @@
 @inject AuthService         Auth
 @inject SimpleDialogService Dialogs
 
-<MudPaper>
+<MudPaper Style="display: flex; flex-direction: column; flex-grow: 1; height: 500px;">
     <MudText Typo="Typo.h1" Align="Align.Center">
         Cue Explorer
     </MudText>
@@ -22,7 +22,7 @@
     }
     @if (ShowService.CurrentlyViewingShow is { } show)
     {
-        <MudCard Elevation="4" style="background-color: #141414">
+        <MudCard Elevation="4" style="background-color: #141414; overflow: auto;">
             <div class="d-flex justify-content-between">
                 <MudText Typo="Typo.subtitle1">CUES</MudText>
                 @if (ShowService.IsEditMode)
@@ -59,9 +59,7 @@
 </MudPaper>
 <style>
     .cue-list {
-        /*                       page padding   show info*/
-        max-height: calc(100vh - 64px - 400px - var(--mud-appbar-height));
-        overflow-y: scroll;
+        overflow-y: auto;
     }
 </style>
 
