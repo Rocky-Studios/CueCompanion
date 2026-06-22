@@ -8,8 +8,17 @@
 @inject IDialogService      DialogService
 
 
-<MudPaper>
-    <MudText Typo="Typo.h1" Align="Align.Center">Show Info</MudText>
+<MudPaper Style="position:relative;">
+    <div style="display:flex; justify-content:center; align-items:center; height: 56px;">
+        <MudText Typo="Typo.h1"
+                 Style="@("transition: font-size 0.3s;" + (_expanded ? "font-size: 2rem;" : "font-size: 1.25rem;"))">
+            Show Info
+        </MudText>
+    </div>
+    <MudIconButton OnClick="@OnExpandCollapseClick"
+                   Icon="@(_expanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                   Style="position: absolute; top: 8px; right: 8px;"/>
+    <MudCollapse Expanded="_expanded">
     <div style="display:flex; align-items:center; gap:8px;">
         @if (HasControlPermissions)
         {
@@ -33,12 +42,12 @@
             @{
                 var shows = ShowService!.Shows.ToList();
                 shows.Sort((a, b) =>
-                           {
-                               bool aIsToday = IsShowToday(a, false);
-                               bool bIsToday = IsShowToday(b, false);
-                               if (aIsToday != bIsToday) return aIsToday ? -1 : 1;
-                               return DateTime.Compare(a.Start, b.Start);
-                           });
+                {
+                    bool aIsToday = IsShowToday(a, false);
+                    bool bIsToday = IsShowToday(b, false);
+                    if (aIsToday != bIsToday) return aIsToday ? -1 : 1;
+                    return DateTime.Compare(a.Start, b.Start);
+                });
             }
             @if (shows.Count == 0 || SelectedShowBound == null)
             {
@@ -172,6 +181,7 @@
             </tr>
         </table>
     }
+    </MudCollapse>
 </MudPaper>
 <InputFile id="@IMPORT_INPUT_ID" style="display:none;" accept=".json,application/json"
            OnChange="@OnImportFileSelected"/>
@@ -224,6 +234,14 @@
 
     [CascadingParameter]
     public required UserProvider UserProvider { get; set; }
+
+
+    bool _expanded = true;
+
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
 
     public Show? SelectedShowBound
     {
