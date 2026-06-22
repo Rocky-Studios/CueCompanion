@@ -28,9 +28,24 @@
                     @foreach (Message message in ChatService.Messages)
                     {
                         ChatService.UserIdToNameCache.TryGetValue(message.Sender, out string? sender);
-                        <MudText>
-                            <b>@MessageTimestampToString(message.Timestamp) @sender:</b> @message.Content
-                        </MudText>
+
+                        <MudStack Row="true" Style="margin-bottom: 0.4rem; align-items: flex-start;">
+                            <div
+                                style="width: 32px; height: 32px; border-radius: 50%; background-color: #007bff; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-top: 8px; flex-shrink: 0;">
+                                @sender?.Substring(0, 1).ToUpper()
+                            </div>
+                            <MudStack Spacing="0" Style="flex-grow: 1; min-width: 0;">
+                                <MudText>
+                                    <b>@sender</b>
+                                    <MudText Typo="Typo.body2" Inline="true">
+                                        @MessageTimestampToString(message.Timestamp)
+                                    </MudText>
+                                </MudText>
+                                <MudText Style="word-wrap: break-word; white-space: pre-wrap;">
+                                    @message.Content
+                                </MudText>
+                            </MudStack>
+                        </MudStack>
                     }
                 </MudPaper>
             </div>
