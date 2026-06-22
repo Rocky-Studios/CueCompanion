@@ -1,7 +1,20 @@
+@using MudBlazor.Utilities
 @inject AuthService         Auth
 @inject SimpleDialogService Dialogs
 
 <MudPaper Style="display: flex; flex-direction: column; overflow: auto;">
+    <MudHotkey Key="JsKey.ArrowDown" OnHotkeyPressed="OnNextCueHotkey">
+
+    </MudHotkey>
+    <MudHotkey Key="JsKey.ArrowRight" OnHotkeyPressed="OnNextCueHotkey">
+
+    </MudHotkey>
+    <MudHotkey Key="JsKey.ArrowUp" OnHotkeyPressed="OnPrevCueHotkey">
+
+    </MudHotkey>
+    <MudHotkey Key="JsKey.ArrowLeft" OnHotkeyPressed="OnPrevCueHotkey">
+
+    </MudHotkey>
     <MudText Typo="Typo.h1" Align="Align.Center">
         Cue Explorer
     </MudText>
@@ -173,5 +186,36 @@
     private IEnumerable<Cue> GetSortedCues()
     {
         return ShowService.GetCuesInShow().OrderBy(c => c.Position);
+    }
+
+    private void OnNextCueHotkey()
+    {
+        var cues = GetSortedCues().ToList();
+        if (ShowService.CurrentCuePosition == null)
+        {
+            ShowService.CurrentCuePosition = cues.First().Position;
+        }
+
+        if (ShowService.CurrentCuePosition == cues.Last().Position) return;
+        ShowService.CurrentCuePosition += 1;
+        ShowService.UpdateState();
+
+        StateHasChanged();
+    }
+
+
+    private void OnPrevCueHotkey()
+    {
+        var cues = GetSortedCues().ToList();
+        if (ShowService.CurrentCuePosition == null)
+        {
+            ShowService.CurrentCuePosition = cues.First().Position;
+        }
+
+        if (ShowService.CurrentCuePosition == cues.First().Position) return;
+        ShowService.CurrentCuePosition -= 1;
+        ShowService.UpdateState();
+
+        StateHasChanged();
     }
 }
