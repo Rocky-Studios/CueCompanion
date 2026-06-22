@@ -3,6 +3,7 @@
 @inject ChatService         ChatService
 @inject SimpleDialogService Dialogs
 @inject IJSRuntime          Js
+@using MudBlazor.Utilities
 @implements IAsyncDisposable
 
 <PageTitle>Chat - Cue Companion</PageTitle>
@@ -21,6 +22,7 @@
         }
         else
         {
+            <MudHotkey Key="JsKey.Enter" OnHotkeyPressed="OnSendButtonClicked"></MudHotkey>
             <div @ref="_messagesContainer" style="max-height: 60vh; overflow-y: auto;">
                 <MudPaper Class="p-4">
                     @foreach (Message message in ChatService.Messages)
@@ -34,7 +36,7 @@
             </div>
             @if (_hasTypePermission)
             {
-                <MudTextField @bind-Value="@_messageContent"></MudTextField>
+                <MudTextField @ref="_messageInput" @bind-Value="@_messageContent"></MudTextField>
                 <MudButton EndIcon="@Icons.Material.Filled.Send" OnClick="@OnSendButtonClicked">Send</MudButton>
             }
         }
@@ -49,6 +51,7 @@
     private bool             _shouldScrollToBottom;
     private Action?          _authStateChangedHandler;
     private Action?          _chatStateChangedHandler;
+    private MudTextField<string>? _messageInput;
 
 
     private bool _hasViewPermission, _hasTypePermission;
@@ -133,6 +136,8 @@
             return;
         }
 
+        StateHasChanged();
+        await _messageInput.BlurAsync();
         if (!string.IsNullOrEmpty(_messageContent) && AuthService.ApiKey is { } key)
         {
             if (ChatService != null) await ChatService.SendMessage(key, _messageContent);
