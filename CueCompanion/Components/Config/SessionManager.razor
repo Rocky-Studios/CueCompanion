@@ -176,20 +176,4 @@
         Expandable  = false,
         Selector    = e => e.UserID,
     };
-
-    // Add this property to ensure all users are shown in groups
-    private IEnumerable<UserInfo> AllUsersWithApiKeys
-    {
-        get
-        {
-            var userGroups = UserManagement.UserInfos.GroupJoin(
-                ConfigService.ApiKeys,
-                user => user.UserID,
-                apiKey => apiKey.UserID,
-                (user, apiKeys) => new { User = user, ApiKeys = apiKeys }
-            );
-
-            return userGroups.Select(ug => ug.User);
-        }
-    }
 }
