@@ -104,6 +104,16 @@ public class UserManagementService : StateSubscriberService
         return await _userManagementHub.InvokeAsync<Result<string>>("ForceChangePassword", apiKey, userID);
     }
 
+    public async Task<Result<ApiKey>> CreateApiKey(string apiKey, int userID, TimeSpan expiration)
+    {
+        if (_userManagementHub == null)
+            throw new InvalidOperationException("AuthHub connection is not established.");
+
+        var r = await _userManagementHub.InvokeAsync<Result<ApiKey>>("CreateApiKey", apiKey, userID, expiration);
+        UpdateState();
+        return r;
+    }
+
     public async Task<Result> DeleteApiKey(string apiKey, int apiKeyId)
     {
         if (_userManagementHub == null)

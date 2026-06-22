@@ -312,6 +312,8 @@ public static class UserManager
         return (user, apiKey);
     }
 
+    private static string NewKey() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
     private static string GetOrAddApiKey(User user, bool forceNew = false)
     {
         ApiKey? existingKeyForConnection = Db.Table<ApiKey>()
@@ -326,16 +328,15 @@ public static class UserManager
                 return existingKeyForConnection.Key;
         }
 
-        string key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         ApiKey apiKey = new()
         {
             UserID    = user.Id,
-            Key       = key,
+            Key       = NewKey(),
             IssuedAt  = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(1),
         };
         Db.Insert(apiKey);
-        return key;
+        return apiKey.Key;
     }
 
     public static User? GetUserById(int userId)
@@ -405,6 +406,26 @@ public static class UserManager
         if (!r.GetValue()) return Result<ApiKey[]>.Failure("Access denied.");
 
         return Result<ApiKey[]>.Success(Db.Table<ApiKey>().ToArray());
+    }
+
+    public static Result<ApiKey> CreateApiKey(string apiKey, int userID, TimeSpan expiration)
+    {
+        var r = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess) return Result<ApiKey>.Failure(r.Error!);
+        if (!r.GetValue()) return Result<ApiKey>.Failure("Access denied.");
+
+        User? user = GetUserById(userID);
+        if (user == null) return Result<ApiKey>.Failure("User not found.");
+
+        ApiKey newApiKey = new()
+        {
+            UserID    = user.Id,
+            Key       = NewKey(),
+            IssuedAt  = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow + expiration,
+        };
+        Db.Insert(newApiKey);
+        return Result<ApiKey>.Success(newApiKey);
     }
 
     public static Result DeleteApiKey(string apiKey, int apiKeyId)

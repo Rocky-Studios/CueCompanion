@@ -1,0 +1,53 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">API Key Create Options</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudStack Row="true" Spacing="2">
+                <MudText Typo="Typo.subtitle1">Expiration:</MudText>
+                <MudNumericField @bind-Value="options.ExpirationAmount" Min="1" Style="max-width: 100px;"/>
+                <MudSelect @bind-Value="options.ExpirationUnits" Style="min-width: 150px;">
+                    <MudSelectItem Value="ExpirationUnits.Hours">Hours</MudSelectItem>
+                    <MudSelectItem Value="ExpirationUnits.Days">Days</MudSelectItem>
+                </MudSelect>
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@Submit">Create API Key</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    public class APIKeyCreateOptions
+    {
+        public ExpirationUnits ExpirationUnits  { get; set; } = ExpirationUnits.Days;
+        public int             ExpirationAmount { get; set; } = 1;
+    }
+
+    public enum ExpirationUnits
+    {
+        Hours,
+        Days,
+    }
+
+    public APIKeyCreateOptions options = new();
+
+
+    [CascadingParameter]
+    IMudDialogInstance Dialog { get; set; }
+
+    private void Submit()
+    {
+        Dialog.Close(DialogResult.Ok(options));
+    }
+
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+
+}

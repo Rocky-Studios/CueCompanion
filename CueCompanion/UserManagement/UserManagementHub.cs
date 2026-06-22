@@ -107,5 +107,8 @@ public class UserManagementHub : Hub
 
     public Task<Result<string>> ForceChangePassword(string apiKey, int userID) => Task.FromResult(UserManager.ForceChangePassword(apiKey, userID));
 
+    public Task<Result<ApiKey>> CreateApiKey(string apiKey, int userID, TimeSpan expiration) =>
+        Task.FromResult(UserManager.CreateApiKey(apiKey, userID, expiration));
+
     public Task<Result> DeleteApiKey(string apiKey, int apiKeyId) => Task.FromResult(UserManager.DeleteApiKey(apiKey, apiKeyId));
 }

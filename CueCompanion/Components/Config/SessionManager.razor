@@ -18,7 +18,8 @@
             <MudTh Class="mud-table-cell-custom-group">
                 <MudTooltip Text="Create new API key">
                     <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
-                                   Size="Size.Small"></MudIconButton>
+                                   Size="Size.Small"
+                                   OnClick="@(() => CreateApiKeyForUser((int)context.Key))"></MudIconButton>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-table-cell-custom-group" colspan="3">
@@ -97,6 +98,40 @@
     {
         UserInfo user = UserManagement.UserInfos.FirstOrDefault(u => u.UserID == userId);
         return user.UserName;
+    }
+
+    public async Task CreateApiKeyForUser(int userId)
+    {
+        if (AuthService.ApiKey is not { } key)
+        {
+            _ = Dialogs.Show("Error", "No API key found");
+            return;
+        }
+
+        IDialogReference dialog = await DialogService.ShowAsync<ApiKeyCreateDialog>("API Key Create Options");
+        DialogResult?    result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        ApiKeyCreateDialog.APIKeyCreateOptions? options = (ApiKeyCreateDialog.APIKeyCreateOptions)result.Data;
+        TimeSpan                                expiration;
+        if (options.ExpirationUnits == ApiKeyCreateDialog.ExpirationUnits.Hours)
+        {
+            expiration = TimeSpan.FromHours(options.ExpirationAmount);
+        }
+        else
+        {
+            expiration = TimeSpan.FromDays(options.ExpirationAmount);
+        }
+
+        var r = await UserManagement.CreateApiKey(key, userId, expiration);
+        if (r.IsSuccess)
+        {
+            ConfigService.ApiKeys.Add(r.Value);
+        }
+
+        r.IfError(s => Dialogs.Show("Failed to create API key", s));
     }
 
     private async Task DeleteApiKey(int apiKeyId)
