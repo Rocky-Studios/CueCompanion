@@ -25,7 +25,9 @@
             <PanelContainer>
                 <CascadingValue TValue="ConfigService" Value="ConfigService">
                     <CascadingValue TValue="UserManagementService" Value="UserManagement">
-                        <SessionManager/>
+                        <CascadingValue TValue="AuthService" Value="AuthService">
+                            <SessionManager/>
+                        </CascadingValue>
                     </CascadingValue>
                 </CascadingValue>
             </PanelContainer>

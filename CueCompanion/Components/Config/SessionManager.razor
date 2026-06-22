@@ -1,15 +1,30 @@
 @using CueCompanion.UserManagement
-@inject IJSRuntime JsRuntime
+@inject IJSRuntime          JsRuntime
+@inject SimpleDialogService Dialogs
 
 <Panel MinWidth="60%">
     <MudText Typo="Typo.h2">Session Manager</MudText>
-    <MudTable T="ApiKey" Items="ConfigService.ApiKeys">
+    <MudTable T="ApiKey" Items="ConfigService.ApiKeys" FixedHeader="true" Hover="true" GroupBy="_groupDefinition">
         <HeaderContent>
             <MudTh>Key</MudTh>
             <MudTh></MudTh>
             <MudTh>Created At</MudTh>
             <MudTh>Expires At</MudTh>
         </HeaderContent>
+        <GroupHeaderTemplate>
+            <MudTh Class="mud-table-cell-custom-group">
+                @($"{NameOf((int)context.Key)} ({context.Key})")
+            </MudTh>
+            <MudTh Class="mud-table-cell-custom-group">
+                <MudTooltip Text="Create new API key">
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
+                                   Size="Size.Small"></MudIconButton>
+                </MudTooltip>
+            </MudTh>
+            <MudTh Class="mud-table-cell-custom-group" colspan="3">
+
+            </MudTh>
+        </GroupHeaderTemplate>
         <RowTemplate>
             <MudTd>
                 <MudText Typo="Typo.body2" Style="font-family: 'Roboto Mono', monospace;">
@@ -17,8 +32,14 @@
                 </MudText>
             </MudTd>
             <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
-                               OnClick="@(() => CopyText(context.Key))"/>
+                <MudTooltip Text="Copy to clipboard">
+                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
+                                   OnClick="@(() => CopyText(context.Key))"/>
+                </MudTooltip>
+                <MudTooltip Text="Delete API key">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                   OnClick="@(() => DeleteApiKey(context.Id))"/>
+                </MudTooltip>
             </MudTd>
             <MudTd>
                 @context.IssuedAt.ToLocalTime().ToString("g")
@@ -36,6 +57,12 @@
         });
     }
 </script>
+<style>
+    .mud-table-root .mud-table-body .mud-table-cell.mud-table-cell-custom-group {
+        font-weight: 500;
+        background-color: color-mix(var(--mud-palette-surface) 75%, #000 25%);
+    }
+</style>
 
 
 @code
@@ -46,9 +73,13 @@
     [CascadingParameter]
     public UserManagementService UserManagement { get; set; } = null!;
 
+    [CascadingParameter]
+    public AuthService AuthService { get; set; } = null!;
+
     protected override Task OnInitializedAsync()
     {
         ConfigService.OnStateChanged += async () => { await InvokeAsync(StateHasChanged); };
+        UserManagement.OnStateChanged += async () => { await InvokeAsync(StateHasChanged); };
         return Task.CompletedTask;
     }
 
@@ -61,4 +92,34 @@
     {
         return ConfigService.ApiKeys.Where(k => k.UserID == user.UserID).ToArray();
     }
+
+    private string NameOf(int userId)
+    {
+        UserInfo user = UserManagement.UserInfos.FirstOrDefault(u => u.UserID == userId);
+        return user.UserName;
+    }
+
+    private async Task DeleteApiKey(int apiKeyId)
+    {
+        if (AuthService.ApiKey is not { } key)
+        {
+            _ = Dialogs.Show("Error", "No API key found");
+            return;
+        }
+
+        Result r = await UserManagement.DeleteApiKey(key, apiKeyId);
+        r.IfError(s => Dialogs.Show("Failed to delete API key", s));
+        if (r.IsSuccess)
+        {
+            ConfigService.ApiKeys = ConfigService.ApiKeys.Where(k => k.Id != apiKeyId).ToList();
+        }
+    }
+
+    private readonly TableGroupDefinition<ApiKey> _groupDefinition = new()
+    {
+        GroupName   = "User ID",
+        Indentation = false,
+        Expandable  = false,
+        Selector    = e => e.UserID,
+    };
 }

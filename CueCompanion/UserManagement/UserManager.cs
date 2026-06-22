@@ -406,4 +406,17 @@ public static class UserManager
 
         return Result<ApiKey[]>.Success(Db.Table<ApiKey>().ToArray());
     }
+
+    public static Result DeleteApiKey(string apiKey, int apiKeyId)
+    {
+        var r = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess) return Result.Failure(r.Error!);
+        if (!r.GetValue()) return Result.Failure("Access denied.");
+
+        ApiKey? key = Db.Table<ApiKey>().FirstOrDefault(k => k?.Id == apiKeyId, null);
+        if (key == null) return Result.Failure("API key not found.");
+
+        Db.Delete(key);
+        return Result.Success();
+    }
 }
