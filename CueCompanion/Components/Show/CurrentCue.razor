@@ -12,8 +12,8 @@
 
         if (_currentCue is not null)
         {
-            <MudText Typo="Typo.h1" Align="Align.Center">Current Cue - @_currentCue.Name </MudText>
             <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
+                <MudText Typo="Typo.h1" Align="Align.Center">Current Cue - @_currentCue.Name </MudText>
                 @if (ShowService.IsEditMode)
                 {
                     <MudSelect T="CueBadgeColor" @bind-Value="SelectedBadgeColor" Label="Badge color"
@@ -50,6 +50,9 @@
                                        Size="Size.Medium"/>
                     </MudTooltip>
                 }
+                <MudButton Variant="@(_currentCue.Cut ? Variant.Filled : Variant.Outlined)" OnClick="@OnCueCutPressed"
+                           Color="Color.Primary">Cut
+                </MudButton>
             </MudStack>
 
             @if (!ShowService.IsEditMode)
@@ -375,4 +378,14 @@
     }
 
     private bool IsTaskVisible(CueTask cueTask) => cueTask.RoleId == null || (_roleFilters.TryGetValue(cueTask.RoleId.Value, out bool isChecked) && isChecked) || AllRolesSelected == true || ShowService.IsEditMode;
+
+    private async void OnCueCutPressed()
+    {
+        if (Auth.ApiKey is { } key)
+        {
+            _currentCue!.Cut = !_currentCue.Cut;
+            StateHasChanged();
+            (await ShowService!.SendEditModeAction(key, EditModeMethod.Update, _currentCue)).IfError(e => Dialogs.Show("Error changing cue cut", e));
+        }
+    }
 }

@@ -1,8 +1,8 @@
 @if (IsEditMode)
 {
-    <div style="@style">
+    <div style="@ContainerStyle">
         <MudText Typo="Typo.subtitle1" style="margin: 0;" Class="@Class">@Label</MudText>
-        <MudTextField @bind-Value="@Value" style="flex: 1;" Class="@("no-padding-input" + Class)" @onblur="OnBlur"
+        <MudTextField @bind-Value="@Value" Style="@Style" Class="@("no-padding-input" + Class)" @onblur="OnBlur"
                       AdornmentIcon="@Icons.Material.Filled.Edit" Adornment="Adornment.End"
                       Lines="@(DefaultLines)"
                       MaxLines="@(MaxLines)"
@@ -14,12 +14,12 @@
 }
 else
 {
-    <MudText Typo="Typo.subtitle1" Class="@Class">@Label@Value</MudText>
+    <MudText Typo="Typo.subtitle1" Class="@Class" Style="@Style">@Label@Value</MudText>
 }
 
 @code
 {
-    private string style => "display: flex; align-items: center; gap: 4px; margin-left: -4px;" + (TopMargin ? "margin-top: 8px;" : "");
+    private string ContainerStyle => "display: flex; align-items: center; gap: 4px; margin-left: -4px;" + (TopMargin ? "margin-top: 8px;" : "");
 
     [Parameter]
     public string Value { get; set; } = string.Empty;
@@ -53,6 +53,9 @@ else
 
     [Parameter]
     public bool CanBeEmpty { get; set; }
+
+    [Parameter]
+    public string Style { get; set; } = string.Empty;
 
     string? Validation(string input)
     {

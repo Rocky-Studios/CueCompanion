@@ -27,4 +27,7 @@ public class Cue
 
     [Column("size")]
     public CueSize Size { get; set; } = CueSize.Medium;
+
+    [Column("cut")]
+    public bool Cut { get; set; } = false;
 }
