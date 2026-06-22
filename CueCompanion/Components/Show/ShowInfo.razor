@@ -55,6 +55,12 @@
                         </MudChip>
                         <MudDivider Light="false"/>
                     }
+                    @if (IsShowPast(showSelectOption, true))
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled"
+                                 Style="margin-left:4px;">Past
+                        </MudChip>
+                    }
                 </MudSelectItem>
             }
         </MudSelect>
@@ -412,6 +418,13 @@
         if (falseIfSelected && show.Id == ShowService!.CurrentlyViewingShow?.Id) return false;
         DateTime today = DateTime.Today;
         return show.Start.Date == today || show.End.Date == today;
+    }
+
+    private bool IsShowPast(Show show, bool falseIfSelected)
+    {
+        if (falseIfSelected && show.Id == ShowService!.CurrentlyViewingShow?.Id) return false;
+        DateTime today = DateTime.Today;
+        return show.Start.Date < today || show.End.Date < today;
     }
 
     private async Task SelectedShowChanged(Show? newShow)
