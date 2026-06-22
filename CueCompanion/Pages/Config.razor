@@ -1,11 +1,14 @@
 @page "/config"
+@using CueCompanion.Components.Config
 @using CueCompanion.Components.Dashboard
-@inject AuthService AuthService
+@inject AuthService           AuthService
+@inject ConfigService         ConfigService
+@inject UserManagementService UserManagement
+@inject SimpleDialogService   Dialogs
 
 <PageTitle>Config - Cue Companion</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudText Typo="Typo.h1">Config</MudText>
     @if (AuthService.User == null)
     {
         <MudAlert Severity="Severity.Error">You must be logged in to access the config page.</MudAlert>
@@ -20,7 +23,11 @@
         @if (_hasPermission)
         {
             <PanelContainer>
-
+                <CascadingValue TValue="ConfigService" Value="ConfigService">
+                    <CascadingValue TValue="UserManagementService" Value="UserManagement">
+                        <SessionManager/>
+                    </CascadingValue>
+                </CascadingValue>
             </PanelContainer>
         }
     }
@@ -28,23 +35,48 @@
 
 @code
 {
+    [CascadingParameter]
+    public UserProvider? UserProvider { get; set; }
+
     private bool _hasPermission;
 
     protected override Task OnInitializedAsync()
     {
-        try
+        AuthService.OnStateChanged += async () =>
         {
-            AuthService.OnStateChanged += () =>
-                                          {
-                                              _hasPermission = AuthService.User != null && AuthService.HasPermission("Admin");
+            _hasPermission = AuthService.User != null && AuthService.HasPermission("Admin");
 
-                                              InvokeAsync(StateHasChanged);
-                                          };
-            return Task.CompletedTask;
-        }
-        catch (Exception exception)
+            if (_hasPermission && AuthService.ApiKey is { } key)
+            {
+                _ = ConfigService.GetApiKeys(key);
+                var r = await UserManagement.GetUsers(key);
+                UserManagement.UserInfos = r.GetValue(s => Dialogs.Show("Failed to retrieve users", s));
+            }
+
+            await InvokeAsync(StateHasChanged);
+        };
+        ConfigService.OnStateChanged += async () =>
         {
-            return Task.FromException(exception);
-        }
+            if (_hasPermission && AuthService.ApiKey is { } key)
+            {
+                _ = ConfigService.GetApiKeys(key);
+            }
+
+            await InvokeAsync(StateHasChanged);
+        };
+
+        UserManagement.OnStateChanged += async () =>
+        {
+            if (_hasPermission && AuthService.ApiKey is { } key)
+            {
+                var r = await UserManagement.GetUsers(key);
+                UserManagement.UserInfos = r.GetValue(s => Dialogs.Show("Failed to retrieve users", s));
+            }
+
+            await InvokeAsync(StateHasChanged);
+        };
+        _ = ConfigService.StartAsync(Navigation.BaseUri);
+        _ = UserManagement.StartAsync(Navigation.BaseUri, UserProvider!);
+        return Task.CompletedTask;
     }
 }

@@ -1,0 +1,64 @@
+@using CueCompanion.UserManagement
+@inject IJSRuntime JsRuntime
+
+<Panel MinWidth="60%">
+    <MudText Typo="Typo.h2">Session Manager</MudText>
+    <MudTable T="ApiKey" Items="ConfigService.ApiKeys">
+        <HeaderContent>
+            <MudTh>Key</MudTh>
+            <MudTh></MudTh>
+            <MudTh>Created At</MudTh>
+            <MudTh>Expires At</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>
+                <MudText Typo="Typo.body2" Style="font-family: 'Roboto Mono', monospace;">
+                    @context.Key
+                </MudText>
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
+                               OnClick="@(() => CopyText(context.Key))"/>
+            </MudTd>
+            <MudTd>
+                @context.IssuedAt.ToLocalTime().ToString("g")
+            </MudTd>
+            <MudTd>
+                @context.ExpiresAt.ToLocalTime().ToString("g")
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</Panel>
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).catch((err) => {
+            alert(err.message);
+        });
+    }
+</script>
+
+
+@code
+{
+    [CascadingParameter]
+    public ConfigService ConfigService { get; set; } = null!;
+
+    [CascadingParameter]
+    public UserManagementService UserManagement { get; set; } = null!;
+
+    protected override Task OnInitializedAsync()
+    {
+        ConfigService.OnStateChanged += async () => { await InvokeAsync(StateHasChanged); };
+        return Task.CompletedTask;
+    }
+
+    public void CopyText(string text)
+    {
+        JsRuntime.InvokeVoidAsync("copyToClipboard", text);
+    }
+
+    private ApiKey[] GetUserApiKeys(UserInfo user)
+    {
+        return ConfigService.ApiKeys.Where(k => k.UserID == user.UserID).ToArray();
+    }
+}

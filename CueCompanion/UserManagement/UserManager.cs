@@ -397,4 +397,13 @@ public static class UserManager
             return Result<string>.Failure(auditAction.Error);
         }
     }
+
+    public static Result<ApiKey[]> GetApiKeys(string apiKey)
+    {
+        var r = HasManageUsersPermission(apiKey);
+        if (!r.IsSuccess) return Result<ApiKey[]>.Failure(r.Error!);
+        if (!r.GetValue()) return Result<ApiKey[]>.Failure("Access denied.");
+
+        return Result<ApiKey[]>.Success(Db.Table<ApiKey>().ToArray());
+    }
 }

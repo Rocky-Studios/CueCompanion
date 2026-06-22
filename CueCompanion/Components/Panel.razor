@@ -1,8 +1,15 @@
-<MudPaper Class="layout-panel">
+<MudPaper Class="layout-panel"
+          Style="@($"min-width: max({MinWidth},{MaxWidth}); flex-basis: max({MinWidth},{MaxWidth});")">
     @ChildContent
 </MudPaper>
 
 @code
 {
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string MinWidth { get; set; } = "40%";
+
+    [Parameter]
+    public string MaxWidth { get; set; } = "400px";
 }
