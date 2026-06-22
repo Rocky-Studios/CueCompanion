@@ -4,7 +4,7 @@
 
 <Panel MinWidth="60%">
     <MudText Typo="Typo.h2">Session Manager</MudText>
-    <MudTable T="ApiKey" Items="ConfigService.ApiKeys" FixedHeader="true" Hover="true" GroupBy="_groupDefinition">
+    <MudTable T="ApiKey" Items="GetApiKeys()" FixedHeader="true" Hover="true" GroupBy="_groupDefinition">
         <HeaderContent>
             <MudTh>Key</MudTh>
             <MudTh></MudTh>
@@ -27,27 +27,30 @@
             </MudTh>
         </GroupHeaderTemplate>
         <RowTemplate>
-            <MudTd>
-                <MudText Typo="Typo.body2" Style="font-family: 'Roboto Mono', monospace;">
-                    @context.Key
-                </MudText>
-            </MudTd>
-            <MudTd>
-                <MudTooltip Text="Copy to clipboard">
-                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
-                                   OnClick="@(() => CopyText(context.Key))"/>
-                </MudTooltip>
-                <MudTooltip Text="Delete API key">
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
-                                   OnClick="@(() => DeleteApiKey(context.Id))"/>
-                </MudTooltip>
-            </MudTd>
-            <MudTd>
-                @context.IssuedAt.ToLocalTime().ToString("g")
-            </MudTd>
-            <MudTd>
-                @context.ExpiresAt.ToLocalTime().ToString("g")
-            </MudTd>
+            @if (context.Key != "")
+            {
+                <MudTd>
+                    <MudText Typo="Typo.body2" Style="font-family: 'Roboto Mono', monospace;">
+                        @context.Key
+                    </MudText>
+                </MudTd>
+                <MudTd>
+                    <MudTooltip Text="Copy to clipboard">
+                        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
+                                       Color="Color.Primary" OnClick="@(() => CopyText(context.Key))"/>
+                    </MudTooltip>
+                    <MudTooltip Text="Delete API key">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                       Color="Color.Primary" OnClick="@(() => DeleteApiKey(context.Id))"/>
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>
+                    @context.IssuedAt.ToLocalTime().ToString("g")
+                </MudTd>
+                <MudTd>
+                    @context.ExpiresAt.ToLocalTime().ToString("g")
+                </MudTd>
+            }
         </RowTemplate>
     </MudTable>
 </Panel>
@@ -89,9 +92,25 @@
         JsRuntime.InvokeVoidAsync("copyToClipboard", text);
     }
 
-    private ApiKey[] GetUserApiKeys(UserInfo user)
+    // This is needed to show all the users even if they don't have any keys
+    private List<ApiKey> GetApiKeys()
     {
-        return ConfigService.ApiKeys.Where(k => k.UserID == user.UserID).ToArray();
+        List<ApiKey> keys = ConfigService.ApiKeys;
+        foreach (UserInfo u in UserManagement.UserInfos)
+        {
+            if (keys.Any(k => k.UserID == u.UserID))
+                continue;
+
+            keys.Add(new ApiKey
+            {
+                IssuedAt  = DateTime.MinValue,
+                ExpiresAt = DateTime.MinValue,
+                Key       = string.Empty,
+                UserID    = u.UserID,
+            });
+        }
+
+        return keys;
     }
 
     private string NameOf(int userId)
@@ -157,4 +176,20 @@
         Expandable  = false,
         Selector    = e => e.UserID,
     };
+
+    // Add this property to ensure all users are shown in groups
+    private IEnumerable<UserInfo> AllUsersWithApiKeys
+    {
+        get
+        {
+            var userGroups = UserManagement.UserInfos.GroupJoin(
+                ConfigService.ApiKeys,
+                user => user.UserID,
+                apiKey => apiKey.UserID,
+                (user, apiKeys) => new { User = user, ApiKeys = apiKeys }
+            );
+
+            return userGroups.Select(ug => ug.User);
+        }
+    }
 }
