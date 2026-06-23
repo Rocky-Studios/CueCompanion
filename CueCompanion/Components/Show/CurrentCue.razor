@@ -12,7 +12,7 @@
 
         if (_currentCue is not null)
         {
-            <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
+            <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
                 <MudText Typo="Typo.h1" Align="Align.Center">Current Cue - @_currentCue.Name </MudText>
                 @if (ShowService.IsEditMode)
                 {
