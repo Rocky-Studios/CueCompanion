@@ -251,6 +251,17 @@ span.nav-label
     border-radius: 4px;
 }
 
+
+.cue-list {
+    overflow-y: auto;
+}
+
+@media (max-width: 999px) {
+    .cue-list {
+        max-height: 500px;
+    }
+}
+
 @media (max-width: 959.98px) {
     .edit-mode-button-container {
         bottom: calc(2rem + 64px + env(safe-area-inset-bottom));
