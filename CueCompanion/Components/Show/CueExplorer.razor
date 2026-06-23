@@ -3,16 +3,14 @@
 @inject SimpleDialogService Dialogs
 
 <MudPaper Style="display: flex; flex-direction: column; overflow: auto;">
+    @code{
+        // TODO make left and right arrow keys work as well
+    }
+
     <MudHotkey Key="JsKey.ArrowDown" OnHotkeyPressed="OnNextCueHotkey">
 
     </MudHotkey>
-    <MudHotkey Key="JsKey.ArrowRight" OnHotkeyPressed="OnNextCueHotkey">
-
-    </MudHotkey>
     <MudHotkey Key="JsKey.ArrowUp" OnHotkeyPressed="OnPrevCueHotkey">
-
-    </MudHotkey>
-    <MudHotkey Key="JsKey.ArrowLeft" OnHotkeyPressed="OnPrevCueHotkey">
 
     </MudHotkey>
     <MudText Typo="Typo.h1" Align="Align.Center">
