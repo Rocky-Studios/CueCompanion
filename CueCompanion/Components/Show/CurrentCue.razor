@@ -50,9 +50,13 @@
                                        Size="Size.Medium"/>
                     </MudTooltip>
                 }
-                <MudButton Variant="@(_currentCue.Cut ? Variant.Filled : Variant.Outlined)" OnClick="@OnCueCutPressed"
-                           Color="Color.Primary">Cut
-                </MudButton>
+                @if (HasCutPermissions)
+                {
+                    <MudButton Variant="@(_currentCue.Cut ? Variant.Filled : Variant.Outlined)"
+                               OnClick="@OnCueCutPressed"
+                               Color="Color.Primary">Cut
+                    </MudButton>
+                }
             </MudStack>
 
             @if (!ShowService.IsEditMode)
@@ -178,6 +182,9 @@
     [CascadingParameter]
     public ShowService? ShowService { get; set; }
 
+    [CascadingParameter]
+    public required UserProvider UserProvider { get; set; }
+
     //              RoleID, IsChecked
     private Dictionary<int, bool> _roleFilters = new();
 
@@ -192,6 +199,26 @@
     private bool   _isColorSelectOpen;
     private string ColorSelectStyle => !_isColorSelectOpen ? "overflow: clip; width: 120px; transition-property: width; transition-duration: 100ms; transition-timing-function: ease-in-out;" : "overflow: clip; width: 400px; transition-property: width; transition-duration: 100ms; transition-timing-function: ease-in-out;";
 
+
+    public bool HasEditPermissions
+    {
+        get
+        {
+            if (!Auth.PermissionsCache.TryGetValue("EditShow", out int _)) return false;
+            return UserProvider.CurrentUser?.HasPermission(Auth.PermissionsCache["EditShow"]) ?? false;
+        }
+    }
+
+    public bool HasControlPermissions
+    {
+        get
+        {
+            if (!Auth.PermissionsCache.TryGetValue("ControlShow", out int _)) return false;
+            return UserProvider.CurrentUser?.HasPermission(Auth.PermissionsCache["ControlShow"]) ?? false;
+        }
+    }
+
+    public bool HasCutPermissions => HasEditPermissions || HasControlPermissions;
 
     private bool? All()
     {
